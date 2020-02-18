@@ -1,0 +1,11 @@
+dataclasses
+aiogram
+aiohttp-autoreload
+aiohttp-healthcheck
+aiomysql
+aioredis
+apscheduler
+loguru
+python-dateutil
+redis
+tortoise-orm
