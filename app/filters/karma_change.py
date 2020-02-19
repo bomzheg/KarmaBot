@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Union, Dict
-
+from loguru import logger
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 
@@ -22,7 +22,8 @@ class KarmaFilter(BoundFilter):
         target_user = await get_target_user(message)
         if target_user is None:
             return False
-        return {'karma': {'user': target_user, 'karma_change': karma_change}}
+        rez = {'karma': {'user': target_user, 'karma_change': karma_change}}
+        return rez
 
 
 async def get_karma_trigger(text: str) -> Union[int, None]:
@@ -48,7 +49,7 @@ def has_minus_karma(text: str) -> bool:
     return text == '-' or text == '👎'
 
 
-async def get_target_user(message: types.Message) -> Union[types.user, None]:
+async def get_target_user(message: types.Message) -> Union[types.user.User, None]:
     """
     Target user can be take from reply or by mention
     :param message:
