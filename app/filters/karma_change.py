@@ -45,7 +45,7 @@ async def get_karma_trigger(text: str) -> Union[int, None]:
 
 THANK = 'спасибо'
 def has_plus_karma(text: str) -> bool:
-    if text.startswith('+', '👍'):
+    if text.startswith(('+', '👍')):
         return True
     if len(text) > len(THANK) and text[:7].lower == THANK:
         return True

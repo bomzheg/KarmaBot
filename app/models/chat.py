@@ -56,7 +56,7 @@ class Chat(Model):
 
     async def get_top_karma_list(self, limit: int=15):
         await self.fetch_related('user_karma')
-        users_karmas = await self.user_karma.order_by('karma').limit(limit).all()
+        users_karmas = await self.user_karma.order_by('-karma').limit(limit).all()
         rez = []
         for user_karma in users_karmas:
             user = await user_karma.user.first()

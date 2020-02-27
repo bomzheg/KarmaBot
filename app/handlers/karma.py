@@ -8,6 +8,20 @@ from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.utils.exeptions import UserWithoutUserIdError
 
+@dp.message_handler(commands=["top"], commands_prefix='!')
+async def get_top(message: types.Message, chat: Chat):
+    text_list = ""
+    for user, karma in await chat.get_top_karma_list():
+        text_list += f"\n{user.mention_no_link} <b>{karma}</b>"
+    if text_list == "":
+        text = "Никто в чате не имеет кармы"
+    else:
+        text = "Список самых почётных пользователей чата:" + text_list
+    await message.reply(text, disable_web_page_preview=True)
+
+
+
+
 how_change = {
     +1: 'увеличил',
     -1: 'уменьшил'
@@ -51,14 +65,3 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True
     )
 
-
-@dp.message_handler(commands=["top"], commands_prefix='!')
-async def get_top(message: types.Message, chat: Chat):
-    text_list = ""
-    for user, karma in await chat.get_top_karma_list():
-        text_list += f"\n{user.mention_no_link} <b>{karma}</b>"
-    if text_list == "":
-        text = "Никто в чате не имеет кармы"
-    else:
-        text = "Список самых почётных пользователей чата:" + text_list
-    await message.reply(text, disable_web_page_preview=True)
