@@ -6,8 +6,8 @@ from loguru import logger
 
 from .chat import Chat
 from .user import User
-
-
+from math import sqrt
+from app.utils.exeptions import SubZeroKarma
 class UserKarma(Model):
     uc_id = fields.IntField(pk=True)
     user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User', related_name='karma')
@@ -18,32 +18,41 @@ class UserKarma(Model):
         table = 'user_karma'
 
     def __str__(self):
-        rez = str(self.uc_id)
+        rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}'
         return rez
 
     def __repr__(self):
         return str(self)
 
-    async def up(self, user_changed: User):
+    async def change(self, user_changed: User, how_change: int) -> float:
+        """
+        change karma to (self.user) from (user_changed)
+        (how_change) must be +1 or -1
+        """
         await self.fetch_related('chat')
         power = await self.get_power(user_changed, self.chat)
-        self.karma += power
-        await self.save()
-
-    async def down(self, user_changed: User):
-        await self.fetch_related('chat')
-        power = await self.get_power(user_changed, self.chat)
-        self.karma -= power
+        if power < 0.01:
+            raise SubZeroKarma(
+                "User have to small karma", 
+                user_id=user_changed.user_id,
+                chat_id=self.chat.chat_id # noqa
+            )
+        self.karma = self.karma + how_change*power
         await self.save()
 
     @classmethod
     async def get_power(cls, user: User, chat: Chat) -> float:
         uk, _ = await cls.get_or_create(user=user, chat=chat)
-        if uk.karma < 0.0:
-            return 0
-        if uk.karma <= 1.0:
-            return 1
-        return log10(uk.karma + 1)
+        return uk.power
+    
     @property
-    def karma_round(self):
+    def power(self) -> float:
+        if self.karma < 0.0:
+            return 0
+        if self.karma <= 1.0:
+            return 1
+        return sqrt(self.karma)
+
+    @property
+    def karma_round(self) -> float:
         return round(self.karma, 2)
