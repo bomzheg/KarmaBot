@@ -10,7 +10,6 @@ from app.models.user import User
 @dp.message_handler(CommandStart())
 async def cmd_start(message: types.Message, user: User):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
-    logger.debug(user)
     await message.answer('messages.START_MSG')
 
 
