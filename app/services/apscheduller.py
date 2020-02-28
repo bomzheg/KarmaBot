@@ -1,3 +1,4 @@
+# partially from https://github.com/aiogram/bot
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
 from apscheduler.executors.asyncio import AsyncIOExecutor
@@ -9,8 +10,8 @@ from app import config
 
 jobstores = {
     'default': RedisJobStore(
-        jobs_key="SH.jobs",
-        run_times_key="SH.run_times",
+        jobs_key="jobs",
+        run_times_key="run_times",
         host=config.REDIS_HOST,
         port=config.REDIS_PORT,
         db=config.REDIS_DB

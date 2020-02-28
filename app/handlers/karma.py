@@ -7,9 +7,13 @@ from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.utils.exeptions import UserWithoutUserIdError
+from app.utils.from_axenia import axenia_raiting
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
 async def get_top(message: types.Message, chat: Chat):
+    parts = message.text.split(' ')
+    if len(parts) > 1:
+        chat = await Chat.get(chat_id=int(parts[1]))
     text_list = ""
     for user, karma in await chat.get_top_karma_list():
         text_list += f"\n{user.mention_no_link} <b>{karma}</b>"
@@ -28,7 +32,7 @@ how_change = {
 }
 
 def can_change_karma(target_user: User, user: User, chat: Chat):
-    if user.user_id == target_user.user_id:
+    if user.id == target_user.id:
         return False
     return True
 
@@ -55,8 +59,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         user=target_user,
         chat=chat
     )
-    from_user_karma = await user.get_karma(chat)
     await uk.change(user_changed=user, how_change=karma['karma_change'])
+    from_user_karma = await user.get_karma(chat)
 
     await message.reply(
         f"{user.mention_no_link} <b>({from_user_karma})</b> "
@@ -65,3 +69,23 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True
     )
 
+@dp.message_handler(commands=["init_from_axenia"], commands_prefix='!')
+async def init_from_axenia(message: types.Message, chat: Chat):
+    #mankie patch
+    chat, _ = await Chat.get_or_create(chat_id=-1001399056118, title=' ')
+    #mankie patch
+    karmas_list = await axenia_raiting(chat.chat_id)
+    without_username = []
+    for name, username, karma in karmas_list:
+        if username is not None:
+            user_tg = types.User(username=username)
+            user = await User.get_or_create_from_tg_user(user_tg)
+            await UserKarma.get_or_create(user=user, chat=chat, karma=karma)
+        else:
+            without_username.append((name, karma))
+    
+    await message.reply('updated', disable_web_page_preview=True)
+    text = "Список пользователей с проблемами"
+    for user, karma in without_username:
+        text += f"\n{user} {karma}"
+    await message.reply(text)

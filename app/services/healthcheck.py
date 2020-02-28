@@ -1,3 +1,4 @@
+# partially from https://github.com/aiogram/bot
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
 from aiohttp_healthcheck import HealthCheck

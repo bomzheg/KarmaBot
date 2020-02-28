@@ -3,7 +3,7 @@ from loguru import logger
 
 from app import config
 from app.misc import bot, dp
-from app.utils.logging import StreamToLogger
+from app.utils.log import StreamToLogger
 from app.utils.send_text_file import send_log_files
 
 _logger = StreamToLogger(logger)
