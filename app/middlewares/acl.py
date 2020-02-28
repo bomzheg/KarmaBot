@@ -1,3 +1,5 @@
+# partially from https://github.com/aiogram/bot
+
 from typing import Optional
 
 from aiogram import types
