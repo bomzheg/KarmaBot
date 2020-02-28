@@ -8,10 +8,12 @@ from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.utils.exeptions import UserWithoutUserIdError
 from app.utils.from_axenia import axenia_raiting
-
+from app.services.trottling import trottling
 @dp.message_handler(commands=["top"], commands_prefix='!')
 async def get_top(message: types.Message, chat: Chat):
     parts = message.text.split(' ')
+    if not await trottling.set_command(parts[0], chat.chat_id):
+        return
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
     text_list = ""
