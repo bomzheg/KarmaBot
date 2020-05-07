@@ -1,4 +1,4 @@
-#from https://github.com/aiogram/bot
+# from https://github.com/aiogram/bot
 from dataclasses import dataclass
 
 from aiogram import types

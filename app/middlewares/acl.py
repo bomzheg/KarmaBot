@@ -13,16 +13,15 @@ from app.models.user import User
 class ACLMiddleware(BaseMiddleware):
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
-        user_id = user.id
         if chat and chat.type != 'private':
             chat_id = chat.id
         else:
             chat_id = None
 
         try:
-            user = await User.get_or_create_from_tg_user(user=user)
+            user = await User.get_or_create_from_tg_user(user)
             if chat_id is not None:
-                chat = await Chat.get_or_create_from_tg_chat(chat=chat)
+                chat = await Chat.get_or_create_from_tg_chat(chat)
 
         except Exception as e:
             logger.error("troubles with db")

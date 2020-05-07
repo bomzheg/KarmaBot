@@ -23,7 +23,7 @@ job_defaults = {
     'max_instances': 20,
     'misfire_grace_time': 3600
 }
-logger.info("configuring shedulder...")
+logger.info("configuring scheduler...")
 scheduler = AsyncIOScheduler(
     jobstores=jobstores,
     job_defaults=job_defaults,
@@ -32,7 +32,7 @@ scheduler = AsyncIOScheduler(
 
 
 async def on_startup(dispatcher: Dispatcher):
-    logger.info("starting shedulder...")
+    logger.info("starting scheduler...")
     scheduler.start()
 
 

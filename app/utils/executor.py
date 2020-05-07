@@ -1,3 +1,4 @@
+# partially from https://github.com/aiogram/bot
 from contextlib import suppress
 
 from aiogram import Dispatcher
@@ -8,8 +9,7 @@ from loguru import logger
 from app import config
 from app.misc import dp
 from app.models import db
-from app.services import apscheduller, healthcheck
-from app.utils.send_text_file import send_log_files
+from app.services import apscheduller, healthcheck, trottling
 
 runner = Executor(dp)
 
@@ -25,7 +25,7 @@ async def on_startup_notify(dispatcher: Dispatcher):
             chat_id=config.LOG_CHAT_ID, text="Bot started", disable_notification=True
         )
         logger.info("Notified superuser {user} about bot is started.", user=config.GLOBAL_ADMIN_ID)
-    await send_log_files(config.LOG_CHAT_ID)
+    #await send_log_files(config.LOG_CHAT_ID)
 
 
 def setup():
@@ -33,5 +33,6 @@ def setup():
     db.setup(runner)
     apscheduller.setup(runner)
     healthcheck.setup(runner)
+    trottling.setup(runner)
     runner.on_startup(on_startup_webhook, webhook=True, polling=False)
     runner.on_startup(on_startup_notify)

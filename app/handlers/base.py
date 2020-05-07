@@ -4,11 +4,11 @@ from aiogram.dispatcher.filters import CommandHelp, CommandStart
 from loguru import logger
 
 from app.misc import dp
-from app.models.user import User
+from app.models.chat import Chat
 
 
 @dp.message_handler(CommandStart())
-async def cmd_start(message: types.Message, user: User):
+async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
         "Бот для изменения кармы в группе, просто добавьте "
@@ -42,3 +42,12 @@ async def cancel_state(message: types.Message, state: FSMContext):
     await state.finish()
     # And remove keyboard (just in case)
     await message.reply('messages.MSG_CANCEL', reply_markup=types.ReplyKeyboardRemove())
+
+
+@dp.message_handler(content_types=types.ContentTypes.MIGRATE_TO_CHAT_ID)
+async def chat_migrate(message: types.Message, chat: Chat):
+    old_id = message.chat.id
+    new_id = message.migrate_to_chat_id
+    chat.chat_id = new_id
+    await chat.save()
+    logger.info(f"Migrate chat from {old_id} to {new_id}")

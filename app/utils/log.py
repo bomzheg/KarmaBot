@@ -3,7 +3,7 @@ import sys
 
 from loguru import logger
 
-from app.config import PRINT_LOG, ERR_LOG
+from app.config import PRINT_LOG, ERR_LOG, CAPTURE_STD_ERR
 from app.misc import app_dir
 
 log_path = pathlib.Path(app_dir / 'log')
@@ -11,17 +11,13 @@ log_path.mkdir(parents=True, exist_ok=True)
 
 
 def setup():
-    sys.stderr = open(log_path / ERR_LOG, 'a')
+    if CAPTURE_STD_ERR:
+        sys.stderr = open(log_path / ERR_LOG, 'a')
     logger.add(
         sink=log_path / PRINT_LOG,
         format='{time} - {name} - {level} - {message}',
         level="DEBUG")
     logger.info("Program started")
-
-
-async def log_msg(message):
-    from app.utils.serialize_msg import serialize_message
-    logger.debug(serialize_message(message))
 
 
 class StreamToLogger(object):

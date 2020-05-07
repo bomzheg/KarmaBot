@@ -1,11 +1,14 @@
-dataclasses
 aiogram
+aiohttp  #  для загрузки кармы с сайта Аксении для последующего парсинга
 aiohttp-autoreload
 aiohttp-healthcheck
 aiomysql
 aioredis
 apscheduler
+dataclasses
 loguru
-python-dateutil
-redis
 tortoise-orm
+lxml  #  для парсинга кармы из Аксении
+redis  #  для apscheduler
+beautifulsoup4  #  для парсинга кармы из Аксении
+python-dotenv

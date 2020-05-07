@@ -4,19 +4,32 @@ class KarmaError(Exception):
             text: str,
             user_id: int = None,
             chat_id: int = None,
-            *args,
-            **kwargs
+            *args
     ):
-        super(KarmaError, self).__init__(args, kwargs)
+        super(KarmaError, self).__init__(text, args)
         self.text = text
         self.user_id = user_id
         self.chat_id = chat_id
 
     def __str__(self):
-        return (
-            f"Exception: {self.text}, by user {self.user_id} "
-            f"in chat {self.chat_id}"
-        )
+        text = f"{self.__class__.__name__}: {self.text}"
+        if self.user_id is not None:
+            text += f", by user {self.user_id} "
+        if self.chat_id is not None:
+            text += f"in chat {self.chat_id}"
+        return text
 
     def __repr__(self):
         return str(self)
+
+
+class UserWithoutUserIdError(KarmaError):
+    pass
+
+
+class SubZeroKarma(KarmaError):
+    pass
+
+
+class CantImportFromAxenia(KarmaError):
+    pass

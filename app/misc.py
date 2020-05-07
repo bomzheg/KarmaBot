@@ -1,3 +1,4 @@
+# partially from https://github.com/aiogram/bot
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, types

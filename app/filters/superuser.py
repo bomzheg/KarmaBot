@@ -15,4 +15,4 @@ class IsSuperuserFilter(BoundFilter):
     async def check(self, obj) -> bool:
         data = ctx_data.get()
         user: User = data["user"]
-        return user.user_id in config.SUPERUSERS
+        return user.tg_id in config.SUPERUSERS
