@@ -1,48 +1,70 @@
 import textwrap
+import html
 from asyncio import sleep
 
 from loguru import logger
 
 from app.misc import bot
 from app.misc import dp
-from app.utils.logging import log_path
+from app.utils.log import log_path
+
+MAX_MESSAGE_SYMBOLS = 4000
+
+PAUSE_SEC = 3
 
 
-async def split_text_file(file_name):
-    in_file = open(file_name, 'r+')
-    buffer_lines = f"{file_name}:\n"
-    rez = list()
-    for line in in_file:
-        line = line.replace("&", "&amp;")
-        line = line.replace("<", "&lt;")
-        line = line.replace(">", "&amp;")
-        if len(buffer_lines) + len(line) > 2980:
-            rez.append(buffer_lines)
-            buffer_lines = ""
-        buffer_lines += line
-    if 0 < len(buffer_lines) < 2980:
-        rez.append(buffer_lines)
-    elif len(buffer_lines) >= 2980:
-        splitted_text = textwrap.wrap(buffer_lines, 2980)
-        for text in splitted_text:
-            rez.append(text)
-    in_file.truncate(0)
-    in_file.close()
+def escape_line(line):
+    rez = line.replace("&", "&amp;")
+    rez = rez.replace("<", "&lt;")
+    rez = rez.replace(">", "&gt;")
     return rez
 
 
-PRE_O = '<pre>'
-PRE_C = '</pre>'
+async def split_text_file(file_name):
+    buffer_lines = f"{file_name}:\n"
+    rez = list()
+    with open(file_name, 'r+') as in_file:
+
+        for line in in_file:
+            line = html.escape(line)
+
+            if len(line) > MAX_MESSAGE_SYMBOLS:
+                rez.append(buffer_lines)
+                buffer_lines = ""
+                splitted_text = textwrap.wrap(line, MAX_MESSAGE_SYMBOLS)
+                rez.extend(splitted_text)
+            elif len(buffer_lines) + len(line) > MAX_MESSAGE_SYMBOLS:
+                rez.append(buffer_lines)
+                buffer_lines = ""
+            else:
+                buffer_lines += line
+        if len(buffer_lines) > 0:
+            rez.append(buffer_lines)
+        in_file.truncate(0)
+    return rez
+
+
+def pre_format(msg):
+    pre_o = '<pre>'
+    pre_c = '</pre>'
+    return f"{pre_o}{msg}{pre_c}"
 
 
 async def send_list_messages(list_msg, chat_id):
     for msg in list_msg:
-        await bot.send_message(chat_id, f"{PRE_O}{msg}{PRE_C}", disable_notification=True, parse_mode="HTML")
-        await sleep(1)
+        await bot.send_message(
+            chat_id,
+            pre_format(msg),
+            disable_notification=True,
+            parse_mode="HTML"
+        )
+        await sleep(PAUSE_SEC)
 
 
 async def send_text_file(file_name, chat_id):
     parts_log = await split_text_file(file_name)
+    if len(parts_log) == 1 and len(parts_log[0].splitlines()) == 1:
+        return
     await send_list_messages(parts_log, chat_id)
 
 

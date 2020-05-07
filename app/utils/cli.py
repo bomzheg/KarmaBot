@@ -1,3 +1,4 @@
+# partially from https://github.com/aiogram/bot
 import argparse
 import functools
 
@@ -66,15 +67,15 @@ def cli():
     namespace = parser.parse_args()
     if True or namespace.beta:
         config.now_token = config.TEST_BOT_TOKEN
-        print("use beta bot")
+        logger.info("use beta bot")
     else:
         config.now_token = config.BOT_TOKEN
-        print("use prodaction bot")
+        logger.info("use production bot")
 
-    from app.utils import logging
+    from app.utils import log
     from app import misc
 
-    logging.setup()
+    log.setup()
     misc.setup()
     if namespace.polling:
         polling(namespace.skip_updates)

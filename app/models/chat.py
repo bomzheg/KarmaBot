@@ -1,7 +1,6 @@
 import typing
 from enum import Enum
 
-from loguru import logger
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
@@ -20,6 +19,7 @@ class Chat(Model):
     title = fields.CharField(max_length=255)
     username = fields.CharField(max_length=32, null=True)
     description = fields.CharField(max_length=255, null=True)
+    # noinspection PyUnresolvedReferences
     user_karma: fields.ReverseRelation['UserKarma']
 
     class Meta:
@@ -54,12 +54,14 @@ class Chat(Model):
     def __repr__(self):
         return str(self)
 
-    async def get_top_karma_list(self, limit: int=15):
+    async def get_top_karma_list(self, limit: int = 15):
         await self.fetch_related('user_karma')
         users_karmas = await self.user_karma.order_by('-karma').limit(limit).all()
         rez = []
         for user_karma in users_karmas:
+            # noinspection PyUnresolvedReferences
             user = await user_karma.user.first()
+            # noinspection PyUnresolvedReferences
             karma = user_karma.karma_round
             rez.append((user, karma))
         return rez

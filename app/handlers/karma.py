@@ -1,18 +1,20 @@
 from aiogram import types
-from aiogram.utils.exceptions import BadRequest
 from loguru import logger
+
 from app import config
 from app.misc import dp, bot
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
+from app.services.trottling import throttling
 from app.utils.exeptions import UserWithoutUserIdError
 from app.utils.from_axenia import axenia_raiting
-from app.services.trottling import trottling
+
+
 @dp.message_handler(commands=["top"], commands_prefix='!')
 async def get_top(message: types.Message, chat: Chat):
     parts = message.text.split(' ')
-    if not await trottling.set_command(parts[0], chat.chat_id):
+    if not await throttling.set_chat_command(parts[0], chat.chat_id):
         return
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
@@ -26,37 +28,40 @@ async def get_top(message: types.Message, chat: Chat):
     await message.reply(text, disable_web_page_preview=True)
 
 
-
-
 how_change = {
     +1: 'увеличил',
     -1: 'уменьшил'
 }
+
 
 def can_change_karma(target_user: User, user: User, chat: Chat):
     if user.id == target_user.id:
         return False
     return True
 
+
 @dp.message_handler(karma_change=True)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat):
+    # можно заменить на karma['karma_change']
+    if not await throttling.set_user_command("karma_change", chat.chat_id, user.tg_id):
+        return await message.reply("Вы слишком часто меняете карму")
     try:
         target_user = await User.get_or_create_from_tg_user(karma['user'])
     except UserWithoutUserIdError as e:
-        e.user_id = user.user_id
+        e.user_id = user.tg_id
         e.chat_id = chat.chat_id
         logger.error(e)
         await bot.send_message(
-            config.LOG_CHAT_ID, 
+            config.LOG_CHAT_ID,
             f"Получено исключение {e}\n"
             "Обычно так бывает, когда бот в чате недавно и ещё не видел "
-            "пользователя которому плюсанули в виде '+ @username'."
+            "пользователя, которому плюсанули в виде '+ @username'."
         )
-        return 
-    
+        return
+
     if not can_change_karma(target_user, user, chat):
         return
-    
+
     uk, _ = await UserKarma.get_or_create(
         user=target_user,
         chat=chat
@@ -71,22 +76,23 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True
     )
 
-@dp.message_handler(commands=["init_from_axenia"], commands_prefix='!')
+
+@dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
 async def init_from_axenia(message: types.Message, chat: Chat):
-    #mankie patch
-    chat, _ = await Chat.get_or_create(chat_id=-1001399056118, title=' ')
-    #mankie patch
-    karmas_list = await axenia_raiting(chat.chat_id)
+    python_scripts_chat = -1001399056118
+    # mankie patch
+    karmas_list = await axenia_raiting(python_scripts_chat or chat.chat_id)
     without_username = []
     for name, username, karma in karmas_list:
         if username is not None:
-            user_tg = types.User(username=username)
-            user = await User.get_or_create_from_tg_user(user_tg)
-            await UserKarma.get_or_create(user=user, chat=chat, karma=karma)
+            user = await User.get_or_create_by_username(username)
+            uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
+            uk.karma = karma
+            await uk.save()
         else:
             without_username.append((name, karma))
-    
-    await message.reply('updated', disable_web_page_preview=True)
+
+    await message.reply('Список карм пользователей импортирован из Аксении', disable_web_page_preview=True)
     text = "Список пользователей с проблемами"
     for user, karma in without_username:
         text += f"\n{user} {karma}"

@@ -1,10 +1,10 @@
 from aiogram import types
-from loguru import logger
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
+
 from .chat import Chat
-from app.utils.exeptions import UserWithoutUserIdError
+
 
 class User(Model):
     id = fields.IntField(pk=True)
@@ -12,7 +12,9 @@ class User(Model):
     first_name = fields.CharField(max_length=255, null=True)
     last_name = fields.CharField(max_length=255, null=True)
     username = fields.CharField(max_length=32, null=True)
+    # noinspection PyUnresolvedReferences
     karma: fields.ReverseRelation['UserKarma']
+
     class Meta:
         table = "users"
 
@@ -28,20 +30,30 @@ class User(Model):
             last_name=user.last_name,
             username=user.username
         )
-        
-        return user 
+
+        return user
 
     @classmethod
-    async def get_or_create_from_tg_user(cls, user: types.User):
+    async def get_or_create_from_tg_user(cls, user_tg: types.User):
         try:
-            if user.id:
-                user = await cls.get(tg_id=user.id)
-            elif user.username:
-                user = await cls.get(username=user.username)
-            else:
-                raise DoesNotExist
+            try:
+                user = await cls.get(tg_id=user_tg.id)
+            except DoesNotExist:
+                # искать в бд по юзернейму нужно на тот случай, что юзер уже импортит
+                if user_tg.username:
+                    user = await cls.get(username=user_tg.username, tg_id__isnull=True)
+                else:
+                    raise DoesNotExist
         except DoesNotExist:
-            user = await cls.create_from_tg_user(user=user)
+            user = await cls.create_from_tg_user(user=user_tg)
+        return user
+
+    @classmethod
+    async def get_or_create_by_username(cls, username: str):
+        try:
+            user = await cls.get(username=username)
+        except DoesNotExist:
+            user = await cls.create(username=username)
         return user
 
     @property
@@ -76,14 +88,14 @@ class User(Model):
         return name
 
     async def get_karma(self, chat: Chat):
-        user_karma =  await self.karma.filter(chat=chat).first()
+        user_karma = await self.karma.filter(chat=chat).first()
+        # noinspection PyUnresolvedReferences
         return user_karma.karma_round
 
-    async def set_karma(self, chat: Chat, karma:int):
-        user_karma =  await self.karma.filter(chat=chat).first()
+    async def set_karma(self, chat: Chat, karma: int):
+        user_karma = await self.karma.filter(chat=chat).first()
         user_karma.karma = karma
         await user_karma.save()
-
 
     def __str__(self):
         rez = f"User ID {self.tg_id}, by name {self.first_name} {self.last_name}"

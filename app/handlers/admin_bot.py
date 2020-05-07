@@ -9,7 +9,7 @@ from app.utils.send_text_file import send_log_files
 _logger = StreamToLogger(logger)
 
 
-@dp.message_handler(lambda message: message.chat.id == config.GLOBAL_ADMIN_ID, commands='cancel_jobs')
+@dp.message_handler(chat_id=config.GLOBAL_ADMIN_ID, commands='cancel_jobs')
 async def cancel_jobs(message: types.Message):
     from app.services.apscheduller import scheduler
     logger.warning("removing all jobs")

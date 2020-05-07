@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Union, Dict
-from loguru import logger
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
-from app.misc import bot
+
+PLUS = ("+", "👍", "спасибо", "спс", "от души")
+MINUS = ('-', '👎')
 
 
 @dataclass
@@ -37,22 +38,23 @@ async def get_karma_trigger(text: str) -> Union[int, None]:
     :param text:
     :return:
     """
-    if has_plus_karma(text):
+    if has_plus_karma(get_first_word(text)):
         return +1
     if has_minus_karma(text):
         return -1
     return None
 
-THANK = 'спасибо'
-def has_plus_karma(text: str) -> bool:
-    if text.startswith(('+', '👍')):
-        return True
-    if len(text) > len(THANK) and text[:7].lower == THANK:
-        return True
+
+def get_first_word(text: str) -> str:
+    return text.split(' ')[0].lower().rstrip(",.")
+
+
+def has_plus_karma(word: str) -> bool:
+    return word in PLUS
 
 
 def has_minus_karma(text: str) -> bool:
-    return text == '-' or text == '👎'
+    return text in MINUS
 
 
 async def get_target_user(message: types.Message) -> Union[types.user.User, None]:
@@ -74,6 +76,7 @@ async def get_target_user(message: types.Message) -> Union[types.user.User, None
     if has_target_user():
         return target_user
     return None
+
 
 def get_mentioned_user(message: types.Message) -> Union[types.User, None]:
     if not message.text:

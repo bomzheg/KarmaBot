@@ -10,7 +10,7 @@ health = HealthCheck()
 
 
 def setup(executor: Executor):
-    logger.info("Configure helthcheck")
+    logger.info("Configure healthcheck")
     executor.on_startup(on_startup, webhook=True, polling=False)
 
 
