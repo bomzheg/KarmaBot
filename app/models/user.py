@@ -34,6 +34,10 @@ class User(Model):
         # TODO изучить фреймворк лучше - уверен есть встроенная функция для обновления только в случае расхождений
         changed = False
 
+        if self.tg_id is None and user_tg.id is not None:
+            changed = True
+            self.tg_id = user_tg.id
+
         if user_tg.first_name is not None and self.first_name != user_tg.first_name:
             changed = True
             self.first_name = user_tg.first_name

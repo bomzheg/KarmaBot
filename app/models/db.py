@@ -11,9 +11,25 @@ async def on_startup(dp: Dispatcher):
 
 
 async def db_init():
+    if config.DB_TYPE == 'mysql':
+        db_url = (
+            f'{config.DB_TYPE}://{config.LOGIN_DB}:{config.PASSWORD_DB}'
+            f'@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}'
+        )
+    elif config.DB_TYPE == 'postgres':
+        db_url = (
+            f'{config.DB_TYPE}://{config.LOGIN_DB}:{config.PASSWORD_DB}'
+            f'@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}'
+        )
+    elif config.DB_TYPE == 'sqlite':
+        db_url = (
+            f'{config.DB_TYPE}://{config.DB_PATH}'
+        )
+    else:
+        raise ValueError("DB_TYPE not mysql, sqlite or postgres")
+
     await Tortoise.init(
-        db_url=f'{config.DB_TYPE}://{config.LOGIN_DB}:{config.PASSWORD_DB}'
-               f'@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}',
+        db_url=db_url,
         modules={'models': __models__}
     )
 

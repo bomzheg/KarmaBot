@@ -42,3 +42,14 @@ async def get_idchat(message: types.Message):
 @dp.message_handler(is_superuser=True, commands=["exception"])
 async def cmd_exception(message: types.Message):
     raise Exception('user press /exception')
+
+
+@dp.message_handler(is_superuser=True, commands='dump')
+async def get_dump(message: types.Message):
+    await bot.send_document(
+        message.from_user.id,
+        open(
+            config.DB_PATH,
+            'rb'
+        )
+    )
