@@ -37,12 +37,13 @@ WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}"
 LISTEN_IP = '127.0.0.1'
 LISTEN_PORT = "3001"
 
+DB_TYPE = os.getenv("DB_TYPE")
 LOGIN_DB = os.getenv("LOGIN_DB")
 PASSWORD_DB = os.getenv("PASSWORD_DB")
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
-DB_TYPE = os.getenv("DB_TYPE")
+DB_PATH = os.getenv("DB_PATH", default=str(app_dir / 'karma.db'))
 
 REDIS_DB = int(os.getenv("REDIS_DB"))
 REDIS_HOST = os.getenv("REDIS_HOST")
