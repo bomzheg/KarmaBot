@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Union, Dict
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
+from loguru import logger
 
-PLUS = ("+", "👍", "спасибо", "спс", "от души")
-MINUS = ('-', '👎')
+from app.config import PLUS, MINUS
 
 
 @dataclass
@@ -87,9 +87,8 @@ def get_mentioned_user(message: types.Message) -> Union[types.User, None]:
         if ent.type == "text_mention":
             return ent.user
         elif ent.type == "mention":
-            # username like '@user'
-            username = message.text[ent.offset:ent.offset + ent.length]
-            return types.User(username=username[1:])
+            username = message.text[ent.offset:ent.offset + ent.length].lstrip("@")
+            return types.User(username=username)
     return None
 
 
