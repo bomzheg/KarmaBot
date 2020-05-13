@@ -16,6 +16,7 @@ class UserKarma(Model):
 
     class Meta:
         table = 'user_karma'
+        unique_together = ('user', 'chat')
 
     def __str__(self):
         rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}'
