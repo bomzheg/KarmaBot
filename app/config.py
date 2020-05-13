@@ -17,7 +17,7 @@ PROG_DESC = (
 PROG_EP = "© bomzheg. License WTFPL."
 DESC_BETA = "Run the program in beta test mode"
 DESC_POLLING = "Run tg bot with polling. Default use WebHook"
-os.getenv("KARMA_BOT_TOKEN")
+
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
 TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
 
