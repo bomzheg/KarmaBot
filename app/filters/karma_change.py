@@ -64,7 +64,7 @@ async def get_target_user(message: types.Message) -> Union[types.user.User, None
     :return:
     """
     def has_target_user():
-        return target_user is not None and target_user != author_user
+        return target_user is not None and target_user != author_user and not target_user.is_bot
 
     author_user = message.from_user.id
 
