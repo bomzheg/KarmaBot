@@ -1,4 +1,6 @@
 from aiogram import types
+from aiogram.types import ChatActions
+from aiogram.utils.markdown import hbold, quote_html
 from loguru import logger
 
 from app import config
@@ -20,7 +22,7 @@ async def get_top(message: types.Message, chat: Chat):
         chat = await Chat.get(chat_id=int(parts[1]))
     text_list = ""
     for user, karma in await chat.get_top_karma_list():
-        text_list += f"\n{user.mention_no_link} <b>{karma}</b>"
+        text_list += f"\n{user.mention_no_link} {hbold(karma)}"
     if text_list == "":
         text = "Никто в чате не имеет кармы"
     else:
@@ -34,10 +36,8 @@ how_change = {
 }
 
 
-def can_change_karma(target_user: User, user: User, chat: Chat):
-    if user.id == target_user.id:
-        return False
-    return True
+def can_change_karma(target_user: User, user: User):
+    return user.id != target_user.id
 
 
 @dp.message_handler(karma_change=True)
@@ -50,16 +50,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except UserWithoutUserIdError as e:
         e.user_id = user.tg_id
         e.chat_id = chat.chat_id
-        logger.error(e)
-        await bot.send_message(
-            config.LOG_CHAT_ID,
-            f"Получено исключение {e}\n"
+        e.args = (
             "Обычно так бывает, когда бот в чате недавно и ещё не видел "
-            "пользователя, которому плюсанули в виде '+ @username'."
+            "пользователя, которому плюсанули в виде '+ @username'.",
         )
-        return
-
-    if not can_change_karma(target_user, user, chat):
+        raise
+    if not can_change_karma(target_user, user):
         return
 
     uk, _ = await UserKarma.get_or_create(
@@ -70,15 +66,16 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     from_user_karma = await user.get_karma(chat)
 
     await message.reply(
-        f"{user.mention_no_link} <b>({from_user_karma})</b> "
+        f"{user.mention_no_link} ({hbold(from_user_karma)}) "
         f"{how_change[karma['karma_change']]} карму пользователю "
-        f"{target_user.mention_no_link} <b>({uk.karma_round})</b>",
+        f"{target_user.mention_no_link} ({hbold(uk.karma_round)})",
         disable_web_page_preview=True
     )
 
 
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
 async def init_from_axenia(message: types.Message, chat: Chat):
+    await bot.send_chat_action(message.chat.id, ChatActions.TYPING)
     python_scripts_chat = -1001399056118
     # mankie patch
     karmas_list = await axenia_raiting(python_scripts_chat or chat.chat_id)
@@ -95,5 +92,5 @@ async def init_from_axenia(message: types.Message, chat: Chat):
     await message.reply('Список карм пользователей импортирован из Аксении', disable_web_page_preview=True)
     text = "Список пользователей с проблемами"
     for user, karma in without_username:
-        text += f"\n{user} {karma}"
+        text += f"\n{quote_html(user)} {karma}"
     await message.reply(text)
