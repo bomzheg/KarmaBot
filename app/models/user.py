@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.utils.markdown import hlink, quote_html
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
@@ -20,10 +21,6 @@ class User(Model):
 
     @classmethod
     async def create_from_tg_user(cls, user: types.User):
-        # if not user.id:
-        #     raise UserWithoutUserIdError(
-        #         f'Can\'t create user without user_id, @{user.username}'
-        #     )
         user = await cls.create(
             tg_id=user.id,
             first_name=user.first_name,
@@ -33,20 +30,47 @@ class User(Model):
 
         return user
 
+    async def update_user_data(self, user_tg):
+        # TODO изучить фреймворк лучше - уверен есть встроенная функция для обновления только в случае расхождений
+        changed = False
+
+        if user_tg.first_name is not None and self.first_name != user_tg.first_name:
+            changed = True
+            self.first_name = user_tg.first_name
+
+        if user_tg.last_name is not None and self.last_name != user_tg.last_name:
+            changed = True
+            self.last_name = user_tg.last_name
+
+        if user_tg.username is not None and self.username != user_tg.username:
+            changed = True
+            self.username = user_tg.username
+
+        if changed:
+            await self.save()
+
     @classmethod
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
+        if user_tg.id is None:
+            user = await cls.get_or_create_by_username(user_tg.username)
+            await user.update_user_data(user_tg)
+            return user
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)
+                await user.update_user_data(user_tg)
             except DoesNotExist:
-                # искать в бд по юзернейму нужно на тот случай, что юзер уже импортит
+                # искать в бд по юзернейму нужно на тот случай, что юзер уже импортирован
                 if user_tg.username:
                     user = await cls.get(username=user_tg.username, tg_id__isnull=True)
                 else:
                     raise DoesNotExist
+
         except DoesNotExist:
-            user = await cls.create_from_tg_user(user=user_tg)
-        return user
+            return await cls.create_from_tg_user(user=user_tg)
+        else:
+            await user.update_user_data(user_tg)
+            return user
 
     @classmethod
     async def get_or_create_by_username(cls, username: str):
@@ -58,34 +82,21 @@ class User(Model):
 
     @property
     def mention_link(self):
-        rez = f"<a href='tg://user?id={self.tg_id}'>{self.fullname}</a>"
-        if False and self.username:
-            rez += f" @{self.username}"
-        return rez
+        return hlink(self.fullname, f"tg://user?id={self.tg_id}")
 
     @property
     def mention_no_link(self):
         if self.username:
-            rez = f"<a href='t.me/{self.username}'>{self.fullname}</a>"
+            rez = hlink(self.fullname, f"t.me/{self.username}")
         else:
-            rez = self.fullname
+            rez = quote_html(self.fullname)
         return rez
 
-    def get_fullname(self):
-        name = ""
-        if self.first_name is not None:
-            name += self.first_name
+    @property
+    def fullname(self):
         if self.last_name is not None:
-            name += f" {self.last_name}"
-        if name != "":
-            return name
-        if self.username is not None:
-            name += self.username
-        elif self.tg_id is not None:
-            name += "tg ID" + str(self.tg_id)
-        else:
-            name += f"internal ID{self.id}"
-        return name
+            return ' '.join((self.first_name, self.last_name))
+        return self.first_name or self.username or self.tg_id or self.id
 
     async def get_karma(self, chat: Chat):
         user_karma = await self.karma.filter(chat=chat).first()
@@ -106,4 +117,3 @@ class User(Model):
     def __repr__(self):
         return str(self)
 
-    fullname = property(get_fullname)

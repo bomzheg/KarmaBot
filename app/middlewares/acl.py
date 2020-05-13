@@ -13,14 +13,10 @@ from app.models.user import User
 class ACLMiddleware(BaseMiddleware):
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
-        if chat and chat.type != 'private':
-            chat_id = chat.id
-        else:
-            chat_id = None
 
         try:
             user = await User.get_or_create_from_tg_user(user)
-            if chat_id is not None:
+            if chat and chat.type != 'private':
                 chat = await Chat.get_or_create_from_tg_chat(chat)
 
         except Exception as e:

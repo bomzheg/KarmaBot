@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
+PLUS = ("+", "👍", "спасибо", "спс")
+MINUS = ('-', '👎')
+
+
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
     "This program is a Python 3+ script. The script launches a bot in Telegram,"
@@ -43,3 +47,4 @@ DB_TYPE = os.getenv("DB_TYPE")
 REDIS_DB = int(os.getenv("REDIS_DB"))
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
+

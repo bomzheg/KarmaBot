@@ -4,7 +4,6 @@ from loguru import logger
 
 def setup(dispatcher: Dispatcher):
     logger.info("Configure filters...")
-    from .is_reply import IsReplyFilter
     from .superuser import IsSuperuserFilter
     from .karma_change import KarmaFilter
 
@@ -15,5 +14,4 @@ def setup(dispatcher: Dispatcher):
     ]
 
     dispatcher.filters_factory.bind(KarmaFilter, event_handlers=text_messages)
-    dispatcher.filters_factory.bind(IsReplyFilter, event_handlers=text_messages)
     dispatcher.filters_factory.bind(IsSuperuserFilter, event_handlers=text_messages)
