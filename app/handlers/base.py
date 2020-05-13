@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import CommandHelp, CommandStart
 from loguru import logger
 
+from app.config import PLUS, MINUS
 from app.misc import dp
 from app.models.chat import Chat
 
@@ -20,10 +21,12 @@ async def cmd_start(message: types.Message):
 async def cmd_help(message: types.Message):
     logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
     await message.reply(
-        "Плюсануть в карму можно начав сообщение с '+' 'спасибо' '👍'. "
-        "Минусануть:  '-' '👎'.\n"
-        "Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя "
-        "или упомянуть его через @ (работает даже если у пользователя нет username."
+        (
+            'Плюсануть в карму можно начав сообщение с "{plus}". '
+            'Минусануть:  "{minus}".\n'
+            'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
+            'или упомянуть его через @ (работает даже если у пользователя нет username.'
+        ).format(plus='", "'.join(PLUS), minus='", "'.join(MINUS))
     )
 
 
@@ -41,7 +44,7 @@ async def cancel_state(message: types.Message, state: FSMContext):
     # Cancel state and inform user about it
     await state.finish()
     # And remove keyboard (just in case)
-    await message.reply('messages.MSG_CANCEL', reply_markup=types.ReplyKeyboardRemove())
+    await message.reply('Диалог прекращён, данные удалены', reply_markup=types.ReplyKeyboardRemove())
 
 
 @dp.message_handler(content_types=types.ContentTypes.MIGRATE_TO_CHAT_ID)
