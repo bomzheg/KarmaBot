@@ -1,6 +1,5 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import CommandHelp, CommandStart
 from loguru import logger
 
 from app.config import PLUS, MINUS
@@ -8,7 +7,7 @@ from app.misc import dp
 from app.models.chat import Chat
 
 
-@dp.message_handler(CommandStart())
+@dp.message_handler(commands=["start"], commands_prefix='!/')
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
@@ -17,7 +16,7 @@ async def cmd_start(message: types.Message):
     )
 
 
-@dp.message_handler(CommandHelp())
+@dp.message_handler(commands=["help"], commands_prefix='!')
 async def cmd_help(message: types.Message):
     logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
     await message.reply(
@@ -26,11 +25,12 @@ async def cmd_help(message: types.Message):
             'Минусануть:  "{minus}".\n'
             'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
             'или упомянуть его через @ (работает даже если у пользователя нет username.'
+            '\nдля отображения топа юзеров по карме напишите !top'
         ).format(plus='", "'.join(PLUS), minus='", "'.join(MINUS))
     )
 
 
-@dp.message_handler(commands=["about"])
+@dp.message_handler(commands=["about"], commands_prefix='!')
 async def cmd_about(message: types.Message):
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
 
