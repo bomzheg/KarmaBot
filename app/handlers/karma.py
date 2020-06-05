@@ -44,7 +44,10 @@ def can_change_karma(target_user: User, user: User):
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat):
     # можно заменить на karma['karma_change']
     if not await throttling.set_user_command("karma_change", chat.chat_id, user.tg_id):
-        return await message.reply("Вы слишком часто меняете карму")
+        err_text = "Вы слишком часто меняете карму"
+        if config.DEBUG_MODE:
+            return await bot.send_message(chat_id=config.DUMP_CHAT_ID, text=err_text)
+        return await message.reply(err_text)
     try:
         target_user = await User.get_or_create_from_tg_user(karma['user'])
     except UserWithoutUserIdError as e:
@@ -64,13 +67,18 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     )
     await uk.change(user_changed=user, how_change=karma['karma_change'])
     from_user_karma = await user.get_karma(chat)
-
-    await message.reply(
+    return_text = (
         f"{user.mention_no_link} ({hbold(from_user_karma)}) "
         f"{how_change[karma['karma_change']]} карму пользователю "
-        f"{target_user.mention_no_link} ({hbold(uk.karma_round)})",
-        disable_web_page_preview=True
+        f"{target_user.mention_no_link} ({hbold(uk.karma_round)})"
     )
+    if config.DEBUG_MODE:
+        return await bot.send_message(
+            chat_id=config.DUMP_CHAT_ID,
+            text=return_text,
+            disable_web_page_preview=True
+        )
+    await message.reply(return_text, disable_web_page_preview=True)
 
 
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
@@ -88,9 +96,22 @@ async def init_from_axenia(message: types.Message, chat: Chat):
             await uk.save()
         else:
             without_username.append((name, karma))
-
-    await message.reply('Список карм пользователей импортирован из Аксении', disable_web_page_preview=True)
-    text = "Список пользователей с проблемами"
+    success_text = 'Список карм пользователей импортирован из Аксении'
+    if config.DEBUG_MODE:
+        await bot.send_message(
+            chat_id=config.DUMP_CHAT_ID,
+            text=f"{success_text} в чате {chat.chat_id}",
+            disable_web_page_preview=True
+        )
+    else:
+        await message.reply(success_text, disable_web_page_preview=True)
+    problems_user = "Список пользователей с проблемами"
     for user, karma in without_username:
-        text += f"\n{quote_html(user)} {karma}"
-    await message.reply(text)
+        problems_user += f"\n{quote_html(user)} {karma}"
+    if config.DEBUG_MODE:
+        await bot.send_message(
+            chat_id=config.DUMP_CHAT_ID,
+            text=problems_user
+        )
+    else:
+        await message.reply(problems_user)
