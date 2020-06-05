@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, Dict
+import typing
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 from loguru import logger
@@ -17,20 +17,20 @@ class KarmaFilter(BoundFilter):
 
     karma_change: bool
 
-    async def check(self, message: types.Message) -> Union[bool, Dict[str, Dict[str, int]]]:
+    async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, int]]:
         karma_change = await get_karma_trigger(message.text)
         if karma_change is None:
-            return False
+            return {}
         target_user = await get_target_user(message)
         if target_user is None:
-            return False
+            return {}
         if target_user.is_bot:
-            return False
+            return {}
         rez = {'karma': {'user': target_user, 'karma_change': karma_change}}
         return rez
 
 
-async def get_karma_trigger(text: str) -> Union[int, None]:
+async def get_karma_trigger(text: str) -> typing.Optional[int]:
     """
     if contain trigger + karma return +1
     if contain trigger - karma return -1
@@ -57,28 +57,43 @@ def has_minus_karma(text: str) -> bool:
     return text in MINUS
 
 
-async def get_target_user(message: types.Message) -> Union[types.user.User, None]:
+async def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
     """
     Target user can be take from reply or by mention
     :param message:
     :return:
     """
-    def has_target_user():
-        return target_user is not None and target_user != author_user and not target_user.is_bot
 
-    author_user = message.from_user.id
+    author_user = message.from_user
 
     target_user = get_replyed_user(message)
-    if has_target_user():
+    if has_target_user(target_user, author_user):
         return target_user
-    
+
     target_user = get_mentioned_user(message)
-    if has_target_user():
+    if has_target_user(target_user, author_user):
         return target_user
     return None
 
 
-def get_mentioned_user(message: types.Message) -> Union[types.User, None]:
+def has_target_user(target_user: types.User, author_user: types.User):
+    """
+
+    :return: True if target_user exist, not is author and not bot
+    """
+
+    def is_one_user(user_1: types.User, user_2: types.User):
+        return (user_1.id is not None and user_1.id == user_2.id) \
+               or user_1.username is not None and user_1.username == user_2.username
+
+    return target_user is not None \
+        and not is_one_user(author_user, target_user)\
+        and not target_user.is_bot
+    #   and not is_bot_username(target_user.username)
+    # don't check is_bot_username because user can have username like @user_bot
+
+
+def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
     if not message.text:
         return None
     if not message.entities:
@@ -92,7 +107,11 @@ def get_mentioned_user(message: types.Message) -> Union[types.User, None]:
     return None
 
 
-def get_replyed_user(message: types.Message) -> Union[types.User, None]:
+def get_replyed_user(message: types.Message) -> typing.Optional[types.User]:
     if message.reply_to_message:
         return message.reply_to_message.from_user
     return None
+
+
+def is_bot_username(username: str):
+    return username is not None and username[-2:] == "bot"
