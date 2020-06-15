@@ -102,7 +102,7 @@ def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
         if ent.type == "text_mention":
             return ent.user
         elif ent.type == "mention":
-            username = message.text[ent.offset:ent.offset + ent.length].lstrip("@")
+            username = ent.get_text(message.text).lstrip("@")
             return types.User(username=username)
     return None
 
