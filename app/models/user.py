@@ -38,17 +38,18 @@ class User(Model):
             changed = True
             self.tg_id = user_tg.id
 
-        if user_tg.first_name is not None and self.first_name != user_tg.first_name:
-            changed = True
-            self.first_name = user_tg.first_name
+        if user_tg.first_name is not None:
+            if self.first_name != user_tg.first_name:
+                changed = True
+                self.first_name = user_tg.first_name
 
-        if user_tg.last_name is not None and self.last_name != user_tg.last_name:
-            changed = True
-            self.last_name = user_tg.last_name
+            if self.last_name != user_tg.last_name:
+                changed = True
+                self.last_name = user_tg.last_name
 
-        if user_tg.username is not None and self.username != user_tg.username:
-            changed = True
-            self.username = user_tg.username
+            if self.username != user_tg.username:
+                changed = True
+                self.username = user_tg.username
 
         if changed:
             await self.save()
