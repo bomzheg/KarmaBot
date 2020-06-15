@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
-PLUS = ("+", "👍", "спасибо", "спс")
-MINUS = ('-', '👎')
+PLUS = ("+",  "спасибо", "спс")
+PLUS_EMOJI = ("👍", )
+MINUS = ('-', )
+MINUS_EMOJI = ('👎', )
 
 
 PROG_NAME = "KarmaBot"

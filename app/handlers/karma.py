@@ -46,6 +46,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     if not await throttling.set_user_command("karma_change", chat.chat_id, user.tg_id):
         err_text = "Вы слишком часто меняете карму"
         if config.DEBUG_MODE:
+            await message.forward(config.DUMP_CHAT_ID)
             return await bot.send_message(chat_id=config.DUMP_CHAT_ID, text=err_text)
         return await message.reply(err_text)
     try:
@@ -73,6 +74,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         f"{target_user.mention_no_link} ({hbold(uk.karma_round)})"
     )
     if config.DEBUG_MODE:
+        await message.forward(config.DUMP_CHAT_ID)
         return await bot.send_message(
             chat_id=config.DUMP_CHAT_ID,
             text=return_text,
