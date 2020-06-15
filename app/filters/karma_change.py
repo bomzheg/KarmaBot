@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 from loguru import logger
 
-from app.config import PLUS, MINUS
+from app.config import PLUS, MINUS, PLUS_EMOJI, MINUS_EMOJI
 
 
 @dataclass
@@ -46,15 +46,15 @@ async def get_karma_trigger(text: str) -> typing.Optional[int]:
 
 
 def get_first_word(text: str) -> str:
-    return text.split(' ')[0].lower().rstrip(",.")
+    return text.split(maxsplit=1)[0].lower().rstrip(",.")
 
 
 def has_plus_karma(word: str) -> bool:
-    return word in PLUS
+    return word in PLUS or word[0] in PLUS_EMOJI
 
 
 def has_minus_karma(text: str) -> bool:
-    return text in MINUS
+    return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
 
 
 async def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:

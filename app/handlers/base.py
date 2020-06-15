@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from loguru import logger
 
-from app.config import PLUS, MINUS
+from app.config import PLUS, MINUS, PLUS_EMOJI, MINUS_EMOJI
 from app.misc import dp
 from app.models.chat import Chat
 
@@ -26,7 +26,7 @@ async def cmd_help(message: types.Message):
             'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
             'или упомянуть его через @ (работает даже если у пользователя нет username.'
             '\nдля отображения топа юзеров по карме напишите !top'
-        ).format(plus='", "'.join(PLUS), minus='", "'.join(MINUS))
+        ).format(plus='", "'.join([*PLUS, *PLUS_EMOJI]), minus='", "'.join([*MINUS, *MINUS_EMOJI]))
     )
 
 
