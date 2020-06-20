@@ -1,7 +1,7 @@
 import textwrap
 from asyncio import sleep
 
-from aiogram.utils.markdown import hbold, quote_html, hpre
+from aiogram.utils.markdown import hbold, hpre
 from loguru import logger
 
 from app.misc import bot
@@ -19,7 +19,7 @@ async def split_text_file(file_name):
     with open(file_name, 'r+') as in_file:
 
         for line in in_file:
-            line = quote_html(line)
+            line = hpre(line)
 
             if len(line) > MAX_MESSAGE_SYMBOLS:
                 rez.append(buffer_lines)
@@ -41,7 +41,7 @@ async def send_list_messages(list_msg, chat_id):
     for msg in list_msg:
         await bot.send_message(
             chat_id,
-            hpre(msg),
+            msg,
             disable_notification=True,
             parse_mode="HTML"
         )
