@@ -50,6 +50,8 @@ def get_first_word(text: str) -> str:
 
 
 def has_plus_karma(word: str) -> bool:
+    if len(word) == 0:
+        return False
     return word in PLUS or word[0] in PLUS_EMOJI
 
 
