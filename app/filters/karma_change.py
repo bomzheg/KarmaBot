@@ -18,10 +18,10 @@ class KarmaFilter(BoundFilter):
     karma_change: bool
 
     async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, int]]:
-        karma_change = await get_karma_trigger(message.text)
+        karma_change = get_karma_trigger(message.text or message.sticker.emoji)
         if karma_change is None:
             return {}
-        target_user = await get_target_user(message)
+        target_user = get_target_user(message)
         if target_user is None:
             return {}
         if target_user.is_bot:
@@ -30,7 +30,7 @@ class KarmaFilter(BoundFilter):
         return rez
 
 
-async def get_karma_trigger(text: str) -> typing.Optional[int]:
+def get_karma_trigger(text: str) -> typing.Optional[int]:
     """
     if contain trigger + karma return +1
     if contain trigger - karma return -1
@@ -59,7 +59,7 @@ def has_minus_karma(text: str) -> bool:
     return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
 
 
-async def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
+def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
     """
     Target user can be take from reply or by mention
     :param message:
