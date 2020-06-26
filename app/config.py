@@ -22,6 +22,7 @@ DESC_POLLING = "Run tg bot with polling. Default use WebHook"
 
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
 TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
+now_token: str
 
 CAPTURE_STD_ERR = True
 
@@ -43,11 +44,13 @@ DUMP_CHAT_ID = -1001459777201  # Fucin' Testing Area
 
 DEBUG_MODE = os.getenv("DEBUG_MODE")
 
-WEBHOOK_HOST = ''
-WEBHOOK_PORT = 443
-WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}"
-LISTEN_IP = '127.0.0.1'
-LISTEN_PORT = "3001"
+WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
+WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH")
+WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}"
+
+LISTEN_IP = os.getenv("LISTEN_IP", default='127.0.0.1')
+LISTEN_PORT = int(os.getenv("LISTEN_PORT", default=3002))
 
 DB_TYPE = os.getenv("DB_TYPE")
 LOGIN_DB = os.getenv("LOGIN_DB")

@@ -57,7 +57,7 @@ def cli():
         from app import config
 
         runner.start_webhook(
-            webhook_path="",
+            webhook_path=f'/{config.now_token}/',
 
             host=config.LISTEN_IP,
             port=config.LISTEN_PORT,
