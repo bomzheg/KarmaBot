@@ -15,8 +15,8 @@ runner = Executor(dp)
 
 
 async def on_startup_webhook(dispatcher: Dispatcher):
-    logger.info("Configure Web-Hook URL to: {url}", url=config.WEBHOOK_URL_BASE)
-    await dispatcher.bot.set_webhook(config.WEBHOOK_URL_BASE)
+    logger.info("Configure Web-Hook URL to: {url}", url=f'{config.WEBHOOK_URL_BASE}<token>/')
+    await dispatcher.bot.set_webhook(f'{config.WEBHOOK_URL_BASE}{config.now_token}/')
 
 
 async def on_startup_notify(dispatcher: Dispatcher):
