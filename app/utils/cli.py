@@ -55,9 +55,8 @@ def cli():
         """
         from app.utils.executor import runner
         from app import config
-
         runner.start_webhook(
-            webhook_path=f'/{config.now_token}/',
+            webhook_path=f'/{config.secret_str}/',
 
             host=config.LISTEN_IP,
             port=config.LISTEN_PORT,
