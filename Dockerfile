@@ -12,6 +12,6 @@ RUN apt update -y \
 VOLUME /log
 VOLUME /karma.db
 WORKDIR "."
-EXPOSE 3002
+EXPOSE 3000
 COPY . .
 ENTRYPOINT ["python3", "-m", "app"]

@@ -2,8 +2,8 @@ version: '3.2'
 
 services:
 
-  karma_bot:
-    container_name: karma_bot
+  karmabot:
+    container_name: karmabot
     restart: always
     depends_on:
       - redis

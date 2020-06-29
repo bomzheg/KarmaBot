@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -23,6 +24,7 @@ DESC_POLLING = "Run tg bot with polling. Default use WebHook"
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
 TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
 now_token: str
+secret_str = secrets.token_urlsafe(16)
 
 CAPTURE_STD_ERR = True
 
@@ -46,13 +48,13 @@ DEBUG_MODE = os.getenv("DEBUG_MODE")
 
 WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
 WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)
-WEBHOOK_PATH = os.getenv("WEBHOOK_PATH")
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", default='karmabot')
 WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}"
 
-LISTEN_IP = os.getenv("LISTEN_IP", default='127.0.0.1')
-LISTEN_PORT = int(os.getenv("LISTEN_PORT", default=3002))
+LISTEN_IP = os.getenv("LISTEN_IP", default='0.0.0.0')
+LISTEN_PORT = int(os.getenv("LISTEN_PORT", default=3000))
 
-DB_TYPE = os.getenv("DB_TYPE")
+DB_TYPE = os.getenv("DB_TYPE", default='sqlite')
 LOGIN_DB = os.getenv("LOGIN_DB")
 PASSWORD_DB = os.getenv("PASSWORD_DB")
 DB_NAME = os.getenv("DB_NAME")
