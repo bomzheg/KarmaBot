@@ -64,7 +64,7 @@ def cli():
 
     parser = create_parser()
     namespace = parser.parse_args()
-    if True or namespace.beta:
+    if namespace.beta:
         config.now_token = config.TEST_BOT_TOKEN
         logger.info("use beta bot")
     else:

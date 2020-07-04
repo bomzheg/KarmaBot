@@ -1,3 +1,5 @@
+import typing
+
 from aiogram import types
 from aiogram.types import ChatActions
 from aiogram.utils.markdown import hbold, quote_html
@@ -11,6 +13,7 @@ from app.models.user_karma import UserKarma
 from app.services.trottling import throttling
 from app.utils.exeptions import UserWithoutUserIdError
 from app.utils.from_axenia import axenia_raiting
+from app.services.user_getter import get_user, RPCError
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
@@ -55,7 +58,6 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except UserWithoutUserIdError as e:
         e.user_id = user.tg_id
         e.chat_id = chat.chat_id
-        e.username = user.username
         e.text = (
             "Обычно так бывает, когда бот в чате недавно и ещё не видел "
             "пользователя, которому плюсанули в виде '+ @username'.",
@@ -91,15 +93,17 @@ async def init_from_axenia(message: types.Message, chat: Chat):
     python_scripts_chat = -1001399056118
     # mankie patch
     karmas_list = await axenia_raiting(python_scripts_chat or chat.chat_id)
-    without_username = []
-    for name, username, karma in karmas_list:
-        if username is not None:
+    without_username, with_username = split_list_by_usernames(karmas_list)
+    for username, karma in with_username.items():
+        try:
+            user = await get_user(username)
+        except RPCError:
             user = await User.get_or_create_by_username(username)
-            uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
-            uk.karma = karma
-            await uk.save()
         else:
-            without_username.append((name, karma))
+            user = await User.get_or_create_from_tg_user(user)
+        uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
+        uk.karma = karma
+        await uk.save()
     success_text = 'Список карм пользователей импортирован из Аксении'
     if config.DEBUG_MODE:
         await bot.send_message(
@@ -119,3 +123,14 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         )
     else:
         await message.reply(problems_user)
+
+
+def split_list_by_usernames(karmas_list: list) -> typing.Tuple[list, dict]:
+    without_username = []
+    with_username = {}
+    for name, username, karma in karmas_list:
+        if username is not None:
+            with_username[username] = karma
+        else:
+            without_username.append((name, karma))
+    return without_username, with_username

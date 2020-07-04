@@ -66,3 +66,5 @@ REDIS_DB = int(os.getenv("REDIS_DB"))
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 
+API_ID = os.getenv("API_ID", default=6)
+API_HASH = os.getenv("API_HASH", default='eb06d4abfb49dc3eeb1aeb98ae0f581e')

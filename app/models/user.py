@@ -5,6 +5,8 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from .chat import Chat
+from app.services.user_getter import get_user, RPCError
+from app.utils.exeptions import UserWithoutUserIdError
 
 
 class User(Model):
@@ -13,11 +15,13 @@ class User(Model):
     first_name = fields.CharField(max_length=255, null=True)
     last_name = fields.CharField(max_length=255, null=True)
     username = fields.CharField(max_length=32, null=True)
+    is_bot: bool = fields.BooleanField(null=True)
     # noinspection PyUnresolvedReferences
     karma: fields.ReverseRelation['UserKarma']
 
     class Meta:
         table = "users"
+        unique = 'tg_id'
 
     @classmethod
     async def create_from_tg_user(cls, user: types.User):
@@ -25,7 +29,8 @@ class User(Model):
             tg_id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
-            username=user.username
+            username=user.username,
+            is_bot=user.is_bot
         )
 
         return user
@@ -51,15 +56,25 @@ class User(Model):
                 changed = True
                 self.username = user_tg.username
 
+            if self.is_bot != user_tg.is_bot and user_tg.is_bot is not None:
+                changed = True
+                self.is_bot = user_tg.is_bot
+
         if changed:
             await self.save()
 
     @classmethod
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
-            user = await cls.get_or_create_by_username(user_tg.username)
-            await user.update_user_data(user_tg)
-            return user
+            try:
+                user_tg = await get_user(user_tg.username)
+            except RPCError:
+                try:
+                    user = await cls.get(username=user_tg.username)
+                except DoesNotExist:
+                    raise UserWithoutUserIdError(username=user_tg.username)
+                await user.update_user_data(user_tg)
+                return user
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)
