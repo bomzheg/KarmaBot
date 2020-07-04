@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
-from tortoise import Tortoise
+from tortoise import Tortoise, run_async
 
 from app import config
 from app.models import __models__
@@ -49,6 +49,4 @@ async def generate_schemas_db():
 
 
 def generate_schemas():
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(generate_schemas_db())
+    run_async(generate_schemas_db())
