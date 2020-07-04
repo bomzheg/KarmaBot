@@ -55,11 +55,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except UserWithoutUserIdError as e:
         e.user_id = user.tg_id
         e.chat_id = chat.chat_id
-        e.args = (
+        e.username = user.username
+        e.text = (
             "Обычно так бывает, когда бот в чате недавно и ещё не видел "
             "пользователя, которому плюсанули в виде '+ @username'.",
         )
-        raise
+        raise e
     if not can_change_karma(target_user, user):
         return
 

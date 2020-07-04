@@ -1,7 +1,7 @@
 class KarmaError(Exception):
     def __init__(
             self,
-            text: str,
+            text: str = None,
             user_id: int = None,
             chat_id: int = None,
             *args
@@ -24,7 +24,9 @@ class KarmaError(Exception):
 
 
 class UserWithoutUserIdError(KarmaError):
-    pass
+    def __init__(self, username: str = None, **kwargs):
+        super().__init__(**kwargs)
+        self.username = username
 
 
 class SubZeroKarma(KarmaError):
