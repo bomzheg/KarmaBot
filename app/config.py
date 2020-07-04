@@ -48,7 +48,7 @@ DEBUG_MODE = os.getenv("DEBUG_MODE")
 
 WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
 WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)
-WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", default='karmabot')
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", default='/karmabot/')
 WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}"
 
 LISTEN_IP = os.getenv("LISTEN_IP", default='0.0.0.0')
