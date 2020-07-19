@@ -1,5 +1,5 @@
 import aiohttp
-from bs4 import BeautifulSoup as BS
+from bs4 import BeautifulSoup as Soup
 from loguru import logger
 
 from app.misc import app_dir
@@ -11,7 +11,7 @@ def username_by_link(link: str) -> str:
 
 
 def get_rating(html):
-    soup = BS(html, 'lxml')
+    soup = Soup(html, 'lxml')
     main_soup = soup.find('main', role='main')
 
     for tbody in main_soup.find('div', class_="carousel-inner").find_all('tbody'):
