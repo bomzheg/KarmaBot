@@ -1,12 +1,12 @@
 from aiogram import types
 from aiogram.utils.markdown import hlink, quote_html
+from pyrogram.errors import RPCError
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from .chat import Chat
-from app.services.user_getter import get_user, RPCError
-from app.utils.exeptions import UserWithoutUserIdError
+from app.services.user_getter import user_getter
 
 
 class User(Model):
@@ -55,8 +55,7 @@ class User(Model):
             if self.username != user_tg.username:
                 changed = True
                 self.username = user_tg.username
-
-            if self.is_bot != user_tg.is_bot and user_tg.is_bot is not None:
+            if self.is_bot is None and user_tg.is_bot is not None:
                 changed = True
                 self.is_bot = user_tg.is_bot
 
@@ -67,18 +66,17 @@ class User(Model):
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
             try:
-                user_tg = await get_user(user_tg.username)
+                user_tg = await user_getter.get_user(user_tg.username)
             except RPCError:
-                try:
-                    user = await cls.get(username=user_tg.username)
-                except DoesNotExist:
-                    raise UserWithoutUserIdError(username=user_tg.username)
+                user = await cls.get_or_create_by_username(user_tg.username)
+            else:
+                user, _ = await cls.get_or_create(tg_id=user_tg.id)
                 await user.update_user_data(user_tg)
-                return user
+            return user
+
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)
-                await user.update_user_data(user_tg)
             except DoesNotExist:
                 # искать в бд по юзернейму нужно на тот случай, что юзер уже импортирован
                 if user_tg.username:
@@ -97,7 +95,8 @@ class User(Model):
         try:
             user = await cls.get(username=username)
         except DoesNotExist:
-            user = await cls.create(username=username)
+            user_tg = await user_getter.get_user(username)
+            user = await cls.get_or_create_from_tg_user(user_tg)
         return user
 
     @property

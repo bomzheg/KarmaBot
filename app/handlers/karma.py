@@ -4,6 +4,7 @@ from aiogram import types
 from aiogram.types import ChatActions
 from aiogram.utils.markdown import hbold, quote_html
 from loguru import logger
+from pyrogram.errors import RPCError
 
 from app import config
 from app.misc import dp, bot
@@ -13,7 +14,7 @@ from app.models.user_karma import UserKarma
 from app.services.trottling import throttling
 from app.utils.exeptions import UserWithoutUserIdError
 from app.utils.from_axenia import axenia_raiting
-from app.services.user_getter import get_user, RPCError
+from app.services.user_getter import user_getter
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
@@ -58,6 +59,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except UserWithoutUserIdError as e:
         e.user_id = user.tg_id
         e.chat_id = chat.chat_id
+        e.username = user.username
         e.text = (
             "Обычно так бывает, когда бот в чате недавно и ещё не видел "
             "пользователя, которому плюсанули в виде '+ @username'.",
@@ -92,18 +94,19 @@ async def init_from_axenia(message: types.Message, chat: Chat):
     await bot.send_chat_action(message.chat.id, ChatActions.TYPING)
     python_scripts_chat = -1001399056118
     # mankie patch
-    karmas_list = await axenia_raiting(python_scripts_chat or chat.chat_id)
-    without_username, with_username = split_list_by_usernames(karmas_list)
-    for username, karma in with_username.items():
-        try:
-            user = await get_user(username)
-        except RPCError:
-            user = await User.get_or_create_by_username(username)
+    chat_id = python_scripts_chat or chat.chat_id
+    karmas_list = await axenia_raiting(chat_id)
+    problems = []
+    for name, username, karma in karmas_list:
+        user = await user_by_name_username(username, name, chat_id)
+
+        if user is not None:
+            uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
+            uk.karma = karma
+            await uk.save()
         else:
-            user = await User.get_or_create_from_tg_user(user)
-        uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
-        uk.karma = karma
-        await uk.save()
+            problems.append((name, username, karma))
+
     success_text = 'Список карм пользователей импортирован из Аксении'
     if config.DEBUG_MODE:
         await bot.send_message(
@@ -113,9 +116,10 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         )
     else:
         await message.reply(success_text, disable_web_page_preview=True)
-    problems_user = "Список пользователей с проблемами"
-    for user, karma in without_username:
-        problems_user += f"\n{quote_html(user)} {karma}"
+    problems_user = "Список пользователей с проблемами:"
+    for name, username, karma in problems:
+        problems_user += f"\n{quote_html(name)} @{username} {hbold(karma)}"
+
     if config.DEBUG_MODE:
         await bot.send_message(
             chat_id=config.DUMP_CHAT_ID,
@@ -125,12 +129,30 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         await message.reply(problems_user)
 
 
-def split_list_by_usernames(karmas_list: list) -> typing.Tuple[list, dict]:
-    without_username = []
-    with_username = {}
-    for name, username, karma in karmas_list:
-        if username is not None:
-            with_username[username] = karma
-        else:
-            without_username.append((name, karma))
-    return without_username, with_username
+async def user_by_name_username(username, name, chat_id) -> typing.Optional[User]:
+    async def try_by_name() -> typing.Optional[User]:
+        try:
+            return await user_by_name(chat_id, name)
+        except RPCError:
+            return None
+
+    if username is not None:
+        try:
+            user = await user_by_username(username)
+        except RPCError:
+            user = await try_by_name()
+    else:
+        user = await try_by_name()
+    return user
+
+
+async def user_by_name(chat_id, name) -> User:
+    user_tg = await user_getter.get_users_by_fullname(chat_id, name)
+    user = await User.get_or_create_from_tg_user(user_tg)
+    return user
+
+
+async def user_by_username(username) -> User:
+    user_tg = await user_getter.get_user(username)
+    user = await User.get_or_create_from_tg_user(user_tg)
+    return user
