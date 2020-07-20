@@ -1,10 +1,12 @@
 from aiogram import types
 from aiogram.utils.markdown import hlink, quote_html
+from pyrogram.errors import RPCError
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from .chat import Chat
+from app.services.user_getter import user_getter
 
 
 class User(Model):
@@ -13,11 +15,13 @@ class User(Model):
     first_name = fields.CharField(max_length=255, null=True)
     last_name = fields.CharField(max_length=255, null=True)
     username = fields.CharField(max_length=32, null=True)
+    is_bot: bool = fields.BooleanField(null=True)
     # noinspection PyUnresolvedReferences
     karma: fields.ReverseRelation['UserKarma']
 
     class Meta:
         table = "users"
+        unique = 'tg_id'
 
     @classmethod
     async def create_from_tg_user(cls, user: types.User):
@@ -25,7 +29,8 @@ class User(Model):
             tg_id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
-            username=user.username
+            username=user.username,
+            is_bot=user.is_bot
         )
 
         return user
@@ -50,6 +55,9 @@ class User(Model):
             if self.username != user_tg.username:
                 changed = True
                 self.username = user_tg.username
+            if self.is_bot is None and user_tg.is_bot is not None:
+                changed = True
+                self.is_bot = user_tg.is_bot
 
         if changed:
             await self.save()
@@ -57,13 +65,18 @@ class User(Model):
     @classmethod
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
-            user = await cls.get_or_create_by_username(user_tg.username)
-            await user.update_user_data(user_tg)
+            try:
+                user_tg = await user_getter.get_user(user_tg.username)
+            except RPCError:
+                user = await cls.get_or_create_by_username(user_tg.username)
+            else:
+                user, _ = await cls.get_or_create(tg_id=user_tg.id)
+                await user.update_user_data(user_tg)
             return user
+
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)
-                await user.update_user_data(user_tg)
             except DoesNotExist:
                 # искать в бд по юзернейму нужно на тот случай, что юзер уже импортирован
                 if user_tg.username:
@@ -82,7 +95,8 @@ class User(Model):
         try:
             user = await cls.get(username=username)
         except DoesNotExist:
-            user = await cls.create(username=username)
+            user_tg = await user_getter.get_user(username)
+            user = await cls.get_or_create_from_tg_user(user_tg)
         return user
 
     @property
