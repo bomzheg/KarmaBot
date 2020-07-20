@@ -4,7 +4,6 @@ from aiogram import types
 from aiogram.types import ChatActions
 from aiogram.utils.markdown import hbold, quote_html
 from loguru import logger
-from pyrogram.errors import RPCError
 
 from app import config
 from app.misc import dp, bot
@@ -92,15 +91,17 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
 async def init_from_axenia(message: types.Message, chat: Chat):
     await bot.send_chat_action(message.chat.id, ChatActions.TYPING)
+
     python_scripts_chat = -1001399056118
-    # mankie patch
+    # monkey patch
     chat_id = python_scripts_chat or chat.chat_id
+
     karmas_list = await axenia_raiting(chat_id)
     problems = []
     for name, username, karma in karmas_list:
-        user = await user_by_name_username(username, name, chat_id)
-
-        if user is not None:
+        user_tg = await user_getter.get_user(username, name, chat_id)
+        if user_tg is not None:
+            user = await User.get_or_create_from_tg_user(user_tg)
             uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
             uk.karma = karma
             await uk.save()
@@ -116,43 +117,17 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         )
     else:
         await message.reply(success_text, disable_web_page_preview=True)
-    problems_user = "Список пользователей с проблемами:"
+    if not problems:
+        return
+    problems_users = "Список пользователей с проблемами:"
     for name, username, karma in problems:
-        problems_user += f"\n{quote_html(name)} @{username} {hbold(karma)}"
+        problems_users += f"\n{quote_html(name)} @{quote_html(username)} {hbold(karma)}"
 
     if config.DEBUG_MODE:
         await bot.send_message(
             chat_id=config.DUMP_CHAT_ID,
-            text=problems_user
+            text=problems_users,
+            disable_web_page_preview=True
         )
     else:
-        await message.reply(problems_user)
-
-
-async def user_by_name_username(username, name, chat_id) -> typing.Optional[User]:
-    async def try_by_name() -> typing.Optional[User]:
-        try:
-            return await user_by_name(chat_id, name)
-        except RPCError:
-            return None
-
-    if username is not None:
-        try:
-            user = await user_by_username(username)
-        except RPCError:
-            user = await try_by_name()
-    else:
-        user = await try_by_name()
-    return user
-
-
-async def user_by_name(chat_id, name) -> User:
-    user_tg = await user_getter.get_users_by_fullname(chat_id, name)
-    user = await User.get_or_create_from_tg_user(user_tg)
-    return user
-
-
-async def user_by_username(username) -> User:
-    user_tg = await user_getter.get_user(username)
-    user = await User.get_or_create_from_tg_user(user_tg)
-    return user
+        await message.reply(problems_users, disable_web_page_preview=True)
