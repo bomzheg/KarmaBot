@@ -1,5 +1,6 @@
 from math import sqrt
 
+from loguru import logger
 from tortoise import fields
 from tortoise.models import Model
 
@@ -57,3 +58,16 @@ class UserKarma(Model):
     @property
     def karma_round(self) -> float:
         return round(self.karma, 2)
+
+    @classmethod
+    async def all_to_json(cls, chat_id: int = None) -> dict:
+        if chat_id is None:
+            raise NotImplementedError
+        karms = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
+        return {
+            chat_id: [
+                {**karm.user.to_json(), "karma": karm.karma} for karm in karms
+            ]
+        }
+
+

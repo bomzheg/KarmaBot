@@ -8,5 +8,4 @@ from app.middlewares.acl import ACLMiddleware
 
 def setup(dispatcher: Dispatcher):
     logger.info("Configure middlewares...")
-    # dispatcher.middleware.setup(LoggingMiddleware("bot"))
     dispatcher.middleware.setup(ACLMiddleware())

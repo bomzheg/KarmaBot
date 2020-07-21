@@ -42,8 +42,8 @@ def cli():
         """
         Start application
         """
-
         from app.utils.executor import runner
+        logger.info("starting polling...")
 
         runner.skip_updates = skip_updates
         runner.start_polling(reset_webhook=True)
@@ -54,7 +54,7 @@ def cli():
         Run application in webhook mode
         """
         from app.utils.executor import runner
-        from app import config
+        logger.info("starting webhook...")
         runner.start_webhook(
             webhook_path=f'/{config.secret_str}/',
 

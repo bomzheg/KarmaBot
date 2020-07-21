@@ -26,11 +26,12 @@ TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
 now_token: str
 secret_str = secrets.token_urlsafe(16)
 
-CAPTURE_STD_ERR = True
+CAPTURE_STD_ERR = False
 
 ERR_LOG = "err.log"
 PRINT_LOG = "print.log"
 
+python_scripts_chat = -1001399056118
 BOMZHEG_ID = 46866565
 BORNTOHACK_ID = 113196531
 ENTERESSI_ID = 198896585

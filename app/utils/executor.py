@@ -9,7 +9,7 @@ from loguru import logger
 from app import config
 from app.misc import dp
 from app.models import db
-from app.services import apscheduller, healthcheck, trottling, user_getter
+from app.services import apscheduller, healthcheck, trottling
 
 runner = Executor(dp)
 
@@ -35,6 +35,5 @@ def setup():
     apscheduller.setup(runner)
     healthcheck.setup(runner)
     trottling.setup(runner)
-    user_getter.setup(runner)
     runner.on_startup(on_startup_webhook, webhook=True, polling=False)
     runner.on_startup(on_startup_notify)

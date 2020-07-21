@@ -1,3 +1,6 @@
+import io
+import json
+
 from aiogram import types
 from loguru import logger
 
@@ -56,6 +59,26 @@ async def get_dump(_: types.Message):
             'rb'
         )
     )
+
+
+@dp.message_handler(is_superuser=True, commands='json')
+async def get_dump(_: types.Message):
+    dct = await UserKarma.all_to_json(config.DUMP_CHAT_ID)
+
+    await bot.send_document(
+        config.DUMP_CHAT_ID,
+        ("dump.json", io.StringIO(json.dumps(dct, ensure_ascii=False, indent=2)))
+    )
+
+
+@dp.message_handler(is_superuser=True, commands='clear')
+async def get_dump(message: types.Message):
+    users = await User.filter(tg_id__isnull=True)
+    logger.debug(users)
+    for user in users:
+        await user.delete()
+    users = await User.filter(tg_id__isnull=True)
+    logger.debug(users)
 
 
 @dp.message_handler(is_superuser=True, commands='add_manual', commands_prefix='!')

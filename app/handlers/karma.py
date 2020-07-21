@@ -1,8 +1,5 @@
-import typing
-
 from aiogram import types
-from aiogram.types import ChatActions
-from aiogram.utils.markdown import hbold, quote_html
+from aiogram.utils.markdown import hbold
 from loguru import logger
 
 from app import config
@@ -12,8 +9,6 @@ from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.services.trottling import throttling
 from app.utils.exeptions import UserWithoutUserIdError
-from app.utils.from_axenia import axenia_raiting
-from app.services.user_getter import user_getter
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
@@ -86,48 +81,3 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             disable_web_page_preview=True
         )
     await message.reply(return_text, disable_web_page_preview=True)
-
-
-@dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
-async def init_from_axenia(message: types.Message, chat: Chat):
-    await bot.send_chat_action(message.chat.id, ChatActions.TYPING)
-
-    python_scripts_chat = -1001399056118
-    # monkey patch
-    chat_id = python_scripts_chat or chat.chat_id
-
-    karmas_list = await axenia_raiting(chat_id)
-    problems = []
-    for name, username, karma in karmas_list:
-        user_tg = await user_getter.get_user(username, name, chat_id)
-        if user_tg is not None:
-            user = await User.get_or_create_from_tg_user(user_tg)
-            uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
-            uk.karma = karma
-            await uk.save()
-        else:
-            problems.append((name, username, karma))
-
-    success_text = 'Список карм пользователей импортирован из Аксении'
-    if config.DEBUG_MODE:
-        await bot.send_message(
-            chat_id=config.DUMP_CHAT_ID,
-            text=f"{success_text} в чате {chat.chat_id}",
-            disable_web_page_preview=True
-        )
-    else:
-        await message.reply(success_text, disable_web_page_preview=True)
-    if not problems:
-        return
-    problems_users = "Список пользователей с проблемами:"
-    for name, username, karma in problems:
-        problems_users += f"\n{quote_html(name)} @{quote_html(username)} {hbold(karma)}"
-
-    if config.DEBUG_MODE:
-        await bot.send_message(
-            chat_id=config.DUMP_CHAT_ID,
-            text=problems_users,
-            disable_web_page_preview=True
-        )
-    else:
-        await message.reply(problems_users, disable_web_page_preview=True)

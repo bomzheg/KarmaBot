@@ -1,8 +1,6 @@
 import asyncio
 import typing
 
-from aiogram import Dispatcher
-from aiogram.utils.executor import Executor
 from loguru import logger
 from pyrogram import Client
 import pyrogram
@@ -16,7 +14,7 @@ SLEEP_TIME = 100
 class UserGetter:
     def __init__(self):
         self._client_api_bot = Client("karma_bot", bot_token=config.TEST_BOT_TOKEN, api_id=config.API_ID,
-                                      api_hash=config.API_HASH)
+                                      api_hash=config.API_HASH, no_updates=True)
         self._lock_username = asyncio.Lock()
         self._lock_fullname = asyncio.Lock()
 
@@ -95,27 +93,17 @@ class UserGetter:
         )
 
     async def start(self):
-        await self._client_api_bot.start()
+        if not self._client_api_bot.is_connected:
+            await self._client_api_bot.start()
 
     async def stop(self):
-        await self._client_api_bot.stop()
+        if self._client_api_bot.is_connected:
+            await self._client_api_bot.stop()
 
+    async def __aenter__(self):
+        await self.start()
+        return self
 
-user_getter = UserGetter()
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.stop()
 
-
-async def on_startup(_: Dispatcher):
-    await user_getter.start()
-
-
-async def on_shutdown(_: Dispatcher):
-    await user_getter.stop()
-
-
-def setup(runner: Executor):
-
-    runner.on_startup(on_startup)
-    runner.on_shutdown(on_shutdown)
-
-
-__all__ = [user_getter, RPCError]
