@@ -155,7 +155,7 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
 
 
 @dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
-async def not_save(callback_query: types.CallbackQuery, callback_data: dict):
+async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
     await callback_query.answer()
     index = callback_data["index"]
     chat_id = callback_data["chat_id"]
@@ -165,8 +165,8 @@ async def not_save(callback_query: types.CallbackQuery, callback_data: dict):
     await callback_query.message.edit_text(**next_approve(get_element_approve(index+1), index+1, chat_id))
 
 
-@dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
-async def not_save(callback_query: types.CallbackQuery, callback_data: dict):
+@dp.callback_query_handler(approve_cb.filter(y_n="yes"), is_superuser=True)
+async def save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
     await callback_query.answer()
     index = callback_data["index"]
     chat_id = callback_data["chat_id"]
