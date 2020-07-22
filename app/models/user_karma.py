@@ -31,6 +31,8 @@ class UserKarma(Model):
         change karma to (self.user) from (user_changed)
         (how_change) must be +1 or -1
         """
+        if abs(how_change) != 1:
+            raise ValueError(f"how_change must be +1 or -1 but it is {how_change}")
         await self.fetch_related('chat')
         power = await self.get_power(user_changed, self.chat)
         if power < 0.01:
@@ -41,6 +43,19 @@ class UserKarma(Model):
             )
         self.karma = self.karma + how_change * power
         await self.save()
+
+    @classmethod
+    async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: int):
+        """
+        change karma to (target_user) from (user_changed) in (chat)
+        (how_change) must be +1 or -1
+        """
+        uk, _ = await UserKarma.get_or_create(
+            user=target_user,
+            chat=chat
+        )
+        await uk.change(user_changed=user_changed, how_change=how_change)
+        return uk
 
     @classmethod
     async def get_power(cls, user: User, chat: Chat) -> float:

@@ -9,19 +9,7 @@ from app.misc import bot, dp
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.log import StreamToLogger
 from app.utils.send_text_file import send_log_files
-
-_logger = StreamToLogger(logger)
-
-
-@dp.message_handler(chat_id=config.GLOBAL_ADMIN_ID, commands='cancel_jobs')
-async def cancel_jobs(message: types.Message):
-    from app.services.apscheduller import scheduler
-    logger.warning("removing all jobs")
-    scheduler.print_jobs(out=_logger)
-    scheduler.remove_all_jobs()
-    await message.reply("Данные удалены")
 
 
 @dp.message_handler(is_superuser=True, commands='update_log')
@@ -69,16 +57,6 @@ async def get_dump(_: types.Message):
         config.DUMP_CHAT_ID,
         ("dump.json", io.StringIO(json.dumps(dct, ensure_ascii=False, indent=2)))
     )
-
-
-@dp.message_handler(is_superuser=True, commands='clear')
-async def get_dump(message: types.Message):
-    users = await User.filter(tg_id__isnull=True)
-    logger.debug(users)
-    for user in users:
-        await user.delete()
-    users = await User.filter(tg_id__isnull=True)
-    logger.debug(users)
 
 
 @dp.message_handler(is_superuser=True, commands='add_manual', commands_prefix='!')

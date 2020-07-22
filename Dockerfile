@@ -11,6 +11,7 @@ RUN apt update -y \
     && rm -rf /var/lib/apt/lists/*
 VOLUME /log
 VOLUME /karma.db
+VOLUME /approve.json
 WORKDIR "."
 EXPOSE 3000
 COPY . .

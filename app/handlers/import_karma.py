@@ -1,10 +1,12 @@
 import io
 import json
 import typing
+from contextlib import suppress
 
 from aiogram import types
 from aiogram.types import ChatActions, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
+from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.markdown import hbold, quote_html
 from loguru import logger
 
@@ -20,15 +22,17 @@ type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
 approve_cb = CallbackData("approve_import", "chat_id", "index", "y_n")
 APPROVE_FILE = "approve.json"
 PROBLEMS_FILE = "problems.json"
+processing_text = "Сообщение обрабатывается, выполнено ~{:.2%}"
 
 
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
 async def init_from_axenia(message: types.Message, chat: Chat):
-    await bot.send_chat_action(message.chat.id, ChatActions.TYPING)
+    msg = await message.reply(processing_text.format(-0.1))
     # monkey patch
     chat_id = config.python_scripts_chat or chat.chat_id
 
-    log_users, to_approve, problems = await process_import_users_karmas(await axenia_raiting(chat_id), chat)
+    log_users, to_approve, problems = await process_import_users_karmas(await axenia_raiting(chat_id), chat, msg)
+    await msg.delete()
 
     await bot.send_document(
         config.DUMP_CHAT_ID,
@@ -50,12 +54,26 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         await start_approve_karmas(to_approve, config.DUMP_CHAT_ID)
 
 
-async def process_import_users_karmas(karmas_list: typing.List[type_karmas], chat: Chat):
+async def process_import_users_karmas(karmas_list: typing.List[type_karmas], chat: Chat, message: types.Message = None):
+    """
+
+    :param karmas_list:
+    :param chat:
+    :param message: by bot in that be outputed percent of completed
+    :return:
+    """
+    if message is not None and message.from_user.id != bot.id:
+        message = None
     log_users = []
     problems = []
     to_approve = []
     async with UserGetter() as user_getter:
-        for name, username, karma in karmas_list:
+        for i, karma_elem in enumerate(karmas_list):
+            if message is not None and i % 20 == 0:
+                with suppress(TelegramAPIError):
+                    await message.edit_text(processing_text.format(i/len(karmas_list)))
+
+            name, username, karma = karma_elem
             user = await try_get_user_by_username(username)
             if user is None:
                 user_tg = await user_getter.get_user(username, name, chat.chat_id)
@@ -157,7 +175,7 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
 @dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
 async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
     await callback_query.answer()
-    index = callback_data["index"]
+    index = int(callback_data["index"])
     chat_id = callback_data["chat_id"]
     elem = get_element_approve(index)
 
@@ -168,7 +186,7 @@ async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data
 @dp.callback_query_handler(approve_cb.filter(y_n="yes"), is_superuser=True)
 async def save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
     await callback_query.answer()
-    index = callback_data["index"]
+    index = int(callback_data["index"])
     chat_id = callback_data["chat_id"]
     elem = get_element_approve(index)
 

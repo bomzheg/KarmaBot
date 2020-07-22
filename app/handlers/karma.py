@@ -7,15 +7,13 @@ from app.misc import dp, bot
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.services.trottling import throttling
 from app.utils.exeptions import UserWithoutUserIdError
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
+@dp.throttled(rate=60*5)
 async def get_top(message: types.Message, chat: Chat):
     parts = message.text.split(' ')
-    if not await throttling.set_chat_command(parts[0], chat.chat_id):
-        return
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
     text_list = ""
@@ -38,16 +36,17 @@ def can_change_karma(target_user: User, user: User):
     return user.id != target_user.id
 
 
-@dp.message_handler(karma_change=True)
-@dp.message_handler(karma_change=True, content_types=types.ContentType.STICKER)
+async def to_fast_change_karma(message: types.Message, *_, **__):
+    err_text = "Вы слишком часто меняете карму"
+    if config.DEBUG_MODE:
+        await message.forward(config.DUMP_CHAT_ID)
+        return await bot.send_message(chat_id=config.DUMP_CHAT_ID, text=err_text)
+    return await message.reply(err_text)
+
+
+@dp.message_handler(karma_change=True, content_types=[types.ContentType.STICKER, types.ContentType.TEXT])
+@dp.throttled(rate=30)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat):
-    # можно заменить на karma['karma_change']
-    if not await throttling.set_user_command("karma_change", chat.chat_id, user.tg_id):
-        err_text = "Вы слишком часто меняете карму"
-        if config.DEBUG_MODE:
-            await message.forward(config.DUMP_CHAT_ID)
-            return await bot.send_message(chat_id=config.DUMP_CHAT_ID, text=err_text)
-        return await message.reply(err_text)
     try:
         target_user = await User.get_or_create_from_tg_user(karma['user'])
     except UserWithoutUserIdError as e:
@@ -62,11 +61,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     if not can_change_karma(target_user, user):
         return
 
-    uk, _ = await UserKarma.get_or_create(
-        user=target_user,
-        chat=chat
+    uk = await UserKarma.change_or_create(
+        target_user=target_user,
+        chat=chat,
+        user_changed=user,
+        how_change=karma['karma_change']
     )
-    await uk.change(user_changed=user, how_change=karma['karma_change'])
     from_user_karma = await user.get_karma(chat)
     return_text = (
         f"{user.mention_no_link} ({hbold(from_user_karma)}) "
