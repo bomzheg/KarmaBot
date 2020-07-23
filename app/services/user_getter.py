@@ -46,6 +46,7 @@ class UserGetter:
             except FloodWait as e:
                 logger.error("Flood Wait {e}", e=e)
                 await asyncio.sleep(e.x)
+                raise IndexError
             finally:
                 await asyncio.sleep(SLEEP_TIME)
 
@@ -67,6 +68,7 @@ class UserGetter:
             except FloodWait as e:
                 logger.error("Flood Wait {e}", e=e)
                 await asyncio.sleep(e.x)
+                raise IndexError
             finally:
                 await asyncio.sleep(SLEEP_TIME)
         return self.get_aiogram_user_by_pyrogram(user)
