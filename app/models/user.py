@@ -1,12 +1,10 @@
 from aiogram import types
 from aiogram.utils.markdown import hlink, quote_html
-from pyrogram.errors import RPCError
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from .chat import Chat
-from app.services.user_getter import user_getter
 
 
 class User(Model):
