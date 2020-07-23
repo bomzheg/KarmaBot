@@ -11,7 +11,7 @@ from app.services.user_getter import user_getter
 
 class User(Model):
     id = fields.IntField(pk=True)
-    tg_id = fields.BigIntField(unique=True, null=True)
+    tg_id = fields.BigIntField(unique=True)
     first_name = fields.CharField(max_length=255, null=True)
     last_name = fields.CharField(max_length=255, null=True)
     username = fields.CharField(max_length=32, null=True)
@@ -65,15 +65,7 @@ class User(Model):
     @classmethod
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
-            try:
-                user_tg = await user_getter.get_user(user_tg.username)
-            except RPCError:
-                user = await cls.get_or_create_by_username(user_tg.username)
-            else:
-                user, _ = await cls.get_or_create(tg_id=user_tg.id)
-                await user.update_user_data(user_tg)
-            return user
-
+            return await cls.get(username=user_tg.username)
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)
@@ -82,21 +74,12 @@ class User(Model):
                 if user_tg.username:
                     user = await cls.get(username=user_tg.username, tg_id__isnull=True)
                 else:
-                    raise DoesNotExist
+                    raise
 
         except DoesNotExist:
             return await cls.create_from_tg_user(user=user_tg)
-        else:
-            await user.update_user_data(user_tg)
-            return user
 
-    @classmethod
-    async def get_or_create_by_username(cls, username: str):
-        try:
-            user = await cls.get(username=username)
-        except DoesNotExist:
-            user_tg = await user_getter.get_user(username)
-            user = await cls.get_or_create_from_tg_user(user_tg)
+        await user.update_user_data(user_tg)
         return user
 
     @property
@@ -126,6 +109,16 @@ class User(Model):
         user_karma = await self.karma.filter(chat=chat).first()
         user_karma.karma = karma
         await user_karma.save()
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            tg_id=self.tg_id,
+            first_name=self.first_name,
+            last_name=self.last_name,
+            username=self.username,
+            is_bot=self.is_bot
+        )
 
     def __str__(self):
         rez = f"User ID {self.tg_id}, by name {self.first_name} {self.last_name}"

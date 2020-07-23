@@ -1,3 +1,6 @@
+import io
+import json
+
 from aiogram import types
 from loguru import logger
 
@@ -6,19 +9,7 @@ from app.misc import bot, dp
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.log import StreamToLogger
 from app.utils.send_text_file import send_log_files
-
-_logger = StreamToLogger(logger)
-
-
-@dp.message_handler(chat_id=config.GLOBAL_ADMIN_ID, commands='cancel_jobs')
-async def cancel_jobs(message: types.Message):
-    from app.services.apscheduller import scheduler
-    logger.warning("removing all jobs")
-    scheduler.print_jobs(out=_logger)
-    scheduler.remove_all_jobs()
-    await message.reply("Данные удалены")
 
 
 @dp.message_handler(is_superuser=True, commands='update_log')
@@ -55,6 +46,16 @@ async def get_dump(_: types.Message):
             config.DB_PATH,
             'rb'
         )
+    )
+
+
+@dp.message_handler(is_superuser=True, commands='json')
+async def get_dump(_: types.Message):
+    dct = await UserKarma.all_to_json(config.DUMP_CHAT_ID)
+
+    await bot.send_document(
+        config.DUMP_CHAT_ID,
+        ("dump.json", io.StringIO(json.dumps(dct, ensure_ascii=False, indent=2)))
     )
 
 

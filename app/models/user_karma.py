@@ -1,5 +1,6 @@
 from math import sqrt
 
+from loguru import logger
 from tortoise import fields
 from tortoise.models import Model
 
@@ -19,7 +20,8 @@ class UserKarma(Model):
         unique_together = ('user', 'chat')
 
     def __str__(self):
-        rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}'
+        # noinspection PyUnresolvedReferences
+        rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}, user_id {self.user_id}, chat_id {self.chat_id}'
         return rez
 
     def __repr__(self):
@@ -30,6 +32,8 @@ class UserKarma(Model):
         change karma to (self.user) from (user_changed)
         (how_change) must be +1 or -1
         """
+        if abs(how_change) != 1:
+            raise ValueError(f"how_change must be +1 or -1 but it is {how_change}")
         await self.fetch_related('chat')
         power = await self.get_power(user_changed, self.chat)
         if power < 0.01:
@@ -39,7 +43,20 @@ class UserKarma(Model):
                 chat_id=self.chat.chat_id
             )
         self.karma = self.karma + how_change * power
-        await self.save()
+        await self.save(update_fields=["karma"])
+
+    @classmethod
+    async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: int):
+        """
+        change karma to (target_user) from (user_changed) in (chat)
+        (how_change) must be +1 or -1
+        """
+        uk, _ = await UserKarma.get_or_create(
+            user=target_user,
+            chat=chat
+        )
+        await uk.change(user_changed=user_changed, how_change=how_change)
+        return uk
 
     @classmethod
     async def get_power(cls, user: User, chat: Chat) -> float:
@@ -57,3 +74,16 @@ class UserKarma(Model):
     @property
     def karma_round(self) -> float:
         return round(self.karma, 2)
+
+    @classmethod
+    async def all_to_json(cls, chat_id: int = None) -> dict:
+        if chat_id is None:
+            raise NotImplementedError
+        karms = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
+        return {
+            chat_id: [
+                {**karm.user.to_json(), "karma": karm.karma} for karm in karms
+            ]
+        }
+
+

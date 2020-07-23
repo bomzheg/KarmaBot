@@ -15,7 +15,7 @@ async def errors_handler(update: types.Update, exception: Exception):
         await bot.send_message(
             config.LOG_CHAT_ID,
             f"Получено исключение {quote_html(e)}\n"
-            f"во время обработки апдейта {quote_html(update)}"
-            f"{e.args[0]}"
+            f"во время обработки апдейта {quote_html(update)}\n"
+            f"{' '.join(e.args)}"
         )
     return True

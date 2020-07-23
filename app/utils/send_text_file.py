@@ -19,17 +19,17 @@ async def split_text_file(file_name):
     with open(file_name, 'r+') as in_file:
 
         for line in in_file:
-            line = hpre(line)
 
             if len(line) > MAX_MESSAGE_SYMBOLS:
                 rez.append(buffer_lines)
                 buffer_lines = ""
-                splitted_text = textwrap.wrap(line, MAX_MESSAGE_SYMBOLS)
+                splitted_text = [hpre(line) for line in textwrap.wrap(line, MAX_MESSAGE_SYMBOLS)]
                 rez.extend(splitted_text)
             elif len(buffer_lines) + len(line) > MAX_MESSAGE_SYMBOLS:
                 rez.append(buffer_lines)
                 buffer_lines = ""
             else:
+                line = hpre(line)
                 buffer_lines += line
         if len(buffer_lines) > 0:
             rez.append(buffer_lines)

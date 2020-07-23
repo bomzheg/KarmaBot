@@ -26,11 +26,12 @@ TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
 now_token: str
 secret_str = secrets.token_urlsafe(16)
 
-CAPTURE_STD_ERR = True
+CAPTURE_STD_ERR = False
 
 ERR_LOG = "err.log"
 PRINT_LOG = "print.log"
 
+python_scripts_chat = -1001399056118
 BOMZHEG_ID = 46866565
 BORNTOHACK_ID = 113196531
 ENTERESSI_ID = 198896585
@@ -44,7 +45,7 @@ SUPERUSERS = tuple({GLOBAL_ADMIN_ID, BOMZHEG_ID, BORNTOHACK_ID, ENTERESSI_ID, VA
 LOG_CHAT_ID = -336404632
 DUMP_CHAT_ID = -1001459777201  # Fucin' Testing Area
 
-DEBUG_MODE = os.getenv("DEBUG_MODE")
+DEBUG_MODE = os.getenv("DEBUG_MODE", default=False)
 
 WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
 WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)

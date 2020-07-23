@@ -5,8 +5,6 @@ services:
   karmabot:
     container_name: karmabot
     restart: always
-    depends_on:
-      - redis
     build: .
     volumes:
       - type: "mount"
@@ -15,24 +13,18 @@ services:
       - type: "bind"
         source: "/home/bomzheg/sqlite/karma.db"
         target: "/karma.db"
+      - type: "bind"
+        source: problems
+        target: "/approve.json"
     env_file: .env
     networks:
       - reverse-proxy
-      - redis
 
-  redis:
-    image: "redis:6-alpine"
-    entrypoint: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    networks:
-      - redis
-
-volumes:
-  redis_data:
 
 networks:
   reverse-proxy:
     external:
       name: nginx-revers-proxy
-  redis:
+
+volumes:
+  problems:
