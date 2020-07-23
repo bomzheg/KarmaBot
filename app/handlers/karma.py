@@ -45,7 +45,7 @@ async def to_fast_change_karma(message: types.Message, *_, **__):
 
 
 @dp.message_handler(karma_change=True, content_types=[types.ContentType.STICKER, types.ContentType.TEXT])
-@dp.throttled(rate=30)
+@dp.throttled(to_fast_change_karma, rate=30)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat):
     try:
         target_user = await User.get_or_create_from_tg_user(karma['user'])
