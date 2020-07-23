@@ -20,7 +20,8 @@ class UserKarma(Model):
         unique_together = ('user', 'chat')
 
     def __str__(self):
-        rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}'
+        # noinspection PyUnresolvedReferences
+        rez = f'UserKarma: id{self.uc_id}, karma: {self.karma}, user_id {self.user_id}, chat_id {self.chat_id}'
         return rez
 
     def __repr__(self):
@@ -42,7 +43,7 @@ class UserKarma(Model):
                 chat_id=self.chat.chat_id
             )
         self.karma = self.karma + how_change * power
-        await self.save()
+        await self.save(update_fields=["karma"])
 
     @classmethod
     async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: int):
