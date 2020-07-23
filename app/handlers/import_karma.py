@@ -4,7 +4,7 @@ import typing
 from contextlib import suppress
 
 from aiogram import types
-from aiogram.types import ChatActions, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import  InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.markdown import hbold, quote_html
@@ -20,9 +20,12 @@ from app.services.user_getter import UserGetter
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
 type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
 approve_cb = CallbackData("approve_import", "chat_id", "index", "y_n")
-APPROVE_FILE = "approve.json"
-PROBLEMS_FILE = "problems.json"
 processing_text = "Сообщение обрабатывается, выполнено ~{:.2%}"
+
+jsons_path = config.app_dir / "jsons"
+jsons_path.mkdir(exist_ok=True, parents=True)
+APPROVE_FILE = jsons_path / "approve.json"
+PROBLEMS_FILE = jsons_path / "problems.json"
 
 
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
@@ -69,7 +72,7 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
     to_approve = []
     async with UserGetter() as user_getter:
         for i, karma_elem in enumerate(karmas_list):
-            if message is not None and i % 20 == 0:
+            if message is not None and i % 5 == 0:
                 with suppress(TelegramAPIError):
                     await message.edit_text(processing_text.format(i/len(karmas_list)))
 
@@ -126,12 +129,14 @@ async def start_approve_karmas(to_approve: typing.List[type_approve_item], chat_
 
 
 def save_approve_list(to_approve: typing.List[type_approve_item]):
-    with open(APPROVE_FILE, "w") as f:
+    with APPROVE_FILE.open("w") as f:
         json.dump(to_approve, f)
+    with PROBLEMS_FILE.open("w") as f:
+        json.dump([], f)
 
 
 def get_element_approve(index: int) -> typing.Optional[type_approve_item]:
-    with open(APPROVE_FILE, "r") as f:
+    with APPROVE_FILE.open("r") as f:
         to_approve: typing.List[type_approve_item] = json.load(f)
     try:
         return to_approve[index]
@@ -173,10 +178,10 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
 
 
 @dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
-async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
+async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
     index = int(callback_data["index"])
-    chat_id = callback_data["chat_id"]
+    chat_id = int(callback_data["chat_id"])
     elem = get_element_approve(index)
 
     save_problems_list((elem['name'], elem['username'], elem['karma']))
@@ -184,27 +189,28 @@ async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data
 
 
 @dp.callback_query_handler(approve_cb.filter(y_n="yes"), is_superuser=True)
-async def save_user_karma(callback_query: types.CallbackQuery, callback_data: dict):
+async def save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
     index = int(callback_data["index"])
-    chat_id = callback_data["chat_id"]
+    chat_id = int(callback_data["chat_id"])
     elem = get_element_approve(index)
+    user_tg = types.User(**json.loads(elem['founded_user']))
 
-    user = await User.get_or_create_from_tg_user(elem['founded_user'])
+    user = await User.get_or_create_from_tg_user(user_tg)
     await save_karma(user, chat_id, elem['karma'])
     await callback_query.message.edit_text(**next_approve(get_element_approve(index+1), index+1, chat_id))
 
 
 def save_problems_list(problem: type_karmas):
-    with open(PROBLEMS_FILE, "+") as f:
+    with PROBLEMS_FILE.open("r") as f:
         problems = json.load(f)
-        problems.append(problem)
-        f.seek(0)
+    problems.append(problem)
+    with PROBLEMS_FILE.open("w") as f:
         json.dump(problems, f)
 
 
 def get_problems_list() -> str:
-    with open(PROBLEMS_FILE, "+") as f:
+    with PROBLEMS_FILE.open("r") as f:
         problems = json.load(f)
     return get_text_problems_users(problems)
 
