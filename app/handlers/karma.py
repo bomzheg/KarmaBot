@@ -12,12 +12,12 @@ from app.utils.exeptions import UserWithoutUserIdError
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
 @dp.throttled(rate=60*5)
-async def get_top(message: types.Message, chat: Chat):
+async def get_top(message: types.Message, chat: Chat, user: User):
     parts = message.text.split(' ')
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
     text_list = ""
-    for user, karma in await chat.get_top_karma_list():
+    for user, karma in await chat.get_top_karma_list(user):
         text_list += f"\n{user.mention_no_link} {hbold(karma)}"
     if text_list == "":
         text = "Никто в чате не имеет кармы"
@@ -69,9 +69,9 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     )
     from_user_karma = await user.get_karma(chat)
     return_text = (
-        f"{user.mention_no_link} ({hbold(from_user_karma)}) "
+        f"{hbold(user.fullname)} ({hbold(from_user_karma)}) "
         f"{how_change[karma['karma_change']]} карму пользователю "
-        f"{target_user.mention_no_link} ({hbold(uk.karma_round)})"
+        f"{hbold(target_user.fullname)} ({hbold(uk.karma_round)})"
     )
     if config.DEBUG_MODE:
         await message.forward(config.DUMP_CHAT_ID)

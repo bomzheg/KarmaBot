@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
-PLUS = ("+",  "спасибо", "спс")
+PLUS = ("+",  "спасибо", "спс", "спасибочки")
 PLUS_EMOJI = ("👍", )
 MINUS = ('-', )
 MINUS_EMOJI = ('👎', )
@@ -40,8 +40,8 @@ RUD_ID = 695207573
 LET45FC_ID = 384612009
 STUDENT_ID = 431590221
 GLOBAL_ADMIN_ID = BOMZHEG_ID
-SUPERUSERS = tuple({GLOBAL_ADMIN_ID, BOMZHEG_ID, BORNTOHACK_ID, ENTERESSI_ID, VADIM_ID,
-                    RUD_ID, LET45FC_ID, STUDENT_ID})
+SUPERUSERS = {GLOBAL_ADMIN_ID, BOMZHEG_ID, BORNTOHACK_ID, ENTERESSI_ID, VADIM_ID,
+              RUD_ID, LET45FC_ID, STUDENT_ID}
 LOG_CHAT_ID = -336404632
 DUMP_CHAT_ID = -1001459777201  # Fucin' Testing Area
 
@@ -62,10 +62,6 @@ DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_PATH = os.getenv("DB_PATH", default=str(app_dir / 'karma.db'))
-
-REDIS_DB = int(os.getenv("REDIS_DB"))
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
 
 
 API_ID = os.getenv("API_ID", default=6)
