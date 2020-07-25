@@ -16,6 +16,6 @@ async def errors_handler(update: types.Update, exception: Exception):
             config.LOG_CHAT_ID,
             f"Получено исключение {quote_html(e)}\n"
             f"во время обработки апдейта {quote_html(update)}\n"
-            f"{' '.join(e.args)}"
+            f"{quote_html(' '.join(e.args))}"
         )
     return True
