@@ -7,6 +7,7 @@ from loguru import logger
 from app.config import PLUS, MINUS, PLUS_EMOJI, MINUS_EMOJI
 PUNCTUATIONS = ",.!"
 
+
 @dataclass
 class KarmaFilter(BoundFilter):
     """

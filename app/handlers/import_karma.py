@@ -42,15 +42,7 @@ async def init_from_axenia(message: types.Message, chat: Chat):
         ("import_log.json", io.StringIO(json.dumps(log_users, ensure_ascii=False, indent=2)))
     )
 
-    success_text = 'Список карм пользователей импортирован из Аксении'
-    if config.DEBUG_MODE:
-        await bot.send_message(
-            chat_id=config.DUMP_CHAT_ID,
-            text=f"{success_text} в чате {chat.chat_id}",
-            disable_web_page_preview=True
-        )
-    else:
-        await message.reply(success_text, disable_web_page_preview=True)
+    await message.reply('Список карм пользователей импортирован из Аксении', disable_web_page_preview=True)
     if problems:
         await send_problems_list(problems, chat.chat_id)
     if to_approve:
@@ -99,15 +91,7 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
 
 async def send_problems_list(problems: typing.List[type_karmas], chat_id: int):
     problems_users = get_text_problems_users(problems)
-
-    if config.DEBUG_MODE:
-        await bot.send_message(
-            chat_id=config.DUMP_CHAT_ID,
-            text=problems_users,
-            disable_web_page_preview=True
-        )
-    else:
-        await bot.send_message(chat_id, problems_users, disable_web_page_preview=True)
+    await bot.send_message(chat_id, problems_users, disable_web_page_preview=True)
 
 
 async def try_get_user_by_username(username: typing.Optional[str]) -> typing.Optional[User]:
