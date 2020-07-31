@@ -32,6 +32,7 @@ async def cmd_help(message: types.Message):
 
 @dp.message_handler(commands=["about"], commands_prefix='!')
 async def cmd_about(message: types.Message):
+    logger.info("User {user} about", user=message.from_user.id)
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
 
 
