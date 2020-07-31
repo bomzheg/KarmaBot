@@ -2,6 +2,7 @@ import io
 import json
 
 from aiogram import types
+from aiogram.utils.markdown import quote_html
 from loguru import logger
 
 from app import config
@@ -60,9 +61,16 @@ async def get_dump(_: types.Message):
 
 
 @dp.message_handler(is_superuser=True, commands='add_manual', commands_prefix='!')
-async def add_manual(message: types.Message, chat: Chat):
+async def add_manual(message: types.Message, chat: Chat, user: User):
+    """
+    superuser send !add_manual 46866565 666.13 то change karma of user with id 46866565 to 666.13
+    :param message:
+    :param chat:
+    :param user:
+    :return:
+    """
+    logger.warning("superuser {user} send command !add_manual", user=user.tg_id)
     args = message.text.partition(' ')[2]
-    logger.debug(float(args.split(' ')[1]))
     try:
         users_karmas = list(
             map(
@@ -76,8 +84,15 @@ async def add_manual(message: types.Message, chat: Chat):
             "user_id должно быть целым числом, а карма числом с плавающей точкой"
         )
     for user_id, karma in users_karmas:
-        user, _ = await User.get_or_create(tg_id=user_id)
-        uk, _ = await UserKarma.get_or_create(user=user, chat=chat)
+        target_user, _ = await User.get_or_create(tg_id=user_id)
+        uk, _ = await UserKarma.get_or_create(user=target_user, chat=chat)
         uk.karma = karma
         await uk.save()
+        logger.warning(
+            "superuser {user} change manual karma for {target} to new karma {karma} in chat {chat}",
+            user=user.tg_id,
+            target=target_user.tg_id,
+            karma=karma,
+            chat=chat.chat_id
+        )
     await message.reply("Кармы успешно обновлены", disable_notification=True)

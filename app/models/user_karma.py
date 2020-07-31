@@ -1,6 +1,5 @@
 from math import sqrt
 
-from loguru import logger
 from tortoise import fields
 from tortoise.models import Model
 
@@ -44,6 +43,7 @@ class UserKarma(Model):
             )
         self.karma = self.karma + how_change * power
         await self.save(update_fields=["karma"])
+        return power
 
     @classmethod
     async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: int):
@@ -55,8 +55,8 @@ class UserKarma(Model):
             user=target_user,
             chat=chat
         )
-        await uk.change(user_changed=user_changed, how_change=how_change)
-        return uk
+        power = await uk.change(user_changed=user_changed, how_change=how_change)
+        return uk, power
 
     @classmethod
     async def get_power(cls, user: User, chat: Chat) -> float:
@@ -65,10 +65,8 @@ class UserKarma(Model):
 
     @property
     def power(self) -> float:
-        if self.karma < 0.0:
+        if self.karma <= 0.0:
             return 0
-        if self.karma <= 1.0:
-            return 1
         return sqrt(self.karma)
 
     @property
@@ -85,5 +83,3 @@ class UserKarma(Model):
                 {**karm.user.to_json(), "karma": karm.karma} for karm in karms
             ]
         }
-
-
