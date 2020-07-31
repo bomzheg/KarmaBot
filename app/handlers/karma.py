@@ -12,11 +12,12 @@ from app.utils.exeptions import UserWithoutUserIdError, SubZeroKarma
 @dp.message_handler(commands=["top"], commands_prefix='!')
 @dp.throttled(rate=60*5)
 async def get_top(message: types.Message, chat: Chat, user: User):
-    parts = message.text.split(' ')
-    if len(parts) > 1:
-        chat = await Chat.get(chat_id=int(parts[1]))
+    args = message.get_args()
+    if args:
+        chat = await Chat.get(chat_id=int(args))
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text_list = ""
-    for user, karma in await chat.get_top_karma_list(user_call=user):
+    for user, karma in await chat.get_top_karma_list():
         text_list += f"\n{user.mention_no_link} {hbold(karma)}"
     if text_list == "":
         text = "Никто в чате не имеет кармы"
@@ -25,9 +26,19 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
+@dp.message_handler(commands=["me"], commands_prefix='!')
+async def get_top(message: types.Message, chat: Chat, user: User):
+    args = message.get_args()
+    if args:
+        chat = await Chat.get(chat_id=int(args))
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
+    uk, _ = await UserKarma.get_or_create(chat=chat, user=user)
+    await message.reply(f"Ваша карма в данном чате: {uk.karma_round}", disable_web_page_preview=True)
+
+
 how_change = {
-    +1: 'увеличил',
-    -1: 'уменьшил'
+    +1: 'увеличили',
+    -1: 'уменьшили'
 }
 
 
@@ -53,22 +64,30 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             "пользователя, которому плюсанули в виде '+ @username'.",
         )
         raise e
+    else:
+        if not can_change_karma(target_user, user):
+            return logger.info("user {user} try to change self karma", user=user.tg_id)
 
-    if not can_change_karma(target_user, user):
-        return
     try:
-        uk = await UserKarma.change_or_create(
+        uk, power = await UserKarma.change_or_create(
             target_user=target_user,
             chat=chat,
             user_changed=user,
             how_change=karma['karma_change']
         )
     except SubZeroKarma:
+        logger.info("user {user} try to change karma but have negative karma", user=user.tg_id)
         return await message.reply("У Вас слишком мало кармы для этого")
-    from_user_karma = await user.get_karma(chat)
+
     return_text = (
-        f"{hbold(user.fullname)} ({hbold(from_user_karma)}) "
-        f"{how_change[karma['karma_change']]} карму пользователю "
-        f"{hbold(target_user.fullname)} ({hbold(uk.karma_round)})"
+        "Вы {how_change} карму "
+        "{name} до {karma_new} "
+        "({power:+.1f})".format(
+            how_change=how_change[karma['karma_change']],
+            name=hbold(target_user.fullname),
+            karma_new=hbold(uk.karma_round),
+            power=power,
+        )
     )
     await message.reply(return_text, disable_web_page_preview=True)
+    logger.info("user {user} change karma of {target_user}", user=user.tg_id, target_user=target_user.tg_id)
