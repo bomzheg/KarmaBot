@@ -17,7 +17,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
         chat = await Chat.get(chat_id=int(args))
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text_list = ""
-    for user, karma in await chat.get_top_karma_list():
+    for user, karma in await chat.get_top_karma_list(user):
         text_list += f"\n{user.mention_no_link} {hbold(karma)}"
     if text_list == "":
         text = "Никто в чате не имеет кармы"
