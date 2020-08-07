@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import types
-from app.filters.karma_change import KarmaFilter, PUNCTUATIONS, PLUS, PLUS_EMOJI, MINUS, MINUS_EMOJI
-plus_texts = (*PLUS, *PLUS_EMOJI, PLUS[0]*2, PLUS[0]*3, PLUS[0]*4)
+from app.filters.karma_change import KarmaFilter, PUNCTUATIONS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS, MINUS_EMOJI, PLUS
+plus_texts = (*PLUS_TRIGGERS, *PLUS_EMOJI, PLUS * 2, PLUS * 3, PLUS * 4)
 minus_texts = (*MINUS, *MINUS_EMOJI)
 punctuations = [*PUNCTUATIONS, ""]
 
