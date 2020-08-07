@@ -4,13 +4,13 @@ from .fixtures import (get_from_user, wrong_generate_phrases_next_word, get_mess
                        get_message_with_text_mention, get_message_with_mention,
                        generate_phrases_next_word, get_wrong_next_word_parts)
 
-from .common import PLUS, MINUS, punctuations, filter_check
+from .common import PLUS_TRIGGERS, MINUS, punctuations, filter_check
 
 
 def test_plus_reply():
     target_user = get_from_user(666, "Sheldon")
     author_user = get_from_user(13, "Leonard")
-    for text in PLUS:
+    for text in PLUS_TRIGGERS:
         for phrase in wrong_generate_phrases_next_word(text, punctuations):
             check_plus_reply(author_user, target_user, phrase)
 
@@ -40,7 +40,7 @@ def test_plus_text_mention():
     target_user = get_from_user(37, first_name="Leslie")
     author_user = get_from_user(50, "Stuart")
 
-    for text in PLUS:
+    for text in PLUS_TRIGGERS:
         for precursors_list in get_wrong_next_word_parts(text, punctuations):
             check_plus_text_mention(author_user, target_user, precursors_list)
 

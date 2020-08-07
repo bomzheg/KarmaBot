@@ -6,7 +6,7 @@ from app import config
 from app.models import __models__
 
 
-async def on_startup(dp: Dispatcher):
+async def on_startup(_: Dispatcher):
     await db_init()
 
 
@@ -34,7 +34,7 @@ async def db_init():
     )
 
 
-async def on_shutdown(dp: Dispatcher):
+async def on_shutdown(_: Dispatcher):
     await Tortoise.close_connections()
 
 

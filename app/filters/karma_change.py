@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 from loguru import logger
 
-from app.config import PLUS, MINUS, PLUS_EMOJI, MINUS_EMOJI
+from app.config import PLUS, PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
 PUNCTUATIONS = ",.!"
 
 
@@ -53,9 +53,9 @@ def get_first_word(text: str) -> str:
 def has_plus_karma(word: str) -> bool:
     if len(word) == 0:
         return False
-    if len(word) > 1 and word[1:] == word[:-1] and word[1] == PLUS[0]:  # contains only ++..+
+    if len(word) > 1 and word[1:] == word[:-1] and word[1] == PLUS:  # contains only ++..+
         return True
-    return word in PLUS or word[0] in PLUS_EMOJI
+    return word in PLUS_TRIGGERS or word[0] in PLUS_EMOJI
 
 
 def has_minus_karma(text: str) -> bool:
