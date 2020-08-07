@@ -1,3 +1,4 @@
+import typing
 from math import sqrt
 
 from tortoise import fields
@@ -75,11 +76,15 @@ class UserKarma(Model):
 
     @classmethod
     async def all_to_json(cls, chat_id: int = None) -> dict:
-        if chat_id is None:
-            raise NotImplementedError
-        karms = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
-        return {
-            chat_id: [
-                {**karm.user.to_json(), "karma": karm.karma} for karm in karms
-            ]
-        }
+        if chat_id is not None:
+            karms = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
+            return {
+                chat_id: [
+                    {**karm.user.to_json(), "karma": karm.karma} for karm in karms
+                ]
+            }
+        else:
+            all_data = {}
+            for chat in await Chat.all():
+                all_data.update(await cls.all_to_json(chat.chat_id))
+            return all_data
