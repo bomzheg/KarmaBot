@@ -2,7 +2,7 @@ import io
 import json
 
 from aiogram import types
-from aiogram.utils.markdown import quote_html
+from aiogram.utils.markdown import hbold
 from loguru import logger
 
 from app import config
@@ -13,46 +13,52 @@ from app.models.user_karma import UserKarma
 from app.utils.send_text_file import send_log_files
 
 
+@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='update_log')
 async def get_log(_: types.Message):
     await send_log_files(config.LOG_CHAT_ID)
 
 
+@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='logchat')
 async def get_logchat(_: types.Message):
     log_ch = (await bot.get_chat(config.LOG_CHAT_ID)).invite_link
     await bot.send_message(config.GLOBAL_ADMIN_ID, log_ch, disable_notification=True)
 
 
+@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='generate_invite_logchat')
 async def generate_logchat_link(message: types.Message):
     await message.reply(await bot.export_chat_invite_link(config.LOG_CHAT_ID), disable_notification=True)
 
 
+@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='idchat')
 async def get_idchat(message: types.Message):
     await message.reply(message.chat.id, disable_notification=True)
 
 
+@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands=["exception"])
 async def cmd_exception(_: types.Message):
     raise Exception('user press /exception')
 
 
+@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='dump')
 async def get_dump(_: types.Message):
-    await bot.send_document(
-        config.DUMP_CHAT_ID,
-        open(
-            config.DB_PATH,
-            'rb'
-        )
-    )
+    await send_dump_bd()
 
 
+async def send_dump_bd():
+    with open(config.DB_PATH, 'rb') as f:
+        await bot.send_document(config.DUMP_CHAT_ID, f)
+
+
+@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='json')
 async def get_dump(_: types.Message):
-    dct = await UserKarma.all_to_json(config.DUMP_CHAT_ID)
+    dct = await UserKarma.all_to_json()
 
     await bot.send_document(
         config.DUMP_CHAT_ID,
@@ -60,6 +66,7 @@ async def get_dump(_: types.Message):
     )
 
 
+@dp.throttled(rate=2)
 @dp.message_handler(is_superuser=True, commands='add_manual', commands_prefix='!')
 async def add_manual(message: types.Message, chat: Chat, user: User):
     """
