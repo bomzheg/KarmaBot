@@ -27,6 +27,10 @@ class UserWithoutUserIdError(KarmaError):
     def __init__(self, username: str = None, **kwargs):
         super().__init__(**kwargs)
         self.username = username
+        self.text = (
+                "Обычно так бывает, когда бот в чате недавно и ещё не видел "
+                "пользователя, которому плюсанули в виде '+ @username'.",
+            )
 
 
 class SubZeroKarma(KarmaError):

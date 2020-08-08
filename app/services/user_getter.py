@@ -8,15 +8,14 @@ from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
 from app import config
 from aiogram.types import User
+from app.services.restrictor import RestrictCall
 SLEEP_TIME = 100
 
 
 class UserGetter:
     def __init__(self):
-        self._client_api_bot = Client("karma_bot", bot_token=config.TEST_BOT_TOKEN, api_id=config.API_ID,
+        self._client_api_bot = Client("karma_bot", bot_token=config.now_token, api_id=config.API_ID,
                                       api_hash=config.API_HASH, no_updates=True)
-        self._lock_username = asyncio.Lock()
-        self._lock_fullname = asyncio.Lock()
 
     async def get_user(self, username: str = None, fullname: str = None, chat_id: int = None) -> User:
         async def try_by_name() -> typing.Optional[User]:
@@ -34,43 +33,39 @@ class UserGetter:
             user_tg = await try_by_name()
         return user_tg
 
+    @RestrictCall(SLEEP_TIME)
     async def get_user_by_username(self, username: str) -> User:
-        async with self._lock_username:
-            try:
-                logger.info("get user of username {username}", username=username)
-                user = await self._client_api_bot.get_users(username)
-                logger.info("found user {user}", user=self.get_user_dict_for_log(user))
-            except UsernameNotOccupied:
-                logger.info("Username not found {username}", username=username)
-                raise
-            except FloodWait as e:
-                logger.error("Flood Wait {e}", e=e)
-                await asyncio.sleep(e.x)
-                raise IndexError
-            finally:
-                await asyncio.sleep(SLEEP_TIME)
+        try:
+            logger.info("get user of username {username}", username=username)
+            user = await self._client_api_bot.get_users(username)
+            logger.info("found user {user}", user=self.get_user_dict_for_log(user))
+        except UsernameNotOccupied:
+            logger.info("Username not found {username}", username=username)
+            raise
+        except FloodWait as e:
+            logger.error("Flood Wait {e}", e=e)
+            await asyncio.sleep(e.x)
+            raise IndexError
 
         return self.get_aiogram_user_by_pyrogram(user)
 
+    @RestrictCall(SLEEP_TIME)
     async def get_user_by_fullname(self, chat_id: int, fullname: str) -> User:
-        async with self._lock_fullname:
-            try:
-                logger.info("get user of name {name}", name=fullname)
-                chat_members = await self._client_api_bot.get_chat_members(chat_id=chat_id, query=fullname)
-                logger.info(
-                    "found: {users}",
-                    users=[self.get_user_dict_for_log(chat_member.user) for chat_member in chat_members]
-                )
-                user = chat_members[0].user
-            except IndexError:
-                logger.info("name not found {name}", name=fullname)
-                raise
-            except FloodWait as e:
-                logger.error("Flood Wait {e}", e=e)
-                await asyncio.sleep(e.x)
-                raise IndexError
-            finally:
-                await asyncio.sleep(SLEEP_TIME)
+        try:
+            logger.info("get user of name {name}", name=fullname)
+            chat_members = await self._client_api_bot.get_chat_members(chat_id=chat_id, query=fullname)
+            logger.info(
+                "found: {users}",
+                users=[self.get_user_dict_for_log(chat_member.user) for chat_member in chat_members]
+            )
+            user = chat_members[0].user
+        except IndexError:
+            logger.info("name not found {name}", name=fullname)
+            raise
+        except FloodWait as e:
+            logger.error("Flood Wait {e}", e=e)
+            await asyncio.sleep(e.x)
+            raise IndexError
         return self.get_aiogram_user_by_pyrogram(user)
 
     @staticmethod
@@ -102,7 +97,7 @@ class UserGetter:
         if self._client_api_bot.is_connected:
             await self._client_api_bot.stop()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "UserGetter":
         await self.start()
         return self
 

@@ -5,7 +5,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from .chat import Chat
-
+from app.utils.exceptions import UserWithoutUserIdError
 
 class User(Model):
     id = fields.IntField(pk=True)
@@ -63,7 +63,10 @@ class User(Model):
     @classmethod
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
-            return await cls.get(username=user_tg.username)
+            try:
+                return await cls.get(username=user_tg.username)
+            except DoesNotExist:
+                raise UserWithoutUserIdError(username=user_tg.username)
         try:
             try:
                 user = await cls.get(tg_id=user_tg.id)

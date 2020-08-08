@@ -1,12 +1,14 @@
 from aiogram import types
 from aiogram.utils.markdown import hbold
 from loguru import logger
+from pyrogram.errors import UsernameNotOccupied
 
 from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.exeptions import UserWithoutUserIdError, SubZeroKarma
+from app.utils.exceptions import UserWithoutUserIdError, SubZeroKarma
+from app.services.user_getter import UserGetter
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
@@ -38,6 +40,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
+@dp.throttled(rate=15)
 @dp.message_handler(commands=["me"], commands_prefix='!')
 async def get_top(message: types.Message, chat: Chat, user: User):
     args = message.get_args()
@@ -68,14 +71,13 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     try:
         target_user = await User.get_or_create_from_tg_user(karma['user'])
     except UserWithoutUserIdError as e:
-        e.user_id = user.tg_id
-        e.chat_id = chat.chat_id
-        e.username = user.username
-        e.text = (
-            "Обычно так бывает, когда бот в чате недавно и ещё не видел "
-            "пользователя, которому плюсанули в виде '+ @username'.",
-        )
-        raise e
+        try:
+            async with UserGetter() as user_getter:
+                target_user = await user_getter.get_user_by_username(karma['user'].username)
+        except (UsernameNotOccupied, IndexError):
+            e.user_id = user.tg_id
+            e.chat_id = chat.chat_id
+            raise e
     else:
         if not can_change_karma(target_user, user):
             return logger.info("user {user} try to change self karma", user=user.tg_id)
@@ -102,4 +104,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     )
     await message.reply(return_text, disable_web_page_preview=True)
-    logger.info("user {user} change karma of {target_user}", user=user.tg_id, target_user=target_user.tg_id)
+    logger.info(
+        "user {user} change karma of {target_user}",
+        user=user.tg_id,
+        target_user=target_user.tg_id
+    )

@@ -4,7 +4,7 @@ from math import sqrt
 from tortoise import fields
 from tortoise.models import Model
 
-from app.utils.exeptions import SubZeroKarma
+from app.utils.exceptions import SubZeroKarma
 from .chat import Chat
 from .user import User
 

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as Soup
 from loguru import logger
 
 from app.misc import app_dir
-from .exeptions import CantImportFromAxenia
+from .exceptions import CantImportFromAxenia
 
 
 def username_by_link(link: str) -> str:
