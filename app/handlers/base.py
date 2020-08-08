@@ -12,7 +12,7 @@ from app.models.chat import Chat
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
-        "Бот для изменения кармы в группе, просто добавьте "
+        "Я бот для подсчёта кармы в группе, просто добавьте меня "
         "в группу и плюсуйте друг другу в карму"
     )
 
