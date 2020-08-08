@@ -4,19 +4,19 @@ import typing
 from contextlib import suppress
 
 from aiogram import types
-from aiogram.types import  InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.markdown import hbold, quote_html
-from loguru import logger
 
 from app import config
 from app.misc import dp, bot
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.from_axenia import axenia_raiting
 from app.services.user_getter import UserGetter
+from app.utils.from_axenia import axenia_raiting
+
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
 type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
 approve_cb = CallbackData("approve_import", "chat_id", "index", "y_n")

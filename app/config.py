@@ -1,6 +1,7 @@
 import os
 import secrets
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 app_dir: Path = Path(__file__).parent.parent

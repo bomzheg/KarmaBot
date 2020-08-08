@@ -2,7 +2,6 @@ import io
 import json
 
 from aiogram import types
-from aiogram.utils.markdown import quote_html
 from loguru import logger
 
 from app import config

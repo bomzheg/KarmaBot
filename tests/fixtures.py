@@ -1,8 +1,9 @@
 import typing
-
-from aiogram import types
 from random import choice, randint
 from string import ascii_letters
+
+from aiogram import types
+
 SPACES = (" ", "\t", "\n", "\r")
 
 

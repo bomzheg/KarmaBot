@@ -1,6 +1,5 @@
 # partially from https://github.com/aiogram/bot
 from aiogram import Dispatcher
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from loguru import logger
 
 from app.middlewares.acl import ACLMiddleware

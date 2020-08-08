@@ -6,6 +6,7 @@ from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 from tortoise.transactions import in_transaction
+
 SQL_PREV_NEXT = """
 SELECT
     prev_user_id,

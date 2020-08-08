@@ -1,10 +1,11 @@
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
+
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
-from loguru import logger
 
 from app.config import PLUS, PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
+
 PUNCTUATIONS = ",.!"
 
 

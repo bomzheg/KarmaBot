@@ -1,10 +1,8 @@
 import typing
 
-from .fixtures import (get_from_user, wrong_generate_phrases_next_word, get_message_with_reply,
-                       get_message_with_text_mention, get_message_with_mention,
-                       generate_phrases_next_word, get_wrong_next_word_parts)
-
 from .common import PLUS_TRIGGERS, MINUS, punctuations, filter_check
+from .fixtures import (get_from_user, wrong_generate_phrases_next_word, get_message_with_reply,
+                       get_message_with_text_mention, generate_phrases_next_word, get_wrong_next_word_parts)
 
 
 def test_plus_reply():

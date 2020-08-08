@@ -1,11 +1,10 @@
 import typing
 
-from .fixtures import get_from_user, generate_phrases_next_word, get_message_with_reply,\
-    get_message_with_text_mention, get_message_with_mention, get_next_word_parts
-
 from aiogram import types
 
 from .common import plus_texts, minus_texts, punctuations, filter_check
+from .fixtures import get_from_user, generate_phrases_next_word, get_message_with_reply, \
+    get_message_with_text_mention, get_message_with_mention, get_next_word_parts
 
 
 def test_plus_reply():
