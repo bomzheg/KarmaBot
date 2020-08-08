@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import typing
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
-from loguru import logger
 
 from app.config import PLUS, PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
 PUNCTUATIONS = ",.!"
@@ -119,4 +118,7 @@ def get_replyed_user(message: types.Message) -> typing.Optional[types.User]:
 
 
 def is_bot_username(username: str):
+    """
+    this function deprecated. user can use username like @alice_bot and it don't say that it is bot
+    """
     return username is not None and username[-2:] == "bot"
