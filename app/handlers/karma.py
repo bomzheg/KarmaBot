@@ -9,7 +9,7 @@ from app.models.user_karma import UserKarma
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
-@dp.throttled(rate=60*5)
+@dp.throttled(rate=60 * 5)
 async def get_top(message: types.Message, chat: Chat, user: User):
     args = message.get_args()
     if args:

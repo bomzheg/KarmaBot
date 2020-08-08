@@ -16,7 +16,7 @@ def get_next_word_parts(first_word: str, punctuations: typing.Iterable[str]) -> 
     return rez
 
 
-def generate_phrases_next_word(first_word: str,punctuations: typing.Iterable[str]) -> typing.List[str]:
+def generate_phrases_next_word(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[str]:
     precursors_lists = get_next_word_parts(first_word, punctuations)
     return ["".join(precursors_list) for precursors_list in precursors_lists]
 
@@ -29,7 +29,7 @@ def get_wrong_next_word_parts(first_word: str, punctuations: typing.Iterable[str
     return rez
 
 
-def wrong_generate_phrases_next_word(first_word: str,punctuations: typing.Iterable[str]) -> typing.List[str]:
+def wrong_generate_phrases_next_word(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[str]:
     precursors_lists = get_wrong_next_word_parts(first_word, punctuations)
     return ["".join(precursors_list) for precursors_list in precursors_lists]
 

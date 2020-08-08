@@ -20,4 +20,5 @@ class RestrictCall:
             await self.queue.put(can_go)
             await can_go.wait()
             return await func(*args, **kwargs)
+
         return wrapped

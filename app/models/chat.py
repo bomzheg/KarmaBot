@@ -20,6 +20,7 @@ FROM (SELECT
 WHERE user_id = ? 
 """
 
+
 class ChatType(str, Enum):
     private = "private"
     group = "group"
