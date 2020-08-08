@@ -1,6 +1,7 @@
 import typing
 from enum import Enum
 
+from aiogram.utils.markdown import hlink, quote_html
 from loguru import logger
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
@@ -57,6 +58,10 @@ class Chat(Model):
         except DoesNotExist:
             chat = await cls.create_from_tg_chat(chat=chat)
         return chat
+
+    @property
+    def mention(self):
+        return hlink(self.title, f"t.me/{self.username}") if self.username else quote_html(self.title)
 
     def __str__(self):
         rez = f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"

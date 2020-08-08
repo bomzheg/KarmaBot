@@ -12,7 +12,7 @@ from app.models.chat import Chat
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
-        "Бот для изменения кармы в группе, просто добавьте "
+        "Я бот для подсчёта кармы в группе, просто добавьте меня "
         "в группу и плюсуйте друг другу в карму"
     )
 
@@ -26,8 +26,10 @@ async def cmd_help(message: types.Message):
             'Плюсануть в карму можно начав сообщение с "{plus}". '
             'Минусануть:  "{minus}".\n'
             'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
-            'или упомянуть его через @ (работает даже если у пользователя нет username).'
-            '\nдля отображения топа юзеров по карме напишите !top'
+            'или упомянуть его через @ (работает даже если у пользователя нет username).\n'
+            '!top - топ юзеров по карме\n'
+            '!about - информция о боте\n'
+            '!me - посмотреть свою карму\n'
         ).format(plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]), minus='", "'.join([*MINUS, *MINUS_EMOJI]))
     )
 
