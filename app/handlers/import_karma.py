@@ -4,11 +4,10 @@ import typing
 from contextlib import suppress
 
 from aiogram import types
-from aiogram.types import  InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.markdown import hbold, quote_html
-from loguru import logger
 
 from app import config
 from app.misc import dp, bot
@@ -28,13 +27,15 @@ APPROVE_FILE = jsons_path / "approve.json"
 PROBLEMS_FILE = jsons_path / "problems.json"
 
 
+@dp.throttled(rate=3600)
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
 async def init_from_axenia(message: types.Message, chat: Chat):
-    msg = await message.reply(processing_text.format(-0.1))
-    # monkey patch
-    chat_id = config.python_scripts_chat or chat.chat_id
+    msg = await message.reply(processing_text.format(-0.01))
+    chat_id = chat.chat_id
 
-    log_users, to_approve, problems = await process_import_users_karmas(await axenia_raiting(chat_id), chat, msg)
+    log_users, to_approve, problems = await process_import_users_karmas(
+        await axenia_raiting(chat_id), chat, msg
+    )
     await msg.delete()
 
     await bot.send_document(
@@ -161,6 +162,7 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
     ]])
 
 
+@dp.throttled(rate=3)
 @dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
 async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
@@ -172,6 +174,7 @@ async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data
     await callback_query.message.edit_text(**next_approve(get_element_approve(index+1), index+1, chat_id))
 
 
+@dp.throttled(rate=3)
 @dp.callback_query_handler(approve_cb.filter(y_n="yes"), is_superuser=True)
 async def save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
