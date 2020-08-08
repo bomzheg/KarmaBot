@@ -4,8 +4,9 @@ from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
-from .chat import Chat
 from app.utils.exceptions import UserWithoutUserIdError
+from .chat import Chat
+
 
 class User(Model):
     id = fields.IntField(pk=True)
@@ -129,4 +130,3 @@ class User(Model):
 
     def __repr__(self):
         return str(self)
-

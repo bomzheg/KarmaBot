@@ -1,6 +1,7 @@
 import os
 import secrets
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 app_dir: Path = Path(__file__).parent.parent
@@ -14,7 +15,6 @@ PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
 MINUS = frozenset({'-', })
 MINUS_EMOJI = frozenset({'👎', })
-
 
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
@@ -48,7 +48,6 @@ SUPERUSERS = {GLOBAL_ADMIN_ID, BOMZHEG_ID, BORNTOHACK_ID, ENTERESSI_ID, VADIM_ID
               RUD_ID, LET45FC_ID, STUDENT_ID}
 LOG_CHAT_ID = -336404632
 DUMP_CHAT_ID = -1001459777201  # Fucin' Testing Area
-
 
 WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
 WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)

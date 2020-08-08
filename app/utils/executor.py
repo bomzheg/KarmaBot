@@ -25,7 +25,7 @@ async def on_startup_notify(dispatcher: Dispatcher):
             chat_id=config.LOG_CHAT_ID, text="Bot started", disable_notification=True
         )
         logger.info("Notified superuser {user} about bot is started.", user=config.GLOBAL_ADMIN_ID)
-    #await send_log_files(config.LOG_CHAT_ID)
+    # await send_log_files(config.LOG_CHAT_ID)
 
 
 def setup():

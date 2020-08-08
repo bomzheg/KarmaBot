@@ -1,14 +1,15 @@
 import asyncio
 import typing
 
+import pyrogram
+from aiogram.types import User
 from loguru import logger
 from pyrogram import Client
-import pyrogram
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
 from app import config
-from aiogram.types import User
 from app.services.restrictor import RestrictCall
+
 SLEEP_TIME = 100
 
 
@@ -103,4 +104,3 @@ class UserGetter:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.stop()
-

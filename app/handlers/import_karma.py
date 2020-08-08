@@ -14,8 +14,9 @@ from app.misc import dp, bot
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.from_axenia import axenia_raiting
 from app.services.user_getter import UserGetter
+from app.utils.from_axenia import axenia_raiting
+
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
 type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
 approve_cb = CallbackData("approve_import", "chat_id", "index", "y_n")
@@ -67,7 +68,7 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
         for i, karma_elem in enumerate(karmas_list):
             if message is not None and i % 5 == 0:
                 with suppress(TelegramAPIError):
-                    await message.edit_text(processing_text.format(i/len(karmas_list)))
+                    await message.edit_text(processing_text.format(i / len(karmas_list)))
 
             name, username, karma = karma_elem
             user = await try_get_user_by_username(username)
@@ -171,7 +172,7 @@ async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data
     elem = get_element_approve(index)
 
     save_problems_list((elem['name'], elem['username'], elem['karma']))
-    await callback_query.message.edit_text(**next_approve(get_element_approve(index+1), index+1, chat_id))
+    await callback_query.message.edit_text(**next_approve(get_element_approve(index + 1), index + 1, chat_id))
 
 
 @dp.throttled(rate=3)
@@ -185,7 +186,7 @@ async def save_user_karma(callback_query: types.CallbackQuery, callback_data: ty
 
     user = await User.get_or_create_from_tg_user(user_tg)
     await save_karma(user, chat_id, elem['karma'])
-    await callback_query.message.edit_text(**next_approve(get_element_approve(index+1), index+1, chat_id))
+    await callback_query.message.edit_text(**next_approve(get_element_approve(index + 1), index + 1, chat_id))
 
 
 def save_problems_list(problem: type_karmas):
