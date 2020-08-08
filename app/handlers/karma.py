@@ -7,7 +7,7 @@ from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.exeptions import UserWithoutUserIdError, SubZeroKarma
+from app.utils.exceptions import UserWithoutUserIdError, SubZeroKarma
 from app.services.user_getter import UserGetter
 
 
@@ -40,6 +40,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
+@dp.throttled(rate=15)
 @dp.message_handler(commands=["me"], commands_prefix='!')
 async def get_top(message: types.Message, chat: Chat, user: User):
     args = message.get_args()
@@ -103,4 +104,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     )
     await message.reply(return_text, disable_web_page_preview=True)
-    logger.info("user {user} change karma of {target_user}", user=user.tg_id, target_user=target_user.tg_id)
+    logger.info(
+        "user {user} change karma of {target_user}",
+        user=user.tg_id,
+        target_user=target_user.tg_id
+    )
