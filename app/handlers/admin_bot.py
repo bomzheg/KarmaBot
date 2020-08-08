@@ -12,39 +12,39 @@ from app.models.user_karma import UserKarma
 from app.utils.send_text_file import send_log_files
 
 
-@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='update_log')
+@dp.throttled(rate=30)
 async def get_log(_: types.Message):
     await send_log_files(config.LOG_CHAT_ID)
 
 
-@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='logchat')
+@dp.throttled(rate=30)
 async def get_logchat(_: types.Message):
     log_ch = (await bot.get_chat(config.LOG_CHAT_ID)).invite_link
     await bot.send_message(config.GLOBAL_ADMIN_ID, log_ch, disable_notification=True)
 
 
-@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='generate_invite_logchat')
+@dp.throttled(rate=120)
 async def generate_logchat_link(message: types.Message):
     await message.reply(await bot.export_chat_invite_link(config.LOG_CHAT_ID), disable_notification=True)
 
 
-@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands='idchat')
+@dp.throttled(rate=30)
 async def get_idchat(message: types.Message):
     await message.reply(message.chat.id, disable_notification=True)
 
 
-@dp.throttled(rate=30)
 @dp.message_handler(is_superuser=True, commands=["exception"])
+@dp.throttled(rate=30)
 async def cmd_exception(_: types.Message):
     raise Exception('user press /exception')
 
 
-@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='dump')
+@dp.throttled(rate=120)
 async def get_dump(_: types.Message):
     await send_dump_bd()
 
@@ -54,8 +54,8 @@ async def send_dump_bd():
         await bot.send_document(config.DUMP_CHAT_ID, f)
 
 
-@dp.throttled(rate=120)
 @dp.message_handler(is_superuser=True, commands='json')
+@dp.throttled(rate=120)
 async def get_dump(_: types.Message):
     dct = await UserKarma.all_to_json()
 
@@ -65,8 +65,8 @@ async def get_dump(_: types.Message):
     )
 
 
-@dp.throttled(rate=2)
 @dp.message_handler(is_superuser=True, commands='add_manual', commands_prefix='!')
+@dp.throttled(rate=2)
 async def add_manual(message: types.Message, chat: Chat, user: User):
     """
     superuser send !add_manual 46866565 666.13 то change karma of user with id 46866565 to 666.13
