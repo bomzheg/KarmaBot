@@ -28,8 +28,8 @@ APPROVE_FILE = jsons_path / "approve.json"
 PROBLEMS_FILE = jsons_path / "problems.json"
 
 
-@dp.throttled(rate=3600)
 @dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
+@dp.throttled(rate=3600)
 async def init_from_axenia(message: types.Message, chat: Chat):
     msg = await message.reply(processing_text.format(-0.01))
     chat_id = chat.chat_id
@@ -163,8 +163,8 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
     ]])
 
 
-@dp.throttled(rate=3)
 @dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
+@dp.throttled(rate=3)
 async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
     index = int(callback_data["index"])
@@ -175,8 +175,8 @@ async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data
     await callback_query.message.edit_text(**next_approve(get_element_approve(index + 1), index + 1, chat_id))
 
 
-@dp.throttled(rate=3)
 @dp.callback_query_handler(approve_cb.filter(y_n="yes"), is_superuser=True)
+@dp.throttled(rate=3)
 async def save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()
     index = int(callback_data["index"])
