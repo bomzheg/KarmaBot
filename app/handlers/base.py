@@ -7,6 +7,7 @@ from app.misc import dp
 from app.models.chat import Chat
 
 
+@dp.throttled(rate=3)
 @dp.message_handler(commands=["start"], commands_prefix='!/')
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
@@ -16,6 +17,7 @@ async def cmd_start(message: types.Message):
     )
 
 
+@dp.throttled(rate=3)
 @dp.message_handler(commands=["help"], commands_prefix='!')
 async def cmd_help(message: types.Message):
     logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
@@ -30,12 +32,14 @@ async def cmd_help(message: types.Message):
     )
 
 
+@dp.throttled(rate=3)
 @dp.message_handler(commands=["about"], commands_prefix='!')
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
 
 
+@dp.throttled(rate=3)
 @dp.message_handler(state='*', commands='cancel')
 async def cancel_state(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
