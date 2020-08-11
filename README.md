@@ -1,4 +1,7 @@
 # KarmaBot
-create .env with your data like a bot token, password from database etc (full list you can see in app/config)
 
-run initialize.py before first start bot to create tables in database
+![Лого проекта](https://github.com/bomzheg/KarmaBot/blob/master/docs/pictures/gitgub_titlepic.png)
+
+This telegram bot is designed to track karma in chats.
+Just add him to the chat and thank each other for helpful answers.
+
