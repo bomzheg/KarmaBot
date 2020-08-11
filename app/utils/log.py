@@ -16,7 +16,9 @@ def setup():
     logger.add(
         sink=log_path / PRINT_LOG,
         format='{time} - {name} - {level} - {message}',
-        level="DEBUG")
+        level="DEBUG",
+        encoding='utf-8',
+    )
     logger.info("Program started")
 
 
