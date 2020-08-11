@@ -8,16 +8,21 @@ from loguru import logger
 
 from app.models.chat import Chat
 from app.models.user import User
+from app.utils.lock_factory import LockFactory
 
 
 class ACLMiddleware(BaseMiddleware):
+    def __init__(self):
+        super(ACLMiddleware, self).__init__()
+        self.lock_factory = LockFactory()
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
 
         try:
-            user = await User.get_or_create_from_tg_user(user)
-            if chat and chat.type != 'private':
-                chat = await Chat.get_or_create_from_tg_chat(chat)
+            async with self.lock_factory.get_lock(f"{chat.id}:{user.id}"):
+                user = await User.get_or_create_from_tg_user(user)
+                if chat and chat.type != 'private':
+                    chat = await Chat.get_or_create_from_tg_chat(chat)
 
         except Exception as e:
             logger.error("troubles with db")
