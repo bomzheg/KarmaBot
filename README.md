@@ -5,3 +5,4 @@
 This telegram bot is designed to track karma in chats.
 Just add him to the chat and thank each other for helpful answers.
 
+for deploy info look at [docs/deploy_manual.md](./docs/deploy_manual.md)
