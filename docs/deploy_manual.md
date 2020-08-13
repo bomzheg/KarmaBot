@@ -51,7 +51,7 @@
 in config.py:
 * create chat in telegram and place it chat_id in 
 [LOG_CHAT_ID](https://github.com/bomzheg/KarmaBot/blob/d5dcf3f6faead1b1b277143857ea9cdc6a872257/app/config.py#L48)
-* on next line you can place that or another chat_id in DUMP_CHAT_ID
+* on next line you can place same or another chat_id in DUMP_CHAT_ID
 * its better to add administrator rights in that chats (generate invite links)
 * fill SUPERUSERS and GLOBAL_ADMIN_ID with yours
 * you can change PLUS_WORDS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS, MINUS_EMOJI. 
