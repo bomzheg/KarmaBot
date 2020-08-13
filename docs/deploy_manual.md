@@ -9,7 +9,7 @@
 * create .env file with Environment variables or export that variables:
   * KARMA_BOT_TOKEN - api token for tg bot
   * TEST_KARMA_BOT_TOKEN - second api token for tg bot. 
-  Used if you need to run test bot for testing some function commandline param -b
+  Used if you need to run test bot for testing some function (commandline param -b)
   * WEBHOOK_HOST, WEBHOOK_PORT, WEBHOOK_PATH, LISTEN_IP, LISTEN_PORT if you need to run with webhook
   * DB_TYPE one of "sqlite", "postgres", "mysql"
   * if you use sqlite you must specify DB_PATH 
