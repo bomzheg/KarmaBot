@@ -2,6 +2,7 @@ import io
 import json
 import typing
 from contextlib import suppress
+from warnings import warn
 
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -16,6 +17,7 @@ from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.services.user_getter import UserGetter
 from app.utils.from_axenia import axenia_raiting
+from app.utils.exceptions import CantImportFromAxenia
 
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
 type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
@@ -28,21 +30,27 @@ APPROVE_FILE = jsons_path / "approve.json"
 PROBLEMS_FILE = jsons_path / "problems.json"
 
 
-@dp.message_handler(commands="init_from_axenia", commands_prefix='!', is_superuser=True)
-@dp.throttled(rate=3600)
+async def check_chat_creator(message: types.Message) -> bool:
+    admins = await message.chat.get_administrators()
+    return message.from_user.id in {admin.user.id for admin in admins if admin.status == types.ChatMemberStatus.CREATOR}
+
+
+@dp.message_handler(check_chat_creator, commands="init_from_axenia", commands_prefix='!')
+@dp.throttled(rate=24*3600)
 async def init_from_axenia(message: types.Message, chat: Chat):
     msg = await message.reply(processing_text.format(-0.01))
     chat_id = chat.chat_id
-
-    log_users, to_approve, problems = await process_import_users_karmas(
-        await axenia_raiting(chat_id), chat, msg
-    )
+    try:
+        log_users, to_approve, problems = await process_import_users_karmas(
+            await axenia_raiting(chat_id), chat, msg
+        )
+    except CantImportFromAxenia:
+        return await message.answer("Что-то пошло не так. вероятно аксения и не знала о существовании этого чата")
     await msg.delete()
 
-    await bot.send_document(
-        config.DUMP_CHAT_ID,
-        ("import_log.json", io.StringIO(json.dumps(log_users, ensure_ascii=False, indent=2)))
-    )
+    await message.answer_document((
+        "import_log.json", io.StringIO(json.dumps(log_users, ensure_ascii=False, indent=2))
+    ))
 
     await message.reply('Список карм пользователей импортирован из Аксении', disable_web_page_preview=True)
     if problems:
@@ -61,6 +69,8 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
     """
     if message is not None and message.from_user.id != bot.id:
         message = None
+        warn("message is filled but it not from bot", UserWarning)
+
     log_users = []
     problems = []
     to_approve = []

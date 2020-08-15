@@ -10,7 +10,7 @@ def username_by_link(link: str) -> str:
     return link.split('=')[1]
 
 
-def get_rating(html):
+def parse_rating(html):
     soup = Soup(html, 'lxml')
     main_soup = soup.find('main', role='main')
 
@@ -24,12 +24,6 @@ def get_rating(html):
                 username = None
             karma = tds[1].text
             yield name, username, karma
-
-
-def get_html_file():
-    html_file = app_dir.parent / 'html' / 'Karmabot for Telegram Axenia.html'
-    with html_file.open('r', encoding='UTF-8') as f:
-        return f.read()
 
 
 async def get_html(url):
@@ -48,7 +42,7 @@ def get_link_by_chat_id(chat_id: int) -> str:
 async def axenia_raiting(chat_id):
     logger.debug(f"import from {chat_id}")
     return list(
-        get_rating(
+        parse_rating(
             await get_html(
                 get_link_by_chat_id(chat_id)
             )
