@@ -20,7 +20,7 @@ class KarmaFilter(BoundFilter):
     karma_change: bool
 
     async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, int]]:
-        karma_change = get_karma_trigger(message.text or message.sticker.emoji or None)
+        karma_change = get_karma_trigger(message.text or message.sticker.emoji or "")
         if karma_change is None:
             return {}
         target_user = get_target_user(message)
