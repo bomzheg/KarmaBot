@@ -14,8 +14,9 @@ from app.utils.send_text_file import send_log_files
 
 @dp.message_handler(is_superuser=True, commands='update_log')
 @dp.throttled(rate=30)
+@dp.async_task
 async def get_log(_: types.Message):
-    await send_log_files(config.LOG_CHAT_ID)
+    await send_log_files(bot, config.LOG_CHAT_ID)
 
 
 @dp.message_handler(is_superuser=True, commands='logchat')

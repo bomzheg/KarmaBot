@@ -65,7 +65,7 @@ PASSWORD_DB = os.getenv("PASSWORD_DB")
 DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
-DB_PATH = os.getenv("DB_PATH", default=str(app_dir / "db_data" / "karma.db"))
+DB_PATH = os.getenv("DB_PATH", default=app_dir / "db_data" / "karma.db")
 
 API_ID = os.getenv("API_ID", default=6)
 API_HASH = os.getenv("API_HASH", default='eb06d4abfb49dc3eeb1aeb98ae0f581e')

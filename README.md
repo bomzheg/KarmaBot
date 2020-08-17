@@ -18,6 +18,18 @@ commands list:
 * !report, /report, !admin, /admin, @admin - report spam, insult or another inappropriate content 
 to the group administrators
 
+moderator commands list:
+* !ro !mute [DURATION] - restrict replyed user for DURATION. 
+* !ban [DURATION] - kick replyed user for DURATION
+  * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
+    * AAA - count of years (more that one years is permanent)
+    * BBB - count of weeks
+    * CCC - count of days
+    * DDD - count of hours
+    * EEE - count of minutes
+    * FFF - count of seconds (less that 30 seconds will be mean 30 seconds)
+  * you have to specify one or more duration part without spaces
+
 superuser commands list:
 * /generate_invite_logchat - if bot is admin in chat of LOG_CHAT_ID from config.py bot generates invite link to that
 * /logchat - get logchat invite link if it's generated earlier
