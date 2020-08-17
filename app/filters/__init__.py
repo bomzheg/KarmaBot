@@ -6,6 +6,7 @@ def setup(dispatcher: Dispatcher):
     logger.info("Configure filters...")
     from .superuser import IsSuperuserFilter
     from .karma_change import KarmaFilter
+    from .tg_permissions import BotHasPermissions, HasPermissions
 
     text_messages = [
         dispatcher.message_handlers,
@@ -15,3 +16,5 @@ def setup(dispatcher: Dispatcher):
 
     dispatcher.filters_factory.bind(KarmaFilter, event_handlers=text_messages)
     dispatcher.filters_factory.bind(IsSuperuserFilter, event_handlers=text_messages)
+    dispatcher.filters_factory.bind(BotHasPermissions, event_handlers=text_messages)
+    dispatcher.filters_factory.bind(HasPermissions, event_handlers=text_messages)
