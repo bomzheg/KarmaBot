@@ -39,3 +39,15 @@ class SubZeroKarma(KarmaError):
 
 class CantImportFromAxenia(KarmaError):
     pass
+
+
+class TimedeltaParseError(KarmaError):
+    pass
+
+
+class ToLongDuration(TimedeltaParseError):
+    pass
+
+
+class InvalidFormatDuration(TimedeltaParseError):
+    pass

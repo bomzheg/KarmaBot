@@ -3,12 +3,14 @@ from datetime import timedelta
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import Text, Command
 from aiogram.utils.exceptions import BadRequest
-from aiogram.utils.markdown import hide_link
+from aiogram.utils.markdown import hide_link, quote_html
 from loguru import logger
 
 from app.misc import dp
 from app.utils.timedelta_functions import parse_timedelta_from_message, format_timedelta
+from app.utils.exceptions import TimedeltaParseError
 FOREVER_DURATION = timedelta(days=366)
+DEFAULT_DURATION = timedelta(hours=1)
 
 
 async def report_filter(message: types.Message):
@@ -57,9 +59,12 @@ def need_notify_admin(admin: types.ChatMember):
     bot_can_restrict_members=True,
 )
 async def cmd_ro(message: types.Message):
-    duration = await parse_timedelta_from_message(message)
+    try:
+        duration = parse_timedelta_from_message(message)
+    except TimedeltaParseError as e:
+        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
     if not duration:
-        return
+        duration = DEFAULT_DURATION
 
     try:
         await message.chat.restrict(
@@ -91,9 +96,12 @@ async def cmd_ro(message: types.Message):
     bot_can_restrict_members=True,
 )
 async def cmd_ban(message: types.Message):
-    duration = await parse_timedelta_from_message(message)
+    try:
+        duration = parse_timedelta_from_message(message)
+    except TimedeltaParseError as e:
+        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
     if not duration:
-        return
+        duration = DEFAULT_DURATION
 
     try:
         await message.chat.kick(message.reply_to_message.from_user.id, until_date=duration)
