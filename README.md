@@ -20,6 +20,7 @@ to the group administrators
 
 moderator commands list:
 * !ro !mute [DURATION] - restrict replyed user for DURATION. 
+* !ban [DURATION] - kick replyed user for DURATION
   * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
     * AAA - count of years (more that one years is permanent)
     * BBB - count of weeks
