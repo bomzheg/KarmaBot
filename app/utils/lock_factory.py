@@ -1,6 +1,8 @@
 import asyncio
 import typing
 
+from loguru import logger
+
 
 class LockFactory:
     def __init__(self):
@@ -23,8 +25,9 @@ class LockFactory:
         for key, lock in self._locks.items():
             if not lock.locked():
                 self._locks.pop(key)
+                logger.debug("remove lock for {key}", key=key)
 
-    async def _check_and_clear(self, cool_down: int = 3600):
+    async def _check_and_clear(self, cool_down: int = 1800):
         while True:
-            self.clear_free()
             await asyncio.sleep(cool_down)
+            self.clear_free()
