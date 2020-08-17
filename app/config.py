@@ -1,3 +1,6 @@
+"""
+constants, settings
+"""
 import os
 import secrets
 from pathlib import Path
@@ -27,8 +30,8 @@ DESC_POLLING = "Run tg bot with polling. Default use WebHook"
 
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
 TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
-now_token: str
-secret_str = secrets.token_urlsafe(16)
+now_token: str  # in that variable setting token, that be used in this instance of bot
+secret_str = secrets.token_urlsafe(16)  # for webhook path
 
 CAPTURE_STD_ERR = False
 

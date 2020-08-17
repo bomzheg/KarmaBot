@@ -93,8 +93,8 @@ def has_target_user(target_user: types.User, author_user: types.User):
                or user_1.username is not None and user_1.username == user_2.username
 
     return target_user is not None \
-           and not is_one_user(author_user, target_user) \
-           and not target_user.is_bot
+        and not is_one_user(author_user, target_user) \
+        and not target_user.is_bot
     #   and not is_bot_username(target_user.username)
     # don't check is_bot_username because user can have username like @user_bot
 
