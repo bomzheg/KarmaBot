@@ -36,7 +36,7 @@
   * install https://github.com/bomzheg/nginx-le
 
   * add karmabot.conf to nginx-le bots path (etc/bots)
-
+  
 * create .env file with environment variables like in #KarmaBot run without docker
   
 
