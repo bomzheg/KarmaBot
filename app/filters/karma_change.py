@@ -123,4 +123,4 @@ def is_bot_username(username: str):
     """
     this function deprecated. user can use username like @alice_bot and it don't say that it is bot
     """
-    return username is not None and username[-2:] == "bot"
+    return username is not None and username[-3:] == "bot"
