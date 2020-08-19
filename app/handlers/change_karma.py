@@ -6,8 +6,8 @@ from pyrogram.errors import UsernameNotOccupied
 from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
-from app.models.user_karma import UserKarma
 from app.services.user_getter import UserGetter
+from app.services.change_karma import change_karma
 from app.utils.exceptions import UserWithoutUserIdError, SubZeroKarma
 
 how_change = {
@@ -46,10 +46,10 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             return logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
 
     try:
-        uk, power = await UserKarma.change_or_create(
+        uk, power = await change_karma(
             target_user=target_user,
             chat=chat,
-            user_changed=user,
+            user=user,
             how_change=karma['karma_change']
         )
     except SubZeroKarma:
@@ -59,7 +59,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     return_text = (
         "Вы {how_change} карму "
         "{name} до {karma_new} "
-        "({power:+.1f})".format(
+        "({power:+.2f})".format(
             how_change=how_change[karma['karma_change']],
             name=hbold(target_user.fullname),
             karma_new=hbold(uk.karma_round),

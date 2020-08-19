@@ -9,6 +9,9 @@ from .user import User
 
 
 class UserKarma(Model):
+    """
+    information about (karma) (user) in (chat)
+    """
     uc_id = fields.IntField(pk=True)
     user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User', related_name='karma')
     chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField('models.Chat', related_name='user_karma')
@@ -26,10 +29,10 @@ class UserKarma(Model):
     def __repr__(self):
         return str(self)
 
-    async def change(self, user_changed: User, how_change: int):
+    async def change(self, user_changed: User, how_change: float):
         """
         change karma to (self.user) from (user_changed)
-        (how_change) must be +1 or -1
+        (how_change) must be from -1 to +1 (power from -100% to +100 %)
         """
         if abs(how_change) != 1:
             raise ValueError(f"how_change must be +1 or -1 but it is {how_change}")
@@ -46,10 +49,10 @@ class UserKarma(Model):
         return power
 
     @classmethod
-    async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: int):
+    async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: float):
         """
         change karma to (target_user) from (user_changed) in (chat)
-        (how_change) must be +1 or -1
+        (how_change) must be from -1 to +1 (power from -100% to +100 %)
         """
         uk, _ = await UserKarma.get_or_create(
             user=target_user,
@@ -76,10 +79,10 @@ class UserKarma(Model):
     @classmethod
     async def all_to_json(cls, chat_id: int = None) -> dict:
         if chat_id is not None:
-            karms = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
+            uks = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
             return {
                 chat_id: [
-                    {**karm.user.to_json(), "karma": karm.karma} for karm in karms
+                    {**uk.user.to_json(), "karma": uk.karma} for uk in uks
                 ]
             }
         else:
