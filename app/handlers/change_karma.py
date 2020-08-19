@@ -32,15 +32,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     # in karma['user'] can be user with only username
     except UserWithoutUserIdError as e:
         try:
-            async with UserGetter() as user_getter:
-                karma['user'] = await user_getter.get_user_by_username(karma['user'].username)
+            target_user = await UserGetter.get_db_user_by_username(karma['user'].username)
         # that username can be not valid
         except (UsernameNotOccupied, IndexError):
             e.user_id = user.tg_id
             e.chat_id = chat.chat_id
             raise e
-
-        target_user = await User.get_or_create_from_tg_user(karma['user'])
     else:
         if not can_change_karma(target_user, user):
             return logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
