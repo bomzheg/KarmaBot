@@ -2,7 +2,7 @@ import datetime
 import re
 import typing
 
-from aiogram import types
+from app.utils.exceptions import TimedeltaParseError, ToLongDuration, InvalidFormatDuration
 
 MODIFIERS = {
     "y": datetime.timedelta(days=365),  # простим один день если кому-то попадётся високосный
@@ -15,17 +15,12 @@ MODIFIERS = {
 ALL_MODIFIER = "".join(MODIFIERS.keys())
 PATTERN = re.compile(rf"(?P<value>\d+)(?P<modifier>[{ALL_MODIFIER}])")
 LINE_PATTERN = re.compile(rf"^(\d+[{ALL_MODIFIER}])+$")
-DEFAULT_TIME_DELTA = datetime.timedelta(hours=1)
-
-
-class TimedeltaParseError(Exception):
-    pass
 
 
 def parse_timedelta(value: str) -> datetime.timedelta:
     match = LINE_PATTERN.match(value)
     if not match:
-        raise TimedeltaParseError("Invalid time format")
+        raise InvalidFormatDuration("Invalid time format")
 
     try:
         result = datetime.timedelta()
@@ -34,27 +29,19 @@ def parse_timedelta(value: str) -> datetime.timedelta:
 
             result += int(value) * MODIFIERS[modifier]
     except OverflowError:
-        raise TimedeltaParseError("Timedelta value is too large")
+        raise ToLongDuration("Timedelta value is too large")
 
     return result
 
 
-async def parse_timedelta_from_message(
-    message: types.Message
-) -> typing.Optional[datetime.timedelta]:
-    _, *args = message.text.split()
+def parse_timedelta_from_text(text_duration: str) -> typing.Optional[datetime.timedelta]:
+    if not text_duration:
+        return None
 
-    if args:  # Parse custom duration
-        try:
-            duration = parse_timedelta(args[0])
-        except TimedeltaParseError:
-            await message.reply("Failed to parse duration")
-            return
-        if duration <= datetime.timedelta(seconds=30):
-            return datetime.timedelta(seconds=30)
-        return duration
-    else:
-        return DEFAULT_TIME_DELTA
+    duration = parse_timedelta(text_duration)
+    if duration <= datetime.timedelta(seconds=30):
+        return datetime.timedelta(seconds=30)
+    return duration
 
 
 def format_timedelta(td: datetime.timedelta) -> str:
