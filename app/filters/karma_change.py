@@ -42,7 +42,7 @@ def get_karma_trigger(text: str) -> typing.Optional[int]:
     """
     if has_plus_karma(get_first_word(text)):
         return +1
-    if has_minus_karma(text):
+    if has_minus_karma(get_first_line(text)):
         return -1
     return None
 
@@ -61,6 +61,10 @@ def has_plus_karma(word: str) -> bool:
 
 def has_minus_karma(text: str) -> bool:
     return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
+
+
+def get_first_line(text: str) -> str:
+    return text.splitlines()[0]
 
 
 def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
