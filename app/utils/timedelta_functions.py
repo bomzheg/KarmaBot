@@ -2,8 +2,6 @@ import datetime
 import re
 import typing
 
-from aiogram import types
-
 from app.utils.exceptions import TimedeltaParseError, ToLongDuration, InvalidFormatDuration
 
 MODIFIERS = {
@@ -36,14 +34,11 @@ def parse_timedelta(value: str) -> datetime.timedelta:
     return result
 
 
-def parse_timedelta_from_message(
-    message: types.Message
-) -> typing.Optional[datetime.timedelta]:
-    _, *args = message.text.split()
-    if not args:
+def parse_timedelta_from_text(text_duration: str) -> typing.Optional[datetime.timedelta]:
+    if not text_duration:
         return None
 
-    duration = parse_timedelta(args[0])
+    duration = parse_timedelta(text_duration)
     if duration <= datetime.timedelta(seconds=30):
         return datetime.timedelta(seconds=30)
     return duration

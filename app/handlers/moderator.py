@@ -1,14 +1,17 @@
+import typing
 from datetime import timedelta
 
 from aiogram import types
-from aiogram.dispatcher.filters.builtin import Text, Command
-from aiogram.utils.exceptions import BadRequest
+from aiogram.dispatcher.filters.builtin import Command
+from aiogram.utils.exceptions import BadRequest, Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
 from loguru import logger
 
-from app.misc import dp
-from app.utils.timedelta_functions import parse_timedelta_from_message, format_timedelta
+from app.misc import dp, bot
+from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
 from app.utils.exceptions import TimedeltaParseError
+from app.models import ModeratorEvent, Chat, User
+from app.services.user_info import get_user_info
 FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
 
@@ -19,9 +22,6 @@ async def report_filter(message: types.Message):
     if not message.reply_to_message:
         return False
     if await Command(commands=['report', 'admin'], prefixes='/!@').check(message):
-        return True
-    if await Text(equals='@admin', ignore_case=True).check(message):
-        print("text with @admin 0_o")
         return True
     return False
 
@@ -51,6 +51,16 @@ def need_notify_admin(admin: types.ChatMember):
     return admin.can_delete_messages or admin.can_restrict_members or admin.status == types.ChatMemberStatus.CREATOR
 
 
+def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
+    _, *args = text.split(maxsplit=2)  # in text: command_duration_comments
+    if not args:
+        return "", ""
+    duration_text = args[0]
+    if len(args) == 1:
+        return duration_text, ""
+    return duration_text, " ".join(args[1:])
+
+
 @dp.message_handler(
     commands=["ro", "mute"],
     commands_prefix="!",
@@ -58,12 +68,14 @@ def need_notify_admin(admin: types.ChatMember):
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ro(message: types.Message):
-    try:
-        duration = parse_timedelta_from_message(message)
-    except TimedeltaParseError as e:
-        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
-    if not duration:
+async def cmd_ro(message: types.Message, chat: Chat):
+    duration_text, comment = get_moderator_message_args(message.text)
+    if duration_text:
+        try:
+            duration = parse_timedelta_from_text(duration_text)
+        except TimedeltaParseError as e:
+            return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
+    else:
         duration = DEFAULT_DURATION
 
     try:
@@ -79,6 +91,15 @@ async def cmd_ro(message: types.Message):
     except BadRequest as e:
         logger.error("Failed to restrict chat member: {error!r}", error=e)
         return False
+    else:
+        await ModeratorEvent.save_new_action(
+            moderator=message.from_user,
+            user=message.reply_to_message.from_user,
+            chat=chat,
+            type_restriction="ro",
+            duration=duration,
+            comment=comment
+        )
 
     await message.reply(
         "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
@@ -95,12 +116,14 @@ async def cmd_ro(message: types.Message):
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ban(message: types.Message):
-    try:
-        duration = parse_timedelta_from_message(message)
-    except TimedeltaParseError as e:
-        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
-    if not duration:
+async def cmd_ban(message: types.Message, chat: Chat):
+    duration_text, comment = get_moderator_message_args(message.text)
+    if duration_text:
+        try:
+            duration = parse_timedelta_from_text(duration_text)
+        except TimedeltaParseError as e:
+            return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
+    else:
         duration = DEFAULT_DURATION
 
     try:
@@ -114,6 +137,15 @@ async def cmd_ban(message: types.Message):
     except BadRequest as e:
         logger.error("Failed to kick chat member: {error!r}", error=e)
         return False
+    else:
+        await ModeratorEvent.save_new_action(
+            moderator=message.from_user,
+            user=message.reply_to_message.from_user,
+            chat=chat,
+            type_restriction="ban",
+            duration=duration,
+            comment=comment
+        )
 
     text = "Пользователь {user} попал в бан этого чата.".format(
             user=message.reply_to_message.from_user.get_mention(),
@@ -140,3 +172,31 @@ async def cmd_ro_bot_not_admin(message: types.Message):
 )
 async def cmd_ro_bot_not_admin(message: types.Message):
     await message.delete()
+
+
+@dp.message_handler(
+    commands=["w", "warn"],
+    commands_prefix="!",
+    is_reply=True,
+    user_can_restrict_members=True,
+)
+async def cmd_warn(message: types.Message, chat: Chat):
+    args = message.text.split(maxsplit=1)
+    if len(args) == 1:
+        comment = ""
+    else:
+        comment = args[1]
+
+    await ModeratorEvent.save_new_action(
+        moderator=message.from_user,
+        user=message.reply_to_message.from_user,
+        chat=chat,
+        type_restriction="warn",
+        comment=comment
+    )
+
+    text = "Пользователь {user} получил официальное предупреждение от модератора".format(
+        user=message.reply_to_message.from_user.get_mention(),
+    )
+    await message.reply(text)
+

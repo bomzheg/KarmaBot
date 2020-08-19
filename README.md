@@ -29,6 +29,7 @@ moderator commands list:
     * EEE - count of minutes
     * FFF - count of seconds (less that 30 seconds will be mean 30 seconds)
   * you have to specify one or more duration part without spaces
+* !warn, !w - official warn user from moderator
 
 superuser commands list:
 * /generate_invite_logchat - if bot is admin in chat of LOG_CHAT_ID from config.py bot generates invite link to that
