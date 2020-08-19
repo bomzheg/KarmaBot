@@ -44,4 +44,4 @@ class KarmaEvent(Model):
         return (
             f"{self.date.date().strftime(config.DATE_FORMAT)} "
             f"{self.user_from.mention_no_link} изменил карму на {self.how_change:.0%} своей силы. "
-        ) + (self.comment if self.comment is not None else "")
+        ) + (f"\"{self.comment}\"" if self.comment is not None else "")

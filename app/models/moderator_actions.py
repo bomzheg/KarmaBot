@@ -60,9 +60,14 @@ class ModeratorEvent(Model):
             chat=chat
         ).order_by('-date').limit(limit).prefetch_related('moderator').all()
 
-    def format_event(self):
-        return (
-            f"{self.date.date().strftime(config.DATE_FORMAT)} "
-            f"{self.type_restriction} {format_timedelta(self.timedelta_restriction)} "
-            f"от {self.moderator.mention_no_link} {self.comment}"
-        )
+    def format_event(self) -> str:
+        rez = f"{self.date.date().strftime(config.DATE_FORMAT)} {self.type_restriction} "
+
+        if self.timedelta_restriction:
+            rez += f"{format_timedelta(self.timedelta_restriction)} "
+
+        rez += f"от {self.moderator.mention_no_link}"
+
+        if self.comment:
+            rez += f" \"{self.comment}\""
+        return rez
