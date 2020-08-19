@@ -17,18 +17,16 @@ class ACLMiddleware(BaseMiddleware):
         self.lock_factory = LockFactory()
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
-        logger.debug("starting setup chat {chat}", chat=chat.id)
         try:
-            async with self.lock_factory.get_lock(f"{chat.id}:{user.id}"):
-                logger.debug("in lock setup chat {chat}", chat=chat.id)
+            async with self.lock_factory.get_lock(f"{user.id}"):
                 user = await User.get_or_create_from_tg_user(user)
-                if chat and chat.type != 'private':
+            if chat and chat.type != 'private':
+                async with self.lock_factory.get_lock(f"{chat.id}"):
                     chat = await Chat.get_or_create_from_tg_chat(chat)
 
         except Exception as e:
             logger.error("troubles with db")
             raise e
-        logger.debug("after lock setup chat {chat}", chat=chat)
         data["user"] = user
         data["chat"] = chat
 
