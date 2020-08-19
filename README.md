@@ -30,6 +30,7 @@ moderator commands list:
     * FFF - count of seconds (less that 30 seconds will be mean 30 seconds)
   * you have to specify one or more duration part without spaces
 * !warn, !w - official warn user from moderator
+* !info - information about user (karma changes, restrictions, warns)
 
 superuser commands list:
 * /generate_invite_logchat - if bot is admin in chat of LOG_CHAT_ID from config.py bot generates invite link to that

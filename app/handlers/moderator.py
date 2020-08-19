@@ -200,3 +200,11 @@ async def cmd_warn(message: types.Message, chat: Chat):
     )
     await message.reply(text)
 
+
+@dp.message_handler(commands="info", commands_prefix='!', is_reply=True)
+async def get_info_about_user(message: types.Message, chat: Chat):
+    info = await get_user_info(await User.get_or_create_from_tg_user(message.reply_to_message.from_user), chat)
+    try:
+        await bot.send_message(message.from_user.id, "\n".join(info), disable_web_page_preview=True)
+    except Unauthorized:
+        await message.reply("Напишите мне в личку /start и повторите команду.")
