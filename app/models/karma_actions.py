@@ -26,12 +26,11 @@ class KarmaEvent(Model):
     class Meta:
         table = 'karma_events'
 
-    def __str__(self):
+    def __repr__(self):
         return (
             f"KarmaEvent {self.id_} from user {self.user_from.id} to {self.user_to.id}, "
             f"date {self.date}, change {self.how_change}"
         )
-    __repr__ = __str__
 
     @classmethod
     async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
@@ -41,7 +40,13 @@ class KarmaEvent(Model):
         ).order_by('-date').limit(limit).prefetch_related("user_from").all()
 
     def format_event(self):
-        return (
+        rez = (
             f"{self.date.date().strftime(config.DATE_FORMAT)} "
-            f"{self.user_from.mention_no_link} изменил карму на {self.how_change:.0%} своей силы. "
-        ) + (f"\"{self.comment}\"" if self.comment is not None else "")
+            f"{self.user_from.mention_no_link} изменил карму на "
+            f"{self.how_match_change:.2} ({self.how_change:.0%} своей силы.) "
+        )
+        if self.comment:
+            rez += f'"{self.comment}"'
+        return rez
+
+    __str__ = format_event
