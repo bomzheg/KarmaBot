@@ -1,9 +1,10 @@
 import typing
+from contextlib import suppress
 from datetime import timedelta
 
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import Command
-from aiogram.utils.exceptions import BadRequest, Unauthorized
+from aiogram.utils.exceptions import BadRequest, Unauthorized, MessageCantBeDeleted, MessageToDeleteNotFound
 from aiogram.utils.markdown import hide_link, quote_html
 from loguru import logger
 
@@ -214,4 +215,5 @@ async def get_info_about_user(message: types.Message, chat: Chat):
     except Unauthorized:
         await message.reply("Напишите мне в личку /start и повторите команду.")
     finally:
-        await message.delete()
+        with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
+            await message.delete()

@@ -27,12 +27,11 @@ class ModeratorEvent(Model):
     class Meta:
         table = 'moderator_events'
 
-    def __str__(self):
+    def __repr__(self):
         return (
             f"KarmaEvent {self.id_} from moderator {self.moderator.id} to {self.user.id}, date {self.date}, "
             f"type_restriction {self.type_restriction} timedelta_restriction {self.timedelta_restriction}"
         )
-    __repr__ = __str__
 
     @classmethod
     async def save_new_action(
@@ -71,3 +70,5 @@ class ModeratorEvent(Model):
         if self.comment:
             rez += f" \"{self.comment}\""
         return rez
+
+    __str__ = format_event
