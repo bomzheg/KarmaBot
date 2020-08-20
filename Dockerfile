@@ -10,9 +10,10 @@ RUN apt update -y \
     && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 VOLUME /log
-VOLUME /karma.db
-VOLUME /approve.json
+VOLUME /db_data
+VOLUME /jsons
 WORKDIR "."
 EXPOSE 3000
-COPY . .
+COPY initialize.py initialize.py
+COPY app app
 ENTRYPOINT ["python3", "-m", "app"]

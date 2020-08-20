@@ -10,12 +10,13 @@ services:
       - type: "mount"
         source: "/home/bomzheg/log/karmabot/"
         target: "/log"
-      - type: "bind"
-        source: "/home/bomzheg/sqlite/karma.db"
-        target: "/karma.db"
-      - type: "bind"
+      - type: "mount"
+        source: "/home/bomzheg/sqlite/db_data"
+        target: "/db_data"
+
+      - type: "mount"
         source: problems
-        target: "/approve.json"
+        target: "/jsons"
     env_file: .env
     networks:
       - reverse-proxy
