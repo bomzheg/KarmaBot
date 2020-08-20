@@ -14,6 +14,6 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         chat=chat,
         how_change=how_change,
         how_match_change=power*abs(how_change),
-        coment=comment
+        comment=comment
     ).save()
     return uk, power

@@ -13,7 +13,8 @@ async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
         "Я бот для подсчёта кармы в группе, просто добавьте меня "
-        "в группу и плюсуйте друг другу в карму"
+        "в группу и плюсуйте друг другу в карму. "
+        "Справка по !help"
     )
 
 
@@ -24,11 +25,11 @@ async def cmd_help(message: types.Message):
     await message.reply(
         (
             'Плюсануть в карму можно начав сообщение с "{plus}". '
-            'Минусануть:  "{minus}".\n'
+            'Минусануть - написав первой строкой что-то из "{minus}".\n'
             'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
             'или упомянуть его через @ (работает даже если у пользователя нет username).\n'
             '!top - топ юзеров по карме\n'
-            '!about - информция о боте\n'
+            '!about - информция о боте (в том числе исходные коды)\n'
             '!me - посмотреть свою карму\n'
         ).format(plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]), minus='", "'.join([*MINUS, *MINUS_EMOJI]))
     )

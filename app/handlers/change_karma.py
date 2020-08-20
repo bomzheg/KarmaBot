@@ -47,7 +47,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             target_user=target_user,
             chat=chat,
             user=user,
-            how_change=karma['karma_change']
+            how_change=karma['karma_change'],
+            comment=karma['comment']
         )
     except SubZeroKarma:
         logger.info("user {user} try to change karma but have negative karma", user=user.tg_id)

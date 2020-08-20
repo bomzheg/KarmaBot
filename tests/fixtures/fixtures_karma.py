@@ -4,6 +4,8 @@ from string import ascii_letters
 
 from aiogram import types
 
+from app.filters.karma_change import PLUS_EMOJI, MINUS_EMOJI
+
 SPACES = (" ", "\t", "\n", "\r")
 
 
@@ -52,7 +54,7 @@ def get_message_with_mention(author_user: dict, target_user: dict, text_precurso
     text_precursors[-1] = text_precursors[-1][:offset] + f" {username} " + text_precursors[-1][offset:]
     msg_text = "".join(text_precursors)
     start_entity_pos = sum((len(part) for part in text_precursors[:-1])) + offset
-    if text_precursors[0] == "👍":
+    if text_precursors[0] in PLUS_EMOJI | MINUS_EMOJI:
         start_entity_pos += 1  # ебучий костыль, задрало меня считать в разных кодировках
     return types.Message(**{
         'from': author_user,

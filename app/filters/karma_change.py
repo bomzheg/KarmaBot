@@ -20,7 +20,7 @@ class KarmaFilter(BoundFilter):
     karma_change: bool
 
     async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, int]]:
-        karma_change = get_karma_trigger(message.text or message.sticker.emoji or "")
+        karma_change, comment = get_karma_trigger(message.text or message.sticker.emoji or "")
         if karma_change is None:
             return {}
         target_user = get_target_user(message)
@@ -28,27 +28,39 @@ class KarmaFilter(BoundFilter):
             return {}
         if target_user.is_bot:
             return {}
-        rez = {'karma': {'user': target_user, 'karma_change': karma_change}}
+        rez = {'karma': {'user': target_user, 'karma_change': karma_change, 'comment': comment}}
         return rez
 
 
-def get_karma_trigger(text: str) -> typing.Optional[int]:
+def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[int], str]:
     """
-    if contain trigger + karma return +1
-    if contain trigger - karma return -1
-    if contain no karma trigger return None
+    :return: tuple (how_change, comment)
+        how_change:
+            if contain trigger + karma +1
+            if contain trigger - karma -1
+            if contain no karma trigger None
+        comment: all text after trigger
     :param text:
-    :return:
     """
-    if has_plus_karma(get_first_word(text)):
-        return +1
-    if has_minus_karma(get_first_line(text)):
-        return -1
-    return None
+    possible_trigger, comment = get_first_word(text)
+    if has_plus_karma(possible_trigger):
+        return +1, comment
+    possible_trigger, comment = get_first_line(text)
+    if has_minus_karma(possible_trigger):
+        return -1, comment
+    return None, ""
 
 
-def get_first_word(text: str) -> str:
-    return text.split(maxsplit=1)[0].lower().rstrip(PUNCTUATIONS)
+def get_first_word(text: str) -> typing.Tuple[str, str]:
+    args = text.split(maxsplit=1)
+
+    possible_trigger = args[0]
+    if len(args) > 1:
+        comment = args[1].splitlines()
+    else:
+        comment = []
+
+    return possible_trigger.lower().rstrip(PUNCTUATIONS), " ".join(comment)
 
 
 def has_plus_karma(word: str) -> bool:
@@ -63,8 +75,15 @@ def has_minus_karma(text: str) -> bool:
     return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
 
 
-def get_first_line(text: str) -> str:
-    return text.splitlines()[0]
+def get_first_line(text: str) -> typing.Tuple[str, str]:
+    args = text.splitlines()
+
+    possible_trigger = args[0]
+    if len(args) > 1:
+        comment = args[1:]
+    else:
+        comment = []
+    return possible_trigger, " ".join(comment)
 
 
 def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
