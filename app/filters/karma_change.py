@@ -107,19 +107,30 @@ def get_target_user(message: types.Message) -> typing.Optional[types.user.User]:
 
 def has_target_user(target_user: types.User, author_user: types.User):
     """
-
     :return: True if target_user exist, not is author and not bot
     """
-
-    def is_one_user(user_1: types.User, user_2: types.User):
-        return (user_1.id is not None and user_1.id == user_2.id) \
-               or user_1.username is not None and user_1.username == user_2.username
-
     return target_user is not None \
         and not is_one_user(author_user, target_user) \
         and not target_user.is_bot
     #   and not is_bot_username(target_user.username)
     # don't check is_bot_username because user can have username like @user_bot
+
+
+def is_one_user(user_1: types.User, user_2: types.User):
+    if all([
+        user_1.id is not None,
+        user_2.id is not None,
+        user_1.id == user_2.id,
+    ]):
+        return True
+    if all([
+        user_1.username is not None,
+        user_2.username is not None,
+        user_1.username == user_2.username,
+    ]):
+        return True
+
+    return False
 
 
 def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:

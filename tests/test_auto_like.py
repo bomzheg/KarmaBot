@@ -1,5 +1,6 @@
 import typing
 
+
 from .common import plus_texts, minus_texts, punctuations, filter_check
 from .fixtures import get_from_user, generate_phrases_next_word, get_message_with_reply, \
     get_message_with_text_mention, get_message_with_mention, get_next_word_parts
@@ -26,8 +27,9 @@ def test_plus_mention():
 
 
 def check_plus_mention(user: dict, text_precursors: typing.List[str]):
-    filter_rez = filter_check(get_message_with_mention(user, user, text_precursors))
-    assert filter_rez == {}
+    msg = get_message_with_mention(user, user, text_precursors)
+    filter_rez = filter_check(msg)
+    assert filter_rez == {}, f"msg text {{{msg.text}}} user: {{{user}}}"
 
 
 def test_plus_text_mention():
