@@ -1,6 +1,11 @@
 import typing
 
 from aiogram import types
+from pyrogram.errors import UsernameNotOccupied
+
+from app.models import User
+from app.services.user_getter import UserGetter
+from app.utils.exceptions import UserWithoutUserIdError
 
 
 def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> typing.Optional[types.user.User]:
@@ -82,3 +87,19 @@ def is_bot_username(username: str):
     this function deprecated. user can use username like @alice_bot and it don't say that it is bot
     """
     return username is not None and username[-3:] == "bot"
+
+
+async def get_db_user_by_tg_user(target: types.User) -> User:
+    try:
+        target_user = await User.get_or_create_from_tg_user(target)
+    # in target can be user with only username
+    except UserWithoutUserIdError as e:
+        try:
+            async with UserGetter() as user_getter:
+                tg_user = await user_getter.get_user_by_username(target.username)
+
+            target_user = await User.get_or_create_from_tg_user(tg_user)
+        # that username can be not valid
+        except (UsernameNotOccupied, IndexError):
+            raise e
+    return target_user

@@ -9,7 +9,6 @@ from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
 from app import config
 from app.services.restrictor import RestrictCall
-from app.models import User as DBUser
 
 SLEEP_TIME = 100
 
@@ -80,13 +79,6 @@ class UserGetter:
             username=user.username,
             language_code=user.language_code,
         )
-
-    @classmethod
-    async def get_db_user_by_username(cls, username: str) -> DBUser:
-        async with cls() as user_getter:
-            tg_user = await user_getter.get_user_by_username(username)
-
-        return await DBUser.get_or_create_from_tg_user(tg_user)
 
     @staticmethod
     def get_user_dict_for_log(user: pyrogram.User) -> dict:
