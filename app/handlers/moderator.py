@@ -3,7 +3,6 @@ from contextlib import suppress
 from datetime import timedelta
 
 from aiogram import types
-from aiogram.dispatcher.filters.builtin import Command
 from aiogram.utils.exceptions import BadRequest, Unauthorized, MessageCantBeDeleted, MessageToDeleteNotFound
 from aiogram.utils.markdown import hide_link, quote_html
 from loguru import logger
@@ -17,17 +16,12 @@ FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
 
 
-async def report_filter(message: types.Message):
-    if not types.ChatType.is_group_or_super_group(message):
-        return False
-    if not message.reply_to_message:
-        return False
-    if await Command(commands=['report', 'admin'], prefixes='/!@').check(message):
-        return True
-    return False
-
-
-@dp.message_handler(report_filter)
+@dp.message_handler(
+    types.ChatType.is_group_or_super_group,
+    is_reply=True,
+    commands=['report', 'admin'],
+    commands_prefix="/!@",
+)
 @dp.throttled(rate=5)
 async def report(message: types.Message):
     logger.info("user {user} report for message {message}", user=message.from_user.id, message=message.message_id)
@@ -40,7 +34,6 @@ async def get_mentions_admins(chat: types.Chat):
     admins = await chat.get_administrators()
     admins_mention = ""
     for admin in admins:
-        logger.debug(admin.as_json())
         if admin.user.is_bot:
             continue
         if need_notify_admin(admin):
@@ -209,7 +202,7 @@ async def get_info_about_user(message: types.Message, chat: Chat):
     try:
         await bot.send_message(
             message.from_user.id,
-            f"Данные на {target_user.mention_link}:\n" + "\n".join(info),
+            f"Данные на {target_user.mention_link} ({await target_user.get_karma(chat)}):\n" + "\n".join(info),
             disable_web_page_preview=True
         )
     except Unauthorized:

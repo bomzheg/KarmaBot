@@ -11,7 +11,11 @@ class LockFactory:
     def get_lock(self, id_: typing.Any):
         if self._locks is None:
             self._locks = {}
+
+            # Это костыль, по хорошему эта таска должна создаваться в ините,
+            # для этого милваря должна создаваться после бота и диспетчера
             asyncio.create_task(self._check_and_clear())
+
         return self._locks.setdefault(id_, asyncio.Lock())
 
     def clear(self):
@@ -22,10 +26,10 @@ class LockFactory:
     def clear_free(self):
         if self._locks is None:
             return
-        for key, lock in self._locks.items():
-            if not lock.locked():
-                self._locks.pop(key)
-                logger.debug("remove lock for {key}", key=key)
+        to_remove = [key for key, lock in self._locks.items() if not lock.locked()]
+        for key in to_remove:
+            del self._locks[key]
+            logger.debug("remove lock for {key}", key=key)
 
     async def _check_and_clear(self, cool_down: int = 1800):
         while True:

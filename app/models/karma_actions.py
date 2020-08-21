@@ -43,7 +43,7 @@ class KarmaEvent(Model):
         rez = (
             f"{self.date.date().strftime(config.DATE_FORMAT)} "
             f"{self.user_from.mention_no_link} изменил карму на "
-            f"{self.how_match_change:.2} ({self.how_change:.0%} своей силы.) "
+            f"{self.how_match_change:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
             rez += f'"{self.comment}"'

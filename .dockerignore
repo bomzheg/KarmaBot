@@ -8,3 +8,8 @@ __pycache__
 docker-compose*.yml
 Dockerfile
 *.service
+*.db
+*.db*
+docs/
+jsons/
+log/
