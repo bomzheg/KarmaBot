@@ -37,6 +37,10 @@ class SubZeroKarma(KarmaError):
     pass
 
 
+class AutoLike(KarmaError):
+    pass
+
+
 class CantImportFromAxenia(KarmaError):
     pass
 

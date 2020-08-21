@@ -12,6 +12,8 @@ from app.utils.timedelta_functions import parse_timedelta_from_text, format_time
 from app.utils.exceptions import TimedeltaParseError
 from app.models import ModeratorEvent, Chat, User
 from app.services.user_info import get_user_info
+from app.services.find_target_user import get_db_user_by_tg_user
+
 FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
 
@@ -55,31 +57,36 @@ def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
     return duration_text, " ".join(args[1:])
 
 
+def get_duration(text: str):
+    duration_text, comment = get_moderator_message_args(text)
+    if duration_text:
+        duration = parse_timedelta_from_text(duration_text)
+    else:
+        duration = DEFAULT_DURATION
+    return duration, comment
+
+
 @dp.message_handler(
     commands=["ro", "mute"],
     commands_prefix="!",
-    is_reply=True,
+    has_target=True,
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ro(message: types.Message, chat: Chat):
-    duration_text, comment = get_moderator_message_args(message.text)
-    if duration_text:
-        try:
-            duration = parse_timedelta_from_text(duration_text)
-        except TimedeltaParseError as e:
-            return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
-    else:
-        duration = DEFAULT_DURATION
+async def cmd_ro(message: types.Message, chat: Chat, user: User, target: types.User):
+    try:
+        duration, comment = get_duration(message.text)
+    except TimedeltaParseError as e:
+        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
+
+    target_user = await get_db_user_by_tg_user(target)
 
     try:
-        await message.chat.restrict(
-            message.reply_to_message.from_user.id, can_send_messages=False, until_date=duration
-        )
+        await message.chat.restrict(target_user.tg_id, can_send_messages=False, until_date=duration)
         logger.info(
             "User {user} restricted by {admin} for {duration}",
-            user=message.reply_to_message.from_user.id,
-            admin=message.from_user.id,
+            user=target_user.tg_id,
+            admin=user.tg_id,
             duration=duration,
         )
     except BadRequest as e:
@@ -87,8 +94,8 @@ async def cmd_ro(message: types.Message, chat: Chat):
         return False
     else:
         await ModeratorEvent.save_new_action(
-            moderator=message.from_user,
-            user=message.reply_to_message.from_user,
+            moderator=user,
+            user=target_user,
             chat=chat,
             type_restriction="ro",
             duration=duration,
@@ -97,7 +104,7 @@ async def cmd_ro(message: types.Message, chat: Chat):
 
     await message.reply(
         "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
-            user=message.reply_to_message.from_user.get_mention(),
+            user=target_user.mention_link,
             duration=format_timedelta(duration),
         )
     )
@@ -106,26 +113,24 @@ async def cmd_ro(message: types.Message, chat: Chat):
 @dp.message_handler(
     commands=["ban"],
     commands_prefix="!",
-    is_reply=True,
+    has_target=True,
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ban(message: types.Message, chat: Chat):
-    duration_text, comment = get_moderator_message_args(message.text)
-    if duration_text:
-        try:
-            duration = parse_timedelta_from_text(duration_text)
-        except TimedeltaParseError as e:
-            return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
-    else:
-        duration = DEFAULT_DURATION
+async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.User):
+    try:
+        duration, comment = get_duration(message.text)
+    except TimedeltaParseError as e:
+        return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
+
+    target_user = await get_db_user_by_tg_user(target)
 
     try:
-        await message.chat.kick(message.reply_to_message.from_user.id, until_date=duration)
+        await message.chat.kick(target_user.tg_id, until_date=duration)
         logger.info(
             "User {user} kicked by {admin} for {duration}",
-            user=message.reply_to_message.from_user.id,
-            admin=message.from_user.id,
+            user=target_user.tg_id,
+            admin=user.tg_id,
             duration=duration,
         )
     except BadRequest as e:
@@ -133,8 +138,8 @@ async def cmd_ban(message: types.Message, chat: Chat):
         return False
     else:
         await ModeratorEvent.save_new_action(
-            moderator=message.from_user,
-            user=message.reply_to_message.from_user,
+            moderator=user,
+            user=target_user,
             chat=chat,
             type_restriction="ban",
             duration=duration,
@@ -142,7 +147,7 @@ async def cmd_ban(message: types.Message, chat: Chat):
         )
 
     text = "Пользователь {user} попал в бан этого чата.".format(
-            user=message.reply_to_message.from_user.get_mention(),
+            user=target_user.mention_link,
         )
     if duration < FOREVER_DURATION:
         text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
@@ -150,54 +155,36 @@ async def cmd_ban(message: types.Message, chat: Chat):
 
 
 @dp.message_handler(
-    commands=["ro", "mute", "ban"],
-    commands_prefix="!",
-    is_reply=True,
-    user_can_restrict_members=True,
-)
-async def cmd_ro_bot_not_admin(message: types.Message):
-    await message.reply("Чтобы я выполнял функции модератора, дайте мне соотвествующие права")
-
-
-@dp.message_handler(
-    commands=["ro", "mute", "ban"],
-    commands_prefix="!",
-    bot_can_delete_messages=True,
-)
-async def cmd_ro_bot_not_admin(message: types.Message):
-    await message.delete()
-
-
-@dp.message_handler(
     commands=["w", "warn"],
     commands_prefix="!",
-    is_reply=True,
+    has_target=True,
     user_can_restrict_members=True,
 )
-async def cmd_warn(message: types.Message, chat: Chat):
+async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user: User):
     args = message.text.split(maxsplit=1)
     if len(args) == 1:
         comment = ""
     else:
         comment = args[1]
+    target_user = await get_db_user_by_tg_user(target)
 
     await ModeratorEvent.save_new_action(
-        moderator=message.from_user,
-        user=message.reply_to_message.from_user,
+        moderator=user,
+        user=target_user,
         chat=chat,
         type_restriction="warn",
         comment=comment
     )
 
     text = "Пользователь {user} получил официальное предупреждение от модератора".format(
-        user=message.reply_to_message.from_user.get_mention(),
+        user=target_user.mention_link,
     )
     await message.reply(text)
 
 
-@dp.message_handler(commands="info", commands_prefix='!', is_reply=True)
-async def get_info_about_user(message: types.Message, chat: Chat):
-    target_user = await User.get_or_create_from_tg_user(message.reply_to_message.from_user)
+@dp.message_handler(commands="info", commands_prefix='!', has_target=dict(can_be_same=True))
+async def get_info_about_user(message: types.Message, chat: Chat, target: types.User):
+    target_user = await get_db_user_by_tg_user(target)
     info = await get_user_info(target_user, chat)
     try:
         await bot.send_message(
@@ -210,3 +197,25 @@ async def get_info_about_user(message: types.Message, chat: Chat):
     finally:
         with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
             await message.delete()
+
+
+@dp.message_handler(
+    commands=["ro", "mute", "ban"],
+    commands_prefix="!",
+    has_target=True,
+    user_can_restrict_members=True,
+)
+async def cmd_ro_bot_not_admin(message: types.Message):
+    """бот без прав модератора"""
+    await message.reply("Чтобы я выполнял функции модератора, дайте мне соотвествующие права")
+
+
+@dp.message_handler(
+    commands=["ro", "mute", "ban", "warn"],
+    commands_prefix="!",
+    bot_can_delete_messages=True,
+)
+async def cmd_ro_bot_not_admin(message: types.Message):
+    """юзер без прав модератора"""
+    with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
+        await message.delete()

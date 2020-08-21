@@ -1,6 +1,6 @@
 import typing
 
-from .common import PLUS_TRIGGERS, MINUS, punctuations, filter_check
+from .common import PLUS_TRIGGERS, MINUS, punctuations, filter_check, SPACES
 from .fixtures import (get_from_user, wrong_generate_phrases_next_word, get_message_with_reply,
                        get_message_with_text_mention, generate_phrases_next_word, get_wrong_next_word_parts)
 
@@ -14,8 +14,9 @@ def test_plus_reply():
 
 
 def check_plus_reply(author_user: dict, target_user: dict, text_with_plus_trigger: str):
-    filter_rez = filter_check(get_message_with_reply(author_user, target_user, text_with_plus_trigger))
-    assert filter_rez == {}
+    msg = get_message_with_reply(author_user, target_user, text_with_plus_trigger)
+    filter_rez = filter_check(msg)
+    assert filter_rez == {}, f"что-то не ок с {msg}"
 
 
 def test_minus_reply():
@@ -23,15 +24,16 @@ def test_minus_reply():
     author_user = get_from_user(36, "Rajesh")
 
     for text in MINUS:
-        for phrase in generate_phrases_next_word(text, punctuations):
+        for phrase in generate_phrases_next_word(text, punctuations, (" ", "\t")):
             check_plus_reply(author_user, target_user, phrase)
         for phrase in wrong_generate_phrases_next_word(text, punctuations):
             check_minus_reply(author_user, target_user, phrase)
 
 
 def check_minus_reply(author_user: dict, target_user: dict, text_with_minus_trigger: str):
-    filter_rez = filter_check(get_message_with_reply(author_user, target_user, text_with_minus_trigger))
-    assert filter_rez == {}
+    msg = get_message_with_reply(author_user, target_user, text_with_minus_trigger)
+    filter_rez = filter_check(msg)
+    assert filter_rez == {}, str(msg)
 
 
 def test_plus_text_mention():

@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from aiogram import types
 from tortoise import fields
 from tortoise.models import Model
 
@@ -36,16 +35,16 @@ class ModeratorEvent(Model):
     @classmethod
     async def save_new_action(
             cls,
-            moderator: types.User,
-            user: types.User,
+            moderator: User,
+            user: User,
             chat: Chat,
             type_restriction: str,
             duration: timedelta = None,
             comment: str = ""
     ):
         await ModeratorEvent(
-            moderator=await User.get_or_create_from_tg_user(moderator),
-            user=await User.get_or_create_from_tg_user(user),
+            moderator=moderator,
+            user=user,
             chat=chat,
             type_restriction=type_restriction,
             timedelta_restriction=duration,
