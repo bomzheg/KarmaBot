@@ -7,6 +7,7 @@ def setup(dispatcher: Dispatcher):
     from .superuser import IsSuperuserFilter
     from .karma_change import KarmaFilter
     from .tg_permissions import BotHasPermissions, HasPermissions
+    from .has_target import HasTargetFilter
 
     text_messages = [
         dispatcher.message_handlers,
@@ -18,3 +19,4 @@ def setup(dispatcher: Dispatcher):
     dispatcher.filters_factory.bind(IsSuperuserFilter, event_handlers=text_messages)
     dispatcher.filters_factory.bind(BotHasPermissions, event_handlers=text_messages)
     dispatcher.filters_factory.bind(HasPermissions, event_handlers=text_messages)
+    dispatcher.filters_factory.bind(HasTargetFilter, event_handlers=text_messages)

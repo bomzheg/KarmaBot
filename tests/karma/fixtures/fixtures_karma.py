@@ -6,24 +6,36 @@ from aiogram import types
 
 from app.filters.karma_change import PLUS_EMOJI, MINUS_EMOJI
 
-SPACES = (" ", "\t", "\n", "\r")
 
-
-def get_next_word_parts(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[typing.List[str]]:
+def get_next_word_parts(
+        first_word: str,
+        punctuations: typing.Iterable[str],
+        spaces: typing.Iterable[str]
+) -> typing.List[typing.List[str]]:
+    """
+    собрать список из списков [first_word, знак препинания, пробельный символ, сгенерированные следующее слово]
+    """
     rez = []
     for punctuation in punctuations:
-        for space in SPACES:
+        for space in spaces:
             for count in (0, 1, 2, 5, 20):
                 rez.append([first_word, punctuation, space, get_next_words(count)])
     return rez
 
 
-def generate_phrases_next_word(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[str]:
-    precursors_lists = get_next_word_parts(first_word, punctuations)
+def generate_phrases_next_word(
+        first_word: str,
+        punctuations: typing.Iterable[str],
+        spaces: typing.Iterable[str]
+) -> typing.List[str]:
+    precursors_lists = get_next_word_parts(first_word, punctuations, spaces)
     return ["".join(precursors_list) for precursors_list in precursors_lists]
 
 
 def get_wrong_next_word_parts(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[typing.List[str]]:
+    """
+    собрать список из списков [first_word, знак препинания, "", сгенерированные следующее слово]
+    """
     rez = []
     for punctuation in punctuations:
         for count in (1, 2, 5, 20):

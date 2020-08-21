@@ -1,4 +1,5 @@
 from aiogram import types
+from aiogram.types import ContentType
 from aiogram.utils.markdown import hbold
 from loguru import logger
 from pyrogram.errors import UsernameNotOccupied
@@ -24,15 +25,15 @@ async def to_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
-@dp.message_handler(karma_change=True, content_types=[types.ContentType.STICKER, types.ContentType.TEXT])
+@dp.message_handler(karma_change=True, has_target=True, content_types=[ContentType.STICKER, ContentType.TEXT])
 @dp.throttled(to_fast_change_karma, rate=30)
-async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat):
+async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: types.User):
     try:
-        target_user = await User.get_or_create_from_tg_user(karma['user'])
+        target_user = await User.get_or_create_from_tg_user(target)
     # in karma['user'] can be user with only username
     except UserWithoutUserIdError as e:
         try:
-            target_user = await UserGetter.get_db_user_by_username(karma['user'].username)
+            target_user = await UserGetter.get_db_user_by_username(target.username)
         # that username can be not valid
         except (UsernameNotOccupied, IndexError):
             e.user_id = user.tg_id
