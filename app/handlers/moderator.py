@@ -202,7 +202,7 @@ async def get_info_about_user(message: types.Message, chat: Chat):
     try:
         await bot.send_message(
             message.from_user.id,
-            f"Данные на {target_user.mention_link}:\n" + "\n".join(info),
+            f"Данные на {target_user.mention_link} ({await target_user.get_karma(chat)}):\n" + "\n".join(info),
             disable_web_page_preview=True
         )
     except Unauthorized:
