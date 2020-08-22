@@ -19,6 +19,8 @@ PLUS_EMOJI = frozenset({"👍", })
 MINUS = frozenset({'-', })
 MINUS_EMOJI = frozenset({'👎', })
 
+TIME_TO_CANCEL_ACTIONS = 60
+
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
     "This program is a Python 3+ script. The script launches a bot in Telegram,"
@@ -33,9 +35,6 @@ TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
 now_token: str  # in that variable setting token, that be used in this instance of bot
 secret_str = secrets.token_urlsafe(16)  # for webhook path
 
-CAPTURE_STD_ERR = False
-
-ERR_LOG = "err.log"
 PRINT_LOG = "print.log"
 
 BOMZHEG_ID = 46866565

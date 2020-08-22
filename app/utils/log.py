@@ -1,9 +1,8 @@
 import pathlib
-import sys
 
 from loguru import logger
 
-from app.config import PRINT_LOG, ERR_LOG, CAPTURE_STD_ERR
+from app.config import PRINT_LOG
 from app.misc import app_dir
 
 log_path = pathlib.Path(app_dir / 'log')
@@ -11,12 +10,10 @@ log_path.mkdir(parents=True, exist_ok=True)
 
 
 def setup():
-    if CAPTURE_STD_ERR:
-        sys.stderr = open(log_path / ERR_LOG, 'a')
     logger.add(
         sink=log_path / PRINT_LOG,
         format='{time} - {name} - {level} - {message}',
-        level="DEBUG",
+        level="INFO",
         encoding='utf-8',
     )
     logger.info("Program started")
