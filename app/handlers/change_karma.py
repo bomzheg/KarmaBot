@@ -6,7 +6,6 @@ from aiogram import types
 from aiogram.types import ContentType
 from aiogram.utils.exceptions import MessageToEditNotFound, MessageCantBeEdited
 from aiogram.utils.markdown import hbold
-from loguru import logger
 
 from app.misc import dp
 from app import config
@@ -41,7 +40,6 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             comment=karma['comment']
         )
     except SubZeroKarma:
-        logger.info("user {user} try to change karma but have negative karma", user=user.tg_id)
         return await message.reply("У Вас слишком мало кармы для этого")
 
     msg = await message.reply(

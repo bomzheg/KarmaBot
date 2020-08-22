@@ -1,5 +1,6 @@
 from math import sqrt
 
+from loguru import logger
 from tortoise import fields
 from tortoise.models import Model
 
@@ -39,6 +40,7 @@ class UserKarma(Model):
         await self.fetch_related('chat')
         power = await self.get_power(user_changed, self.chat)
         if power < 0.01:
+            logger.info("user {user} try to change karma but have negative karma", user=user_changed.tg_id)
             raise SubZeroKarma(
                 "User have to small karma",
                 user_id=user_changed.id,

@@ -89,11 +89,9 @@ class Chat(Model):
     # noinspection PyUnresolvedReferences
     async def get_neighbours(self, user) -> typing.Tuple["UserKarma", "UserKarma", "UserKarma"]:
         prev_id, next_id = await get_neighbours_id(self.chat_id, user.id)
-        logger.debug(f"{prev_id}, {next_id}")
         uk = await self.user_karma.filter(
             user_id__in=(prev_id, user.id, next_id)
         ).prefetch_related("user").order_by("-karma").all()
-        logger.debug(uk)
         return uk[0], uk[1], uk[2]
 
 
