@@ -40,7 +40,7 @@ def get_link_by_chat_id(chat_id: int) -> str:
 
 
 async def axenia_raiting(chat_id):
-    logger.debug(f"import from {chat_id}")
+    logger.info("load axenia karmas for chat {chat}", chat=chat_id)
     return list(
         parse_rating(
             await get_html(

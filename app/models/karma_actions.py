@@ -18,8 +18,9 @@ class KarmaEvent(Model):
     how_change = fields.FloatField(
         description="how match change karma in percent of possible power"
     )
-    how_match_change = fields.FloatField(
-        description="how match user_from change karma user_to in absolute"
+    how_change_absolute = fields.FloatField(
+        description="how match user_from change karma user_to in absolute",
+        source_field="how_match_change"
     )
     comment = fields.TextField(null=True)
 
@@ -43,7 +44,7 @@ class KarmaEvent(Model):
         rez = (
             f"{self.date.date().strftime(config.DATE_FORMAT)} "
             f"{self.user_from.mention_no_link} изменил карму на "
-            f"{self.how_match_change:.2f} ({self.how_change:.0%} своей силы.) "
+            f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
             rez += f'"{self.comment}"'
