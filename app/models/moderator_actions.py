@@ -42,14 +42,16 @@ class ModeratorEvent(Model):
             duration: timedelta = None,
             comment: str = ""
     ):
-        await ModeratorEvent(
+        moderator_event = ModeratorEvent(
             moderator=moderator,
             user=user,
             chat=chat,
             type_restriction=type_restriction,
             timedelta_restriction=duration,
             comment=comment
-        ).save()
+        )
+        await moderator_event.save()
+        return moderator_event
 
     @classmethod
     async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
