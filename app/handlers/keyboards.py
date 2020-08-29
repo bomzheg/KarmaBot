@@ -8,5 +8,5 @@ cb_karma_cancel = CallbackData("karma_cancel", "user_id", "action_id")
 
 def get_kb_karma_cancel(user: User, action: KarmaEvent) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
-        "Отменить назначение кармы", callback_data=cb_karma_cancel.new(user_id=user.tg_id, action_id=action.id_)
+        "Отменить", callback_data=cb_karma_cancel.new(user_id=user.tg_id, action_id=action.id_)
     )]])

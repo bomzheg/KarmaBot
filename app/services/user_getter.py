@@ -8,7 +8,7 @@ from pyrogram import Client
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
 from app import config
-from app.services.restrictor import RestrictCall
+from app.services.restrict_call import RestrictCall
 
 SLEEP_TIME = 100
 

@@ -67,6 +67,8 @@ def has_plus_karma(word: str) -> bool:
 
 
 def has_minus_karma(text: str) -> bool:
+    if len(text) == 0:
+        return False
     return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
 
 

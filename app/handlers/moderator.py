@@ -13,6 +13,7 @@ from app.utils.exceptions import TimedeltaParseError
 from app.models import ModeratorEvent, Chat, User
 from app.services.user_info import get_user_info
 from app.services.find_target_user import get_db_user_by_tg_user
+from app.services.moderation import cancel_warn, warn_user
 
 FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
@@ -48,7 +49,7 @@ def need_notify_admin(admin: types.ChatMember):
 
 
 def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
-    _, *args = text.split(maxsplit=2)  # in text: command_duration_comments
+    _, *args = text.split(maxsplit=2)  # in text: command_duration_comments like: "!ro 13d don't flood"
     if not args:
         return "", ""
     duration_text = args[0]
@@ -162,17 +163,13 @@ async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.
 )
 async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user: User):
     args = message.text.split(maxsplit=1)
-    if len(args) == 1:
-        comment = ""
-    else:
-        comment = args[1]
+    comment = args[1] if len(args) > 1 else ""
     target_user = await get_db_user_by_tg_user(target)
 
-    await ModeratorEvent.save_new_action(
+    moderator_event = await warn_user(
         moderator=user,
-        user=target_user,
+        target_user=target_user,
         chat=chat,
-        type_restriction="warn",
         comment=comment
     )
 
@@ -186,17 +183,20 @@ async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user:
 async def get_info_about_user(message: types.Message, chat: Chat, target: types.User):
     target_user = await get_db_user_by_tg_user(target)
     info = await get_user_info(target_user, chat)
+    target_karma = await target_user.get_karma(chat)
+    if target_karma is None:
+        target_karma = "пока не имеет кармы"
+    information = f"Данные на {target_user.mention_link} ({target_karma}):\n" + "\n".join(info)
     try:
         await bot.send_message(
             message.from_user.id,
-            f"Данные на {target_user.mention_link} ({await target_user.get_karma(chat)}):\n" + "\n".join(info),
+            information,
             disable_web_page_preview=True
         )
     except Unauthorized:
         await message.reply("Напишите мне в личку /start и повторите команду.")
     finally:
-        with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
-            await message.delete()
+        await delete_message(message)
 
 
 @dp.message_handler(
@@ -217,5 +217,4 @@ async def cmd_ro_bot_not_admin(message: types.Message):
 )
 async def cmd_ro_bot_not_admin(message: types.Message):
     """юзер без прав модератора"""
-    with suppress(MessageCantBeDeleted, MessageToDeleteNotFound):
-        await message.delete()
+    await delete_message(message)

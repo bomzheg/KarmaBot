@@ -1,24 +1,22 @@
 import asyncio
 import typing
-from contextlib import suppress
 
 from aiogram import types
 from aiogram.types import ContentType
-from aiogram.utils.exceptions import MessageToEditNotFound, MessageCantBeEdited
 from aiogram.utils.markdown import hbold
 
 from app.misc import dp
 from app import config
-from app.models.chat import Chat
-from app.models.user import User
+from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
 from app.utils.exceptions import SubZeroKarma
 from app.services.find_target_user import get_db_user_by_tg_user
+from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
 
 how_change = {
     +1: 'увеличили',
-    -1: 'уменьшили'
+    -1: 'уменьшили',
 }
 
 
@@ -52,13 +50,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)
     )
-    asyncio.create_task(remove_kb_after_sleep(msg))
-
-
-async def remove_kb_after_sleep(message: types.Message):
-    await asyncio.sleep(config.TIME_TO_CANCEL_ACTIONS)
-    with suppress(MessageToEditNotFound, MessageCantBeEdited):
-        await message.edit_reply_markup()
+    asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
 
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())
