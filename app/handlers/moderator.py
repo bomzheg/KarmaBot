@@ -183,10 +183,14 @@ async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user:
 async def get_info_about_user(message: types.Message, chat: Chat, target: types.User):
     target_user = await get_db_user_by_tg_user(target)
     info = await get_user_info(target_user, chat)
+    target_karma = await target_user.get_karma(chat)
+    if target_karma is None:
+        target_karma = "пока не имеет кармы"
+    information = f"Данные на {target_user.mention_link} ({target_karma}):\n" + "\n".join(info)
     try:
         await bot.send_message(
             message.from_user.id,
-            f"Данные на {target_user.mention_link} ({await target_user.get_karma(chat)}):\n" + "\n".join(info),
+            information,
             disable_web_page_preview=True
         )
     except Unauthorized:

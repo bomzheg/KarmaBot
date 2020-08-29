@@ -104,8 +104,10 @@ class User(Model):
 
     async def get_karma(self, chat: Chat):
         user_karma = await self.karma.filter(chat=chat).first()
-        # noinspection PyUnresolvedReferences
-        return user_karma.karma_round
+        if user_karma:
+            # noinspection PyUnresolvedReferences
+            return user_karma.karma_round
+        return None
 
     async def set_karma(self, chat: Chat, karma: int):
         user_karma = await self.karma.filter(chat=chat).first()
