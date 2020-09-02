@@ -1,6 +1,6 @@
 from aiogram import types
 from aiogram.types import ChatType
-from aiogram.utils.markdown import hbold
+from aiogram.utils.markdown import hbold, hpre
 from loguru import logger
 
 from app.misc import dp
@@ -15,6 +15,12 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     args = message.get_args()
     if args:
         chat = await Chat.get(chat_id=int(args))
+    elif ChatType.is_private(message):
+        return await message.reply(
+            "Эту команду можно использовать только в группах "
+            "или с указанием id нужного чата, например:"
+            "\n" + hpre("!top -1001399056118")
+        )
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text_list = ""
     user_ids = []
