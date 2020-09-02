@@ -20,12 +20,12 @@ how_change = {
 }
 
 
-async def to_fast_change_karma(message: types.Message, *_, **__):
+async def too_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
 @dp.message_handler(karma_change=True, has_target=True, content_types=[ContentType.STICKER, ContentType.TEXT])
-@dp.throttled(to_fast_change_karma, rate=30)
+@dp.throttled(too_fast_change_karma, rate=30)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: types.User):
     target_user = await get_db_user_by_tg_user(target)
 
