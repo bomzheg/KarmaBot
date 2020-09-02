@@ -8,6 +8,8 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
+from app.utils.exceptions import NotHaveNeighbours
+
 SQL_PREV_NEXT = """
 SELECT
     prev_user_id,
@@ -99,5 +101,12 @@ class Chat(Model):
 async def get_neighbours_id(chat_id, user_id) -> typing.Tuple[int, int]:
     async with in_transaction() as conn:
         neighbours = await conn.execute_query(SQL_PREV_NEXT, (chat_id, user_id))
-        rez = dict(neighbours[1][0])
-        return int(rez['prev_user_id']), int(rez['next_user_id'])
+        try:
+            rez = dict(neighbours[1][0])
+        except IndexError:
+            raise NotHaveNeighbours
+        try:
+            rez = int(rez['prev_user_id']), int(rez['next_user_id'])
+        except TypeError:
+            raise NotHaveNeighbours
+        return rez
