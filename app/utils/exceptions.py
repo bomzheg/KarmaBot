@@ -55,3 +55,7 @@ class ToLongDuration(TimedeltaParseError):
 
 class InvalidFormatDuration(TimedeltaParseError):
     pass
+
+
+class NotHaveNeighbours(KarmaError):
+    pass
