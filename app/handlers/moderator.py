@@ -13,7 +13,7 @@ from app.utils.exceptions import TimedeltaParseError
 from app.models import ModeratorEvent, Chat, User
 from app.services.user_info import get_user_info
 from app.services.find_target_user import get_db_user_by_tg_user
-from app.services.moderation import cancel_warn, warn_user
+from app.services.moderation import warn_user
 
 FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
