@@ -7,7 +7,7 @@ from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
-from app.utils.exceptions import NotHaveNeighbours
+from app.services.karma_top import get_karma_top
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!')
@@ -23,27 +23,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
             "\n" + hpre("!top -1001399056118")
         )
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
-    text_list = ""
-    user_ids = []
-    for user_, karma in await chat.get_top_karma_list():
-        text_list += f"\n{user_.mention_no_link} {hbold(karma)}"
-        user_ids.append(user_.id)
-    if text_list == "":
-        text = "Никто в чате не имеет кармы"
-    else:
-        text = "Список самых почётных пользователей чата:" + text_list
-    try:
-        prev_uk, user_uk, next_uk = await chat.get_neighbours(user)
-    except NotHaveNeighbours:
-        pass
-    else:
-        if prev_uk.user.id not in user_ids:
-            text += "\n..."
-            text += f"\n{prev_uk.user.mention_no_link} {hbold(prev_uk.karma_round)}"
-        if user_uk.user.id not in user_ids:
-            text += f"\n{user_uk.user.mention_no_link} {hbold(user_uk.karma_round)}"
-        if next_uk.user.id not in user_ids:
-            text += f"\n{next_uk.user.mention_no_link} {hbold(next_uk.karma_round)}"
+    text = await get_karma_top(chat, user)
 
     await message.reply(text, disable_web_page_preview=True)
 

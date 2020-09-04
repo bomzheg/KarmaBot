@@ -3,7 +3,14 @@ from aiogram.utils.executor import Executor
 from tortoise import Tortoise, run_async
 
 from app import config
-from app.models import __models__
+__models__ = [
+    'app.models.user',
+    'app.models.chat',
+    'app.models.user_karma',
+    'app.models.karma_actions',
+    'app.models.moderator_actions',
+]
+karma_filters = ("-karma", "uc_id")
 
 
 async def on_startup(_: Dispatcher):

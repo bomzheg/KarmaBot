@@ -102,8 +102,12 @@ class User(Model):
             return ' '.join((self.first_name, self.last_name))
         return self.first_name or self.username or self.tg_id or self.id
 
+    # noinspection PyUnresolvedReferences
+    async def get_uk(self, chat: Chat) -> "UserKarma":
+        return await self.karma.filter(chat=chat).first()
+
     async def get_karma(self, chat: Chat):
-        user_karma = await self.karma.filter(chat=chat).first()
+        user_karma = await self.get_uk(chat)
         if user_karma:
             # noinspection PyUnresolvedReferences
             return user_karma.karma_round
@@ -113,6 +117,11 @@ class User(Model):
         user_karma = await self.karma.filter(chat=chat).first()
         user_karma.karma = karma
         await user_karma.save()
+
+    async def get_number_in_top_karma(self, chat: Chat) -> int:
+        # noinspection PyUnresolvedReferences
+        uk: "UserKarma" = await self.get_uk(chat)
+        return await uk.number_in_top()
 
     def to_json(self):
         return dict(
