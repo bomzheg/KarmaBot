@@ -1,3 +1,4 @@
+from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
@@ -47,7 +48,7 @@ class KarmaEvent(Model):
             f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
-            rez += f'"{self.comment}"'
+            rez += f'"{quote_html(self.comment)}"'
         return rez
 
     __str__ = format_event

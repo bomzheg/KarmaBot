@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
@@ -69,7 +70,7 @@ class ModeratorEvent(Model):
         rez += f"от {self.moderator.mention_no_link}"
 
         if self.comment:
-            rez += f" \"{self.comment}\""
+            rez += f" \"{quote_html(self.comment)}\""
         return rez
 
     __str__ = format_event
