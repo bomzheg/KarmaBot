@@ -94,9 +94,11 @@ class Chat(Model):
     async def get_neighbours(self, user) -> typing.Tuple["UserKarma", "UserKarma", "UserKarma"]:
         prev_id, next_id = await get_neighbours_id(self.chat_id, user.id)
         uk = await self.user_karma.filter(
-            user_id__in=(prev_id, user.id, next_id)
-        ).prefetch_related("user").all()
-        return uk[0], uk[1], uk[2]
+            user_id__in=(prev_id, next_id)
+        ).prefetch_related("user").order_by(*karma_filters).all()
+
+        user_uk = await self.user_karma.filter(user=user).prefetch_related("user").first()
+        return uk[0], user_uk, uk[1]
 
 
 async def get_neighbours_id(chat_id, user_id) -> typing.Tuple[int, int]:

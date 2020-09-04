@@ -79,6 +79,10 @@ class UserKarma(Model):
     def karma_round(self) -> float:
         return round(self.karma, 2)
 
+    async def number_in_top(self) -> int:
+        # noinspection PyUnresolvedReferences
+        return await self.filter(chat_id=self.chat_id, karma__gte=self.karma).count()
+
     @classmethod
     async def all_to_json(cls, chat_id: int = None) -> dict:
         if chat_id is not None:
