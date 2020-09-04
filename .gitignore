@@ -2,3 +2,10 @@
 *.pyc
 .env
 *.psd
+log/
+*.log
+*.db
+*.json
+*.sqlite
+*/.pytest_cache/
+jsons/
