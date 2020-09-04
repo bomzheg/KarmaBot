@@ -7,6 +7,7 @@ from tortoise.models import Model
 from app.utils.exceptions import SubZeroKarma
 from .chat import Chat
 from .user import User
+from .db import karma_filters
 
 
 class UserKarma(Model):
@@ -81,7 +82,7 @@ class UserKarma(Model):
     @classmethod
     async def all_to_json(cls, chat_id: int = None) -> dict:
         if chat_id is not None:
-            uks = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by("-karma")
+            uks = await cls.filter(chat_id=chat_id).prefetch_related("user").order_by(*karma_filters)
             return {
                 chat_id: [
                     {**uk.user.to_json(), "karma": uk.karma} for uk in uks

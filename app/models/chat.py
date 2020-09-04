@@ -9,6 +9,8 @@ from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
 from app.utils.exceptions import NotHaveNeighbours
+from .db import karma_filters
+
 
 SQL_PREV_NEXT = """
 SELECT
@@ -79,7 +81,7 @@ class Chat(Model):
     # noinspection PyUnresolvedReferences
     async def get_top_karma_list(self, limit: int = 15):
         await self.fetch_related('user_karma')
-        users_karmas = await self.user_karma.order_by('-karma').limit(limit).prefetch_related("user").all()
+        users_karmas = await self.user_karma.order_by(*karma_filters).limit(limit).prefetch_related("user").all()
         rez = []
         for user_karma in users_karmas:
             user = user_karma.user
@@ -97,7 +99,6 @@ class Chat(Model):
         return uk[0], uk[1], uk[2]
 
 
-# noinspection PyUnresolvedReferences
 async def get_neighbours_id(chat_id, user_id) -> typing.Tuple[int, int]:
     async with in_transaction() as conn:
         neighbours = await conn.execute_query(SQL_PREV_NEXT, (chat_id, user_id))
