@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.markdown import hpre
 from loguru import logger
 
 from app.config import PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
@@ -36,6 +37,8 @@ async def cmd_help(message: types.Message):
             '!about - информация о боте и его исходники\n'
             '!me - посмотреть свою карму (желательно это делать в личных сообщениях с ботом)\n'
             '!report {реплаем} - пожаловаться на сообщение модераторам\n'
+            '!idchat - показать Ваш id, id чата и, '
+            'если имеется, - id пользователя, которому Вы ответили командой'
         ).format(
             plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]),
             minus='", "'.join([*MINUS, *MINUS_EMOJI])
@@ -48,6 +51,18 @@ async def cmd_help(message: types.Message):
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
+
+
+@dp.message_handler(commands='idchat', commands_prefix='!')
+@dp.throttled(rate=30)
+async def get_idchat(message: types.Message):
+    text = (
+        f"id этого чата: {hpre(message.chat.id)}\n"
+        f"Ваш id: {hpre(message.from_user.id)}"
+    )
+    if message.reply_to_message:
+        text += f"\nid пользователя, которому Вы ответили: {hpre(message.reply_to_message.from_user.id)}"
+    await message.reply(text, disable_notification=True)
 
 
 @dp.message_handler(state='*', commands='cancel')
