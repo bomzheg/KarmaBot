@@ -32,8 +32,17 @@ def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
     """
     :return: tuple (how_change, comment)
         how_change:
-            if contain trigger + karma +1
-            if contain trigger - karma -1
+            if contain trigger + karma:
+                if contains numbers after + symbol:
+                    +int(numbers)
+                else:
+                    +inf
+
+            if contain trigger - karma:
+                if contains numbers after - symbol:
+                    -int(numbers)
+                else:
+                    -inf
             if contain no karma trigger None
         comment: all text after trigger
     :param text:
@@ -70,8 +79,11 @@ def has_plus_karma(word: str) -> typing.Optional[float]:
         return INF
     if word[0] in PLUS_EMOJI:
         return INF
-    if word[0:len(PLUS)] == PLUS and word[len(PLUS):].isdecimal():
-        return +int(word[len(PLUS):])
+    if word[0:len(PLUS)] == PLUS:
+        try:
+            return +int(word[len(PLUS):])
+        except ValueError:
+            pass
     return None
 
 
@@ -82,8 +94,11 @@ def has_minus_karma(first_line: str) -> typing.Optional[float]:
         return -INF
     if not has_spaces(first_line) and first_line[0] in MINUS_EMOJI:
         return -INF
-    if first_line[0:len(MINUS)] == MINUS and first_line[len(MINUS):].isdecimal():
-        return -int(first_line[len(MINUS):])
+    if first_line[0:len(MINUS)] == MINUS:
+        try:
+            return -int(first_line[len(MINUS):])
+        except ValueError:
+            pass
     return None
 
 
