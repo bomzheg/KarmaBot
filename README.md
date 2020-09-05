@@ -17,6 +17,7 @@ commands list:
 * !me - show your karma for this chat (in group or supergroup) or show your karma for all yours chats (in private)
 * !report, /report, !admin, /admin, @admin - report spam, insult or another inappropriate content 
 to the group administrators
+* !idchat - get id of chat, your id, and id of replayed user   
 
 moderator commands list:
 * !ro !mute [DURATION] - restrict replyed user for DURATION. 
@@ -36,7 +37,6 @@ superuser commands list:
 * /generate_invite_logchat - if bot is admin in chat of LOG_CHAT_ID from config.py bot generates invite link to that
 * /logchat - get logchat invite link if it's generated earlier
 * /update_log - send logs from /logs path to LOG_CHAT_ID and remove logs from files
-* /idchat - get id of chat   
 * /dump - The bot sends a dump of the sqlite database to the chat DUMP_CHAT_ID
 * /json - bot exports db with karma to json and send it to the DUMP_CHAT_ID
 * !add_manual - send it with format  "!add_manual USER_ID NEW_KARMA" to replace karma in that chat for that user.
