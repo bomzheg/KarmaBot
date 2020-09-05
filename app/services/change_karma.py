@@ -13,7 +13,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
 
-    uk, power = await UserKarma.change_or_create(
+    uk, abs_change, relative_change = await UserKarma.change_or_create(
         target_user=target_user,
         chat=chat,
         user_changed=user,
@@ -23,8 +23,8 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         user_from=user,
         user_to=target_user,
         chat=chat,
-        how_change=how_change,
-        how_change_absolute=power*how_change,
+        how_change=relative_change,
+        how_change_absolute=abs_change,
         comment=comment
     )
     await ke.save()
@@ -34,7 +34,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         target_user=target_user.tg_id,
         chat=chat.chat_id
     )
-    return uk, power, ke
+    return uk, abs_change, ke
 
 
 async def cancel_karma_change(karma_event_id):

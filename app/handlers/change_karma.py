@@ -9,15 +9,19 @@ from app.misc import dp
 from app import config
 from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
-from app.utils.exceptions import SubZeroKarma
+from app.utils.exceptions import SubZeroKarma, AutoLike
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
 
-how_change = {
-    +1: 'увеличили',
-    -1: 'уменьшили',
-}
+
+def get_how_change_text(number: float) -> str:
+    if number > 0:
+        return "увеличили"
+    if number < 0:
+        return "уменьшили"
+    else:
+        raise ValueError("karma_trigger must be float and not 0")
 
 
 async def too_fast_change_karma(message: types.Message, *_, **__):
@@ -30,7 +34,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     target_user = await get_db_user_by_tg_user(target)
 
     try:
-        uk, power, karma_event = await change_karma(
+        uk, abs_change, karma_event = await change_karma(
             target_user=target_user,
             chat=chat,
             user=user,
@@ -39,13 +43,15 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
+    except AutoLike:
+        return
 
     msg = await message.reply(
         "Вы {how_change} карму {name} до {karma_new} ({power:+.2f})".format(
-            how_change=how_change[karma['karma_change']],
+            how_change=get_how_change_text(karma['karma_change']),
             name=hbold(target_user.fullname),
             karma_new=hbold(uk.karma_round),
-            power=power * karma['karma_change'],
+            power=abs_change,
         ),
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)

@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 
-from app.config import PLUS, PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
+from app.config import PLUS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS, MINUS_EMOJI, MINUS_TRIGGERS
 
 PUNCTUATIONS = ",.!"
+INF = float('inf')
 
 
 @dataclass
@@ -19,7 +20,7 @@ class KarmaFilter(BoundFilter):
 
     karma_change: bool
 
-    async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, int]]:
+    async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, float]]:
         karma_change, comment = get_karma_trigger(message.text or message.sticker.emoji or "")
         if karma_change is None:
             return {}
@@ -27,7 +28,7 @@ class KarmaFilter(BoundFilter):
         return rez
 
 
-def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[int], str]:
+def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
     """
     :return: tuple (how_change, comment)
         how_change:
@@ -38,11 +39,13 @@ def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[int], str]:
     :param text:
     """
     possible_trigger, comment = get_first_word(text)
-    if has_plus_karma(possible_trigger):
-        return +1, comment
+    changer = has_plus_karma(possible_trigger)
+    if changer:
+        return changer, comment
     possible_trigger, comment = get_first_line(text)
-    if has_minus_karma(possible_trigger):
-        return -1, comment
+    changer = has_minus_karma(possible_trigger)
+    if changer:
+        return changer, comment
     return None, ""
 
 
@@ -58,18 +61,30 @@ def get_first_word(text: str) -> typing.Tuple[str, str]:
     return possible_trigger.lower().rstrip(PUNCTUATIONS), " ".join(comment)
 
 
-def has_plus_karma(word: str) -> bool:
+def has_plus_karma(word: str) -> typing.Optional[float]:
     if len(word) == 0:
-        return False
-    if len(word) > 1 and word[1:] == word[:-1] and word[1] == PLUS:  # contains only ++..+
-        return True
-    return word in PLUS_TRIGGERS or word[0] in PLUS_EMOJI
+        return None
+    if len(word) > 1 and word[1:] == word[:-1] and word[0:len(PLUS)] == PLUS:  # contains only ++..+
+        return INF
+    if word in PLUS_TRIGGERS:
+        return INF
+    if word[0] in PLUS_EMOJI:
+        return INF
+    if word[0:len(PLUS)] == PLUS and word[len(PLUS):].isdecimal():
+        return +int(word[len(PLUS):])
+    return None
 
 
-def has_minus_karma(text: str) -> bool:
-    if len(text) == 0:
-        return False
-    return text in MINUS or (text.split(maxsplit=1)[0] == text and text[0] in MINUS_EMOJI)
+def has_minus_karma(first_line: str) -> typing.Optional[float]:
+    if len(first_line) == 0:
+        return None
+    if first_line in MINUS_TRIGGERS:
+        return -INF
+    if not has_spaces(first_line) and first_line[0] in MINUS_EMOJI:
+        return -INF
+    if first_line[0:len(MINUS)] == MINUS and first_line[len(MINUS):].isdecimal():
+        return -int(first_line[len(MINUS):])
+    return None
 
 
 def get_first_line(text: str) -> typing.Tuple[str, str]:
@@ -81,3 +96,7 @@ def get_first_line(text: str) -> typing.Tuple[str, str]:
     else:
         comment = []
     return possible_trigger, " ".join(comment)
+
+
+def has_spaces(text: str) -> bool:
+    return text.split(maxsplit=1)[0] != text
