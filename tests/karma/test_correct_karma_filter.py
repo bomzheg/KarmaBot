@@ -1,4 +1,4 @@
-from .common import plus_texts, minus_texts, punctuations, filter_check, SPACES
+from .common import plus_texts, minus_texts, punctuations, filter_check, SPACES, INF
 from .fixtures import generate_phrases_next_word, get_message_with_text
 
 
@@ -11,7 +11,7 @@ def test_correct_plus():
 def check_plus(text_with_plus_trigger: str):
     msg = get_message_with_text(text_with_plus_trigger)
     filter_rez = filter_check(msg)
-    assert filter_rez['karma']['karma_change'] == 1, str(msg)
+    assert filter_rez['karma']['karma_change'] == INF, str(msg)
 
 
 def test_correct_minus():
@@ -23,4 +23,4 @@ def test_correct_minus():
 def check_minus_reply(text_with_minus_trigger: str):
     msg = get_message_with_text(text_with_minus_trigger)
     filter_rez = filter_check(msg)
-    assert filter_rez['karma']['karma_change'] == -1, str(msg)
+    assert filter_rez['karma']['karma_change'] == -INF, str(msg)
