@@ -31,19 +31,7 @@ class KarmaFilter(BoundFilter):
 def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
     """
     :return: tuple (how_change, comment)
-        how_change:
-            if contain trigger + karma:
-                if contains numbers after + symbol:
-                    +int(numbers)
-                else:
-                    +inf
-
-            if contain trigger - karma:
-                if contains numbers after - symbol:
-                    -int(numbers)
-                else:
-                    -inf
-            if contain no karma trigger None
+        how_change: shows how much to change karma wants user
         comment: all text after trigger
     :param text:
     """
