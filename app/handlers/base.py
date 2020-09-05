@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hpre, hbold
 from loguru import logger
 
-from app.config import PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
+from app.config import PLUS_TRIGGERS, MINUS_TRIGGERS, PLUS_EMOJI, MINUS_EMOJI
 from app.misc import dp
 from app.models.chat import Chat
 
@@ -41,7 +41,7 @@ async def cmd_help(message: types.Message):
             'если имеется, - id пользователя, которому Вы ответили командой'
         ).format(
             plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]),
-            minus='", "'.join([*MINUS, *MINUS_EMOJI])
+            minus='", "'.join([*MINUS_TRIGGERS, *MINUS_EMOJI])
         )
     )
 

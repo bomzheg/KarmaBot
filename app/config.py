@@ -16,7 +16,8 @@ PLUS_WORDS = frozenset(
 )
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
-MINUS = frozenset({'-', })
+MINUS = "-"
+MINUS_TRIGGERS = frozenset({MINUS, })
 MINUS_EMOJI = frozenset({'👎', })
 
 TIME_TO_CANCEL_ACTIONS = 60

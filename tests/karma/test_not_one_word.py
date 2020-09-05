@@ -1,4 +1,4 @@
-from .common import PLUS_TRIGGERS, MINUS, punctuations, filter_check
+from .common import PLUS_TRIGGERS, MINUS_TRIGGERS, punctuations, filter_check
 from .fixtures import (wrong_generate_phrases_next_word, get_message_with_text,
                        generate_phrases_next_word)
 
@@ -19,7 +19,7 @@ def check_plus(text_with_plus_trigger: str):
 def test_minus():
     """проверка что триггер не находится, если кроме триггера на первой строке сообщения есть посторонние символы"""
     spaces_without_new_lines = (" ", "\t")
-    for text in MINUS:
+    for text in MINUS_TRIGGERS:
         # next words on the same line. in message with minus trigger can't not
         for phrase in generate_phrases_next_word(text, punctuations, spaces_without_new_lines):
             check_plus(phrase)
