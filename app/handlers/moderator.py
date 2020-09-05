@@ -1,9 +1,8 @@
 import typing
-from contextlib import suppress
 from datetime import timedelta
 
 from aiogram import types
-from aiogram.utils.exceptions import BadRequest, Unauthorized, MessageCantBeDeleted, MessageToDeleteNotFound
+from aiogram.utils.exceptions import BadRequest, Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
 from loguru import logger
 
@@ -14,6 +13,7 @@ from app.models import ModeratorEvent, Chat, User
 from app.services.user_info import get_user_info
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.services.moderation import warn_user
+from app.services.remove_message import delete_message
 
 FOREVER_DURATION = timedelta(days=366)
 DEFAULT_DURATION = timedelta(hours=1)
@@ -166,7 +166,7 @@ async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user:
     comment = args[1] if len(args) > 1 else ""
     target_user = await get_db_user_by_tg_user(target)
 
-    moderator_event = await warn_user(
+    await warn_user(
         moderator=user,
         target_user=target_user,
         chat=chat,

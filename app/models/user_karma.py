@@ -34,10 +34,10 @@ class UserKarma(Model):
     async def change(self, user_changed: User, how_change: float):
         """
         change karma to (self.user) from (user_changed)
-        (how_change) must be from -1 to +1 (power from -100% to +100 %)
+        (how_change) must be from -inf to +inf
         """
-        if abs(how_change) != 1:
-            raise ValueError(f"how_change must be +1 or -1 but it is {how_change}")
+        if how_change == 0:
+            raise ValueError(f"how_change must be float and not 0 but it is {how_change}")
         await self.fetch_related('chat')
         power = await self.get_power(user_changed, self.chat)
         if power < 0.01:
@@ -47,22 +47,25 @@ class UserKarma(Model):
                 user_id=user_changed.id,
                 chat_id=self.chat.chat_id
             )
-        self.karma = self.karma + how_change * power
+        change_sign = +1 if how_change > 0 else -1
+        abs_how_change = min(abs(how_change), power)
+        self.karma = self.karma + change_sign * abs_how_change
         await self.save(update_fields=["karma"])
-        return power
+        relative_power = abs_how_change / power
+        return change_sign * abs_how_change, change_sign * relative_power
 
     @classmethod
     async def change_or_create(cls, target_user: User, chat: Chat, user_changed: User, how_change: float):
         """
         change karma to (target_user) from (user_changed) in (chat)
-        (how_change) must be from -1 to +1 (power from -100% to +100 %)
+        (how_change) must be from -inf to +inf
         """
         uk, _ = await UserKarma.get_or_create(
             user=target_user,
             chat=chat
         )
-        power = await uk.change(user_changed=user_changed, how_change=how_change)
-        return uk, power
+        abs_change, relative_change = await uk.change(user_changed=user_changed, how_change=how_change)
+        return uk, abs_change, relative_change
 
     @classmethod
     async def get_power(cls, user: User, chat: Chat) -> float:
