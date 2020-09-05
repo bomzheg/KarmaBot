@@ -32,12 +32,6 @@ async def generate_logchat_link(message: types.Message):
     await message.reply(await bot.export_chat_invite_link(config.LOG_CHAT_ID), disable_notification=True)
 
 
-@dp.message_handler(is_superuser=True, commands='idchat')
-@dp.throttled(rate=30)
-async def get_idchat(message: types.Message):
-    await message.reply(message.chat.id, disable_notification=True)
-
-
 @dp.message_handler(is_superuser=True, commands=["exception"])
 @dp.throttled(rate=30)
 async def cmd_exception(_: types.Message):

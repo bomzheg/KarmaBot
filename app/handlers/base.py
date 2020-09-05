@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.markdown import hpre, hbold
 from loguru import logger
 
 from app.config import PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
@@ -13,8 +14,9 @@ async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
         "Я бот для подсчёта кармы в группе, просто добавьте меня "
-        "в группу и плюсуйте друг другу в карму. "
-        "Справка по !help"
+        "в группу и плюсуйте друг другу в карму.\n"
+        "<pre>!help</pre> справка о командах\n"
+        "<pre>!about</pre> - информация о боте и его исходники "
     )
 
 
@@ -28,10 +30,19 @@ async def cmd_help(message: types.Message):
             'Минусануть - написав первой строкой что-то из "{minus}".\n'
             'Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
             'или упомянуть его через @ (работает даже если у пользователя нет username).\n'
-            '!top - топ юзеров по карме\n'
-            '!about - информция о боте (в том числе исходные коды)\n'
-            '!me - посмотреть свою карму\n'
-        ).format(plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]), minus='", "'.join([*MINUS, *MINUS_EMOJI]))
+            'Сила, с которой пользователь меняет другим карму, зависит от собственной кармы, '
+            'чем она больше, тем больше будет изменение кармы у цели '
+            '(вычисляется как корень из кармы)\n'
+            '!top [chat_id] - топ юзеров по карме для текущего чата или для чата с chat_id \n'
+            '!about - информация о боте и его исходники\n'
+            '!me - посмотреть свою карму (желательно это делать в личных сообщениях с ботом)\n'
+            '!report {реплаем} - пожаловаться на сообщение модераторам\n'
+            '!idchat - показать Ваш id, id чата и, '
+            'если имеется, - id пользователя, которому Вы ответили командой'
+        ).format(
+            plus='", "'.join([*PLUS_TRIGGERS, *PLUS_EMOJI]),
+            minus='", "'.join([*MINUS, *MINUS_EMOJI])
+        )
     )
 
 
@@ -40,6 +51,21 @@ async def cmd_help(message: types.Message):
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
+
+
+@dp.message_handler(commands='idchat', commands_prefix='!')
+@dp.throttled(rate=30)
+async def get_idchat(message: types.Message):
+    text = (
+        f"id этого чата: {hpre(message.chat.id)}\n"
+        f"Ваш id: {hpre(message.from_user.id)}"
+    )
+    if message.reply_to_message:
+        text += (
+            f"\nid {hbold(message.reply_to_message.from_user.full_name)}: "
+            f"{hpre(message.reply_to_message.from_user.id)}"
+        )
+    await message.reply(text, disable_notification=True)
 
 
 @dp.message_handler(state='*', commands='cancel')
