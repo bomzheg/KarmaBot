@@ -1,6 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.markdown import hpre
+from aiogram.utils.markdown import hpre, hbold
 from loguru import logger
 
 from app.config import PLUS_TRIGGERS, MINUS, PLUS_EMOJI, MINUS_EMOJI
@@ -61,7 +61,7 @@ async def get_idchat(message: types.Message):
         f"Ваш id: {hpre(message.from_user.id)}"
     )
     if message.reply_to_message:
-        text += f"\nid пользователя, которому Вы ответили: {hpre(message.reply_to_message.from_user.id)}"
+        text += f"\nid {hbold(message.reply_to_message.from_user.full_name)}: {hpre(message.reply_to_message.from_user.id)}"
     await message.reply(text, disable_notification=True)
 
 
