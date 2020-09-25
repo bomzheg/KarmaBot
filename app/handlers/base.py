@@ -20,7 +20,7 @@ async def cmd_start(message: types.Message):
     )
 
 
-@dp.message_handler(commands=["help"], commands_prefix='!/')
+@dp.message_handler(commands=["help", "info"], commands_prefix='!/')
 @dp.throttled(rate=3)
 async def cmd_help(message: types.Message):
     logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
