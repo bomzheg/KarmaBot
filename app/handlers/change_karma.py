@@ -13,6 +13,10 @@ from app.utils.exceptions import SubZeroKarma, AutoLike
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
+from ..services.adaptive_trottle import AdaptiveThrottle
+
+
+a_throttle = AdaptiveThrottle()
 
 
 def get_how_change_text(number: float) -> str:
@@ -29,7 +33,8 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
 
 
 @dp.message_handler(karma_change=True, has_target=True, content_types=[ContentType.STICKER, ContentType.TEXT])
-@dp.throttled(too_fast_change_karma, rate=30)
+@a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
+@dp.throttled(rate=1)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: types.User):
     target_user = await get_db_user_by_tg_user(target)
 
