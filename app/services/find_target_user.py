@@ -1,8 +1,9 @@
-import functools
 import typing
 
 from aiogram import types
+from loguru import logger
 from pyrogram.errors import UsernameNotOccupied
+from tortoise.exceptions import MultipleObjectsReturned
 
 from app.models import User
 from app.services.user_getter import UserGetter
@@ -91,16 +92,25 @@ def is_bot_username(username: str):
 
 
 async def get_db_user_by_tg_user(target: types.User) -> User:
+    exception: Exception
     try:
         target_user = await User.get_or_create_from_tg_user(target)
+    except MultipleObjectsReturned as e:
+        logger.warning("Strange, multiple username? chek id={id}, username={username}",
+                       id=target.id, username=target.username)
+        exception = e
     # In target can be user with only username
     except UserWithoutUserIdError as e:
-        try:
-            async with UserGetter() as user_getter:
-                tg_user = await user_getter.get_user_by_username(target.username)
+        exception = e
+    else:
+        return target_user
 
-            target_user = await User.get_or_create_from_tg_user(tg_user)
+    try:
+        async with UserGetter() as user_getter:
+            tg_user = await user_getter.get_user_by_username(target.username)
+
+        target_user = await User.get_or_create_from_tg_user(tg_user)
         # That username can be not valid
-        except (UsernameNotOccupied, IndexError):
-            raise e  # e is instance of UserWithoutUserIdError
+    except (UsernameNotOccupied, IndexError):
+        raise exception
     return target_user
