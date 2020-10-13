@@ -9,3 +9,4 @@ log/
 *.sqlite
 */.pytest_cache/
 jsons/
+*.session
