@@ -20,7 +20,6 @@ class User(Model):
 
     class Meta:
         table = "users"
-        unique = 'tg_id'
 
     @classmethod
     async def create_from_tg_user(cls, user: types.User):
