@@ -8,6 +8,7 @@ from loguru import logger
 
 from app.models.chat import Chat
 from app.models.user import User
+from app.services.find_target_user import get_db_user_by_tg_user
 from app.utils.lock_factory import LockFactory
 
 
@@ -30,8 +31,20 @@ class ACLMiddleware(BaseMiddleware):
         data["user"] = user
         data["chat"] = chat
 
+    @staticmethod
+    async def fix_target(data: dict):
+        try:
+            target: types.User = data['target']
+        except KeyError:
+            return
+        target = await get_db_user_by_tg_user(target)
+        data['target'] = target
+
     async def on_pre_process_message(self, message: types.Message, data: dict):
         await self.setup_chat(data, message.from_user, message.chat)
+
+    async def on_process_message(self, _: types.Message, data: dict):
+        await self.fix_target(data)
 
     async def on_pre_process_callback_query(self, query: types.CallbackQuery, data: dict):
         await self.setup_chat(data, query.from_user, query.message.chat if query.message else None)

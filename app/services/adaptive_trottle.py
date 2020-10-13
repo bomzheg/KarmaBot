@@ -3,7 +3,6 @@ import functools
 import typing
 from time import time
 
-from aiogram import types
 from aiogram.utils.exceptions import Throttled
 from loguru import logger
 
@@ -29,9 +28,9 @@ class AdaptiveThrottle:
             async def wrapped(*args, **kwargs):
                 chat: Chat = kwargs['chat']
                 user: User = kwargs['user']
-                target: types.User = kwargs['target']
+                target: User = kwargs['target']
 
-                if self.check_time_throttle(rate, current_key, chat.chat_id, user.tg_id, target.id):
+                if self.check_time_throttle(rate, current_key, chat.chat_id, user.tg_id, target.tg_id):
                     return await func(*args, **kwargs)
                 else:
                     await process_on_throttled(on_throttled, current_key, rate, *args, **kwargs)
