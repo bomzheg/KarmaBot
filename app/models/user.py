@@ -67,20 +67,13 @@ class User(Model):
                 return await cls.get(username=user_tg.username)
             except DoesNotExist:
                 raise UserWithoutUserIdError(username=user_tg.username)
-        try:
-            try:
-                user = await cls.get(tg_id=user_tg.id)
-            except DoesNotExist:
-                # искать в бд по юзернейму нужно на тот случай, что юзер уже импортирован
-                if user_tg.username:
-                    user = await cls.get(username=user_tg.username, tg_id__isnull=True)
-                else:
-                    raise
 
+        try:
+            user = await cls.get(tg_id=user_tg.id)
         except DoesNotExist:
             return await cls.create_from_tg_user(user=user_tg)
-
-        await user.update_user_data(user_tg)
+        else:
+            await user.update_user_data(user_tg)
         return user
 
     @property
