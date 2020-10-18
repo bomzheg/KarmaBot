@@ -6,4 +6,4 @@ tortoise-orm
 lxml  #  для парсинга кармы из Аксении
 beautifulsoup4  #  для парсинга кармы из Аксении
 python-dotenv
-https://github.com/pyrogram/pyrogram/archive/asyncio.zip
+Pyrogram # для резолва username через клиент апи
