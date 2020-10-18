@@ -27,7 +27,7 @@ class User(Model):
             tg_id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
-            username=user.username.lower(),
+            username=user.username,
             is_bot=user.is_bot
         )
 
@@ -50,9 +50,9 @@ class User(Model):
                 changed = True
                 self.last_name = user_tg.last_name
 
-            if self.username != user_tg.username.lower():
+            if self.username != user_tg.username:
                 changed = True
-                self.username = user_tg.username.lower()
+                self.username = user_tg.username
             if self.is_bot is None and user_tg.is_bot is not None:
                 changed = True
                 self.is_bot = user_tg.is_bot
@@ -64,9 +64,10 @@ class User(Model):
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
             try:
-                return await cls.get(username=user_tg.username.lower())
+                # __iexact - хотя в документации __iequals
+                return await cls.get(username__iexact=user_tg.username)
             except DoesNotExist:
-                raise UserWithoutUserIdError(username=user_tg.username.lower())
+                raise UserWithoutUserIdError(username=user_tg.username)
 
         try:
             user = await cls.get(tg_id=user_tg.id)
