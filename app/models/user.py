@@ -20,7 +20,6 @@ class User(Model):
 
     class Meta:
         table = "users"
-        unique = 'tg_id'
 
     @classmethod
     async def create_from_tg_user(cls, user: types.User):
@@ -65,23 +64,17 @@ class User(Model):
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
             try:
-                return await cls.get(username=user_tg.username)
+                # __iexact - хотя в документации __iequals
+                return await cls.get(username__iexact=user_tg.username)
             except DoesNotExist:
                 raise UserWithoutUserIdError(username=user_tg.username)
-        try:
-            try:
-                user = await cls.get(tg_id=user_tg.id)
-            except DoesNotExist:
-                # искать в бд по юзернейму нужно на тот случай, что юзер уже импортирован
-                if user_tg.username:
-                    user = await cls.get(username=user_tg.username, tg_id__isnull=True)
-                else:
-                    raise
 
+        try:
+            user = await cls.get(tg_id=user_tg.id)
         except DoesNotExist:
             return await cls.create_from_tg_user(user=user_tg)
-
-        await user.update_user_data(user_tg)
+        else:
+            await user.update_user_data(user_tg)
         return user
 
     @property

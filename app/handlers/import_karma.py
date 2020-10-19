@@ -16,7 +16,7 @@ from app.models.chat import Chat
 from app.models.user import User
 from app.models.user_karma import UserKarma
 from app.services.user_getter import UserGetter
-from app.utils.from_axenia import axenia_raiting
+from app.utils.from_axenia import axenia_rating
 from app.utils.exceptions import CantImportFromAxenia
 
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
@@ -42,7 +42,7 @@ async def init_from_axenia(message: types.Message, chat: Chat):
     chat_id = chat.chat_id
     try:
         log_users, to_approve, problems = await process_import_users_karmas(
-            await axenia_raiting(chat_id), chat, msg
+            await axenia_rating(chat_id), chat, msg
         )
     except CantImportFromAxenia:
         return await message.answer("Что-то пошло не так. вероятно аксения и не знала о существовании этого чата")
@@ -64,7 +64,7 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
 
     :param karmas_list:
     :param chat:
-    :param message: by bot in that be outputed percent of completed
+    :param message: by bot in that be output percent of completed
     :return:
     """
     if message is not None and message.from_user.id != bot.id:

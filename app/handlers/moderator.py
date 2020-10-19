@@ -11,7 +11,6 @@ from app.utils.timedelta_functions import parse_timedelta_from_text, format_time
 from app.utils.exceptions import TimedeltaParseError
 from app.models import ModeratorEvent, Chat, User
 from app.services.user_info import get_user_info
-from app.services.find_target_user import get_db_user_by_tg_user
 from app.services.moderation import warn_user
 from app.services.remove_message import delete_message
 
@@ -74,19 +73,17 @@ def get_duration(text: str):
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ro(message: types.Message, chat: Chat, user: User, target: types.User):
+async def cmd_ro(message: types.Message, chat: Chat, user: User, target: User):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
         return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
 
-    target_user = await get_db_user_by_tg_user(target)
-
     try:
-        await message.chat.restrict(target_user.tg_id, can_send_messages=False, until_date=duration)
+        await message.chat.restrict(target.tg_id, can_send_messages=False, until_date=duration)
         logger.info(
             "User {user} restricted by {admin} for {duration}",
-            user=target_user.tg_id,
+            user=target.tg_id,
             admin=user.tg_id,
             duration=duration,
         )
@@ -96,7 +93,7 @@ async def cmd_ro(message: types.Message, chat: Chat, user: User, target: types.U
     else:
         await ModeratorEvent.save_new_action(
             moderator=user,
-            user=target_user,
+            user=target,
             chat=chat,
             type_restriction="ro",
             duration=duration,
@@ -105,7 +102,7 @@ async def cmd_ro(message: types.Message, chat: Chat, user: User, target: types.U
 
     await message.reply(
         "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
-            user=target_user.mention_link,
+            user=target.mention_link,
             duration=format_timedelta(duration),
         )
     )
@@ -118,19 +115,17 @@ async def cmd_ro(message: types.Message, chat: Chat, user: User, target: types.U
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.User):
+async def cmd_ban(message: types.Message, chat: Chat, user: User, target: User):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
         return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
 
-    target_user = await get_db_user_by_tg_user(target)
-
     try:
-        await message.chat.kick(target_user.tg_id, until_date=duration)
+        await message.chat.kick(target.tg_id, until_date=duration)
         logger.info(
             "User {user} kicked by {admin} for {duration}",
-            user=target_user.tg_id,
+            user=target.tg_id,
             admin=user.tg_id,
             duration=duration,
         )
@@ -140,7 +135,7 @@ async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.
     else:
         await ModeratorEvent.save_new_action(
             moderator=user,
-            user=target_user,
+            user=target,
             chat=chat,
             type_restriction="ban",
             duration=duration,
@@ -148,7 +143,7 @@ async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.
         )
 
     text = "Пользователь {user} попал в бан этого чата.".format(
-            user=target_user.mention_link,
+            user=target.mention_link,
         )
     if duration < FOREVER_DURATION:
         text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
@@ -161,32 +156,30 @@ async def cmd_ban(message: types.Message, chat: Chat, user: User, target: types.
     has_target=True,
     user_can_restrict_members=True,
 )
-async def cmd_warn(message: types.Message, chat: Chat, target: types.User, user: User):
+async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User):
     args = message.text.split(maxsplit=1)
     comment = args[1] if len(args) > 1 else ""
-    target_user = await get_db_user_by_tg_user(target)
 
     await warn_user(
         moderator=user,
-        target_user=target_user,
+        target_user=target,
         chat=chat,
         comment=comment
     )
 
     text = "Пользователь {user} получил официальное предупреждение от модератора".format(
-        user=target_user.mention_link,
+        user=target.mention_link,
     )
     await message.reply(text)
 
 
 @dp.message_handler(commands="info", commands_prefix='!', has_target=dict(can_be_same=True))
-async def get_info_about_user(message: types.Message, chat: Chat, target: types.User):
-    target_user = await get_db_user_by_tg_user(target)
-    info = await get_user_info(target_user, chat)
-    target_karma = await target_user.get_karma(chat)
+async def get_info_about_user(message: types.Message, chat: Chat, target: User):
+    info = await get_user_info(target, chat)
+    target_karma = await target.get_karma(chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"
-    information = f"Данные на {target_user.mention_link} ({target_karma}):\n" + "\n".join(info)
+    information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(info)
     try:
         await bot.send_message(
             message.from_user.id,
