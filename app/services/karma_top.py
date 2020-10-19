@@ -1,5 +1,5 @@
 from aiogram.utils.markdown import hbold
-from app.models import Chat, User, UserKarma
+from app.models import Chat, User
 from app.utils.exceptions import NotHaveNeighbours
 
 

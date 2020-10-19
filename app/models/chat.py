@@ -2,7 +2,6 @@ import typing
 from enum import Enum
 
 from aiogram.utils.markdown import hlink, quote_html
-from loguru import logger
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
