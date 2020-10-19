@@ -17,17 +17,3 @@ def setup():
         encoding='utf-8',
     )
     logger.info("Program started")
-
-
-class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
-
-    def __init__(self, in_logger):
-        self.logger = in_logger
-        self.linebuf = ''
-
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            self.logger.info(line.rstrip())
