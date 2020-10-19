@@ -2,7 +2,6 @@ import aiohttp
 from bs4 import BeautifulSoup as Soup
 from loguru import logger
 
-from app.misc import app_dir
 from .exceptions import CantImportFromAxenia
 
 
@@ -39,7 +38,7 @@ def get_link_by_chat_id(chat_id: int) -> str:
     return f"http://axeniabot.ru/?chat_id={chat_id}"
 
 
-async def axenia_raiting(chat_id):
+async def axenia_rating(chat_id):
     logger.info("load axenia karmas for chat {chat}", chat=chat_id)
     return list(
         parse_rating(
