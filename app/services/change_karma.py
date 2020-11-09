@@ -1,4 +1,5 @@
 from loguru import logger
+from tortoise.transactions import in_transaction
 
 from app.models import User, Chat, UserKarma, KarmaEvent
 from app.utils.exceptions import AutoLike
@@ -13,27 +14,29 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
 
-    uk, abs_change, relative_change = await UserKarma.change_or_create(
-        target_user=target_user,
-        chat=chat,
-        user_changed=user,
-        how_change=how_change
-    )
-    ke = KarmaEvent(
-        user_from=user,
-        user_to=target_user,
-        chat=chat,
-        how_change=relative_change,
-        how_change_absolute=abs_change,
-        comment=comment
-    )
-    await ke.save()
-    logger.info(
-        "user {user} change karma of {target_user} in chat {chat}",
-        user=user.tg_id,
-        target_user=target_user.tg_id,
-        chat=chat.chat_id
-    )
+    async with in_transaction() as conn:
+        uk, abs_change, relative_change = await UserKarma.change_or_create(
+            target_user=target_user,
+            chat=chat,
+            user_changed=user,
+            how_change=how_change,
+            using_db=conn,
+        )
+        ke = KarmaEvent(
+            user_from=user,
+            user_to=target_user,
+            chat=chat,
+            how_change=relative_change,
+            how_change_absolute=abs_change,
+            comment=comment,
+        )
+        await ke.save(using_db=conn)
+        logger.info(
+            "user {user} change karma of {target_user} in chat {chat}",
+            user=user.tg_id,
+            target_user=target_user.tg_id,
+            chat=chat.chat_id
+        )
     return uk, abs_change, ke
 
 
