@@ -38,20 +38,21 @@ class ModeratorEvent(Model):
             cls,
             moderator: User,
             user: User,
-            chat: Chat,
+            chat_id: int,
             type_restriction: str,
             duration: timedelta = None,
-            comment: str = ""
+            comment: str = "",
+            using_db=None,
     ):
         moderator_event = ModeratorEvent(
             moderator=moderator,
             user=user,
-            chat=chat,
+            chat_id=chat_id,
             type_restriction=type_restriction,
             timedelta_restriction=duration,
             comment=comment
         )
-        await moderator_event.save()
+        await moderator_event.save(using_db=using_db)
         return moderator_event
 
     @classmethod

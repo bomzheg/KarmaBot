@@ -59,3 +59,14 @@ class InvalidFormatDuration(TimedeltaParseError):
 
 class NotHaveNeighbours(KarmaError):
     pass
+
+
+class ModerationError(KarmaError):
+    def __init__(self, reason: str = None, type_event: str = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reason = reason
+        self.type_event = type_event
+
+
+class CantRestrict(ModerationError):
+    pass
