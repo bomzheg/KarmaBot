@@ -7,6 +7,7 @@ from aiogram import Bot
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
+from app import config
 from app.models import ModeratorEvent, User, Chat
 from app.utils.exceptions import CantRestrict
 from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
@@ -61,7 +62,7 @@ async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, co
         admin=admin,
         duration=duration,
         comment=comment,
-        type_restriction=TypeRestriction.ro
+        type_restriction=TypeRestriction.ro,
     )
     return "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
         user=target.mention_link,
@@ -127,3 +128,34 @@ def get_duration(text: str):
     else:
         duration = DEFAULT_DURATION
     return duration, comment
+
+
+async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> TypeRestriction:
+    bot_user = await User.get_or_create_from_tg_user(await bot.me)
+
+    moderator_events = await ModeratorEvent.filter(
+        moderator=bot_user, user=target, chat=chat, comment=config.COMMENT_AUTO_RESTRICT
+    ).all()
+    logger.info(
+        "auto restrict user {user} in chat {chat} for to negative karma. previous restrict for the same: {events}",
+        user=target.tg_id,
+        chat=chat.chat_id,
+        events=moderator_events,
+    )
+
+    if not moderator_events:
+        type_restriction = TypeRestriction.ro
+    else:
+        type_restriction = TypeRestriction.ban
+
+    await restrict(
+        bot=bot,
+        chat=chat,
+        target=target,
+        admin=bot_user,
+        duration=config.DURATION_AUTO_RESTRICT,
+        comment=config.COMMENT_AUTO_RESTRICT,
+        type_restriction=type_restriction,
+        using_db=using_db,
+    )
+    return type_restriction

@@ -37,12 +37,13 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
 
     try:
-        uk, abs_change, karma_event = await change_karma(
+        uk, abs_change, karma_event, type_restriction = await change_karma(
             target_user=target,
             chat=chat,
             user=user,
             how_change=karma['karma_change'],
-            comment=karma['comment']
+            comment=karma['comment'],
+            bot=message.bot,
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
@@ -59,6 +60,16 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)
     )
+    if type_restriction:
+        await message.answer(
+            "{target}, Уровень вашей кармы снизился ниже {negative_limit}. "
+            "За это вы попадаете в {type_restriction} на срок {duration}!".format(
+                target=target,
+                negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
+                type_restriction=type_restriction.name,
+                duration=config.DURATION_AUTO_RESTRICT
+            )
+        )
     asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
 
 

@@ -1,7 +1,10 @@
+from aiogram import Bot
 from loguru import logger
 from tortoise.transactions import in_transaction
 
+from app import config
 from app.models import User, Chat, UserKarma, KarmaEvent
+from app.services.moderation import restrict, TypeRestriction, auto_restrict
 from app.utils.exceptions import AutoLike
 
 
@@ -9,7 +12,7 @@ def can_change_karma(target_user: User, user: User):
     return user.id != target_user.id and not target_user.is_bot
 
 
-async def change_karma(user: User, target_user: User, chat: Chat, how_change: float, comment: str = ""):
+async def change_karma(user: User, target_user: User, chat: Chat, how_change: float, bot: Bot, comment: str = ""):
     if not can_change_karma(target_user, user):
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
@@ -37,7 +40,15 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             target_user=target_user.tg_id,
             chat=chat.chat_id
         )
-    return uk, abs_change, ke
+        type_restriction = None
+        if uk.karma < config.NEGATIVE_KARMA_TO_RESTRICT:
+            type_restriction = await auto_restrict(
+                bot=bot,
+                chat=chat,
+                target=target_user,
+                using_db=conn,
+            )
+    return uk, abs_change, ke, type_restriction
 
 
 async def cancel_karma_change(karma_event_id):

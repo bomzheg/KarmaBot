@@ -3,6 +3,7 @@ constants, settings
 """
 import os
 import secrets
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -11,9 +12,10 @@ app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
 PLUS = "+"
-PLUS_WORDS = frozenset(
-    {"спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба", "благодарочка", "thx", "мерси", "выручил"}
-)
+PLUS_WORDS = frozenset({
+    "спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба", "благодарочка", "thx", "мерси",
+    "выручил",
+})
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
 MINUS = "-"
@@ -21,6 +23,11 @@ MINUS_TRIGGERS = frozenset({MINUS, })
 MINUS_EMOJI = frozenset({'👎', })
 
 TIME_TO_CANCEL_ACTIONS = 60
+
+# auto restrict
+NEGATIVE_KARMA_TO_RESTRICT = 100
+DURATION_AUTO_RESTRICT = timedelta(days=30)
+COMMENT_AUTO_RESTRICT = f"Карма ниже {NEGATIVE_KARMA_TO_RESTRICT}"
 
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
