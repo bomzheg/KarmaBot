@@ -1,3 +1,4 @@
+import json
 import typing
 from datetime import timedelta
 from enum import Enum
@@ -140,22 +141,22 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> Ty
         "auto restrict user {user} in chat {chat} for to negative karma. previous restrict for the same: {events}",
         user=target.tg_id,
         chat=chat.chat_id,
-        events=moderator_events,
+        events=json.dumps([repr(event) for event in moderator_events], ensure_ascii=False),
     )
 
     if not moderator_events:
-        type_restriction = TypeRestriction.ro
+        duration = config.DURATION_AUTO_RESTRICT
     else:
-        type_restriction = TypeRestriction.ban
+        duration = FOREVER_DURATION
 
     await restrict(
         bot=bot,
         chat=chat,
         target=target,
         admin=bot_user,
-        duration=config.DURATION_AUTO_RESTRICT,
+        duration=duration,
         comment=config.COMMENT_AUTO_RESTRICT,
-        type_restriction=type_restriction,
+        type_restriction=TypeRestriction.ro,
         using_db=using_db,
     )
-    return type_restriction
+    return duration

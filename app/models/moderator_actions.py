@@ -29,7 +29,7 @@ class ModeratorEvent(Model):
 
     def __repr__(self):
         return (
-            f"KarmaEvent {self.id_} from moderator {self.moderator.id} to {self.user.id}, date {self.date}, "
+            f"ModeratorEvent {self.id_} from moderator {self.moderator_id} to {self.user_id}, date {self.date}, "
             f"type_restriction {self.type_restriction} timedelta_restriction {self.timedelta_restriction}"
         )
 

@@ -40,15 +40,18 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             target_user=target_user.tg_id,
             chat=chat.chat_id
         )
-        type_restriction = None
+        restrict_duration = None
         if uk.karma < config.NEGATIVE_KARMA_TO_RESTRICT:
-            type_restriction = await auto_restrict(
+            restrict_duration = await auto_restrict(
                 bot=bot,
                 chat=chat,
                 target=target_user,
                 using_db=conn,
             )
-    return uk, abs_change, ke, type_restriction
+            if restrict_duration == config.DURATION_AUTO_RESTRICT:
+                uk.karma = config.KARMA_AFTER_RESTRICT
+                await uk.save(using_db=conn)
+    return uk, abs_change, ke, restrict_duration
 
 
 async def cancel_karma_change(karma_event_id):
