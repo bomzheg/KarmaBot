@@ -38,7 +38,7 @@ class ModeratorEvent(Model):
             cls,
             moderator: User,
             user: User,
-            chat_id: int,
+            chat: Chat,
             type_restriction: str,
             duration: timedelta = None,
             comment: str = "",
@@ -47,7 +47,7 @@ class ModeratorEvent(Model):
         moderator_event = ModeratorEvent(
             moderator=moderator,
             user=user,
-            chat_id=chat_id,
+            chat=chat,
             type_restriction=type_restriction,
             timedelta_restriction=duration,
             comment=comment

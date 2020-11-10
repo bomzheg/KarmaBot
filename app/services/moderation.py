@@ -1,7 +1,9 @@
 import typing
 from datetime import timedelta
+from enum import Enum
+from functools import partial
 
-from aiogram import types
+from aiogram import Bot
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
@@ -13,73 +15,98 @@ DEFAULT_DURATION = timedelta(hours=1)
 FOREVER_DURATION = timedelta(days=366)
 
 
+class TypeRestriction(Enum):
+    ro = "ro"
+    ban = "ban"
+    warn = "warn"
+
+
+action_for_restrict = {
+    TypeRestriction.ban: Bot.kick_chat_member,
+    TypeRestriction.ro: partial(Bot.restrict_chat_member, can_send_messages=False),
+}
+
+
 async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str):
     return await ModeratorEvent.save_new_action(
         moderator=moderator,
         user=target_user,
-        chat_id=chat.chat_id,
-        type_restriction="warn",
-        comment=comment
+        chat=chat,
+        type_restriction=TypeRestriction.warn.name,
+        comment=comment,
     )
 
 
-async def ban_user(chat: types.Chat, target: User, admin: User, duration: timedelta, comment: str):
-    type_restriction = 'ban'
+async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot):
+    await restrict(
+        bot=bot,
+        chat=chat,
+        target=target,
+        admin=admin,
+        duration=duration,
+        comment=comment,
+        type_restriction=TypeRestriction.ban
+    )
+    text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
+    if duration < FOREVER_DURATION:
+        text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
+    return text
+
+
+async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot):
+    await restrict(
+        bot=bot,
+        chat=chat,
+        target=target,
+        admin=admin,
+        duration=duration,
+        comment=comment,
+        type_restriction=TypeRestriction.ro
+    )
+    return "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
+        user=target.mention_link,
+        duration=format_timedelta(duration),
+    )
+
+
+async def restrict(
+        bot: Bot,
+        chat: Chat,
+        target: User,
+        admin: User,
+        duration: timedelta,
+        comment: str,
+        type_restriction: TypeRestriction,
+        using_db=None
+):
     try:
-        await chat.kick(target.tg_id, until_date=duration)
+        await action_for_restrict[type_restriction](
+            bot,
+            chat_id=chat.chat_id,
+            user_id=target.tg_id,
+            until_date=duration,
+        )
     except BadRequest as e:
-        logger.error("Failed to kick chat member: {error!r}", error=e)
         raise CantRestrict(
-            text=e.text, user_id=target.tg_id, chat_id=chat.id, reason=comment, type_event=type_restriction
+            text=e.text, user_id=target.tg_id, chat_id=chat.chat_id, reason=comment, type_event=type_restriction.name
         )
     else:
         await ModeratorEvent.save_new_action(
             moderator=admin,
             user=target,
-            chat_id=chat.id,
-            type_restriction=type_restriction,
+            chat=chat,
+            type_restriction=type_restriction.name,
             duration=duration,
             comment=comment,
+            using_db=using_db,
         )
         logger.info(
-            "User {user} kicked by {admin} for {duration}",
+            "User {user} restricted ({type_restriction}) by {admin} for {duration} in chat {chat}",
             user=target.tg_id,
+            type_restriction=type_restriction.name,
             admin=admin.tg_id,
             duration=duration,
-        )
-        text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
-        if duration < FOREVER_DURATION:
-            text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
-        return text
-
-
-async def ro_user(chat: types.Chat, target: User, admin: User, duration: timedelta, comment: str):
-    type_restriction = 'ro'
-    try:
-        await chat.restrict(target.tg_id, can_send_messages=False, until_date=duration)
-    except BadRequest as e:
-        logger.error("Failed to restrict chat member: {error!r}", error=e)
-        raise CantRestrict(
-            text=e.text, user_id=target.tg_id, chat_id=chat.id, reason=comment, type_event=type_restriction
-        )
-    else:
-        await ModeratorEvent.save_new_action(
-            moderator=admin,
-            user=target,
-            chat_id=chat.id,
-            type_restriction=type_restriction,
-            duration=duration,
-            comment=comment,
-        )
-        logger.info(
-            "User {user} restricted by {admin} for {duration}",
-            user=target.tg_id,
-            admin=admin.tg_id,
-            duration=duration,
-        )
-        return "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
-            user=target.mention_link,
-            duration=format_timedelta(duration),
+            chat=chat.chat_id,
         )
 
 
