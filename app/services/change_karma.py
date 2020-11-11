@@ -4,7 +4,7 @@ from tortoise.transactions import in_transaction
 
 from app import config
 from app.models import User, Chat, UserKarma, KarmaEvent
-from app.services.moderation import restrict, TypeRestriction, auto_restrict
+from app.services.moderation import auto_restrict
 from app.utils.exceptions import AutoLike
 
 
@@ -40,8 +40,8 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             target_user=target_user.tg_id,
             chat=chat.chat_id
         )
-        restrict_duration = None
-        if config.AUTO_RESTRICT_ON_NEGATIVE_KARMA and uk.karma < config.NEGATIVE_KARMA_TO_RESTRICT:
+
+        if check_need_auto_restrict(uk.karma, target_user, chat):
             restrict_duration = await auto_restrict(
                 bot=bot,
                 chat=chat,
@@ -51,7 +51,18 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             if restrict_duration == config.DURATION_AUTO_RESTRICT:
                 uk.karma = config.KARMA_AFTER_RESTRICT
                 await uk.save(using_db=conn)
+        else:
+            restrict_duration = None
+
     return uk, abs_change, ke, restrict_duration
+
+
+async def check_need_auto_restrict(karma: float, user: User, chat: Chat):
+    return all([
+        config.ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA,
+        karma < config.NEGATIVE_KARMA_TO_RESTRICT,
+        not await user.has_now_ro(chat),
+    ])
 
 
 async def cancel_karma_change(karma_event_id):
