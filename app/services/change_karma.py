@@ -41,7 +41,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             chat=chat.chat_id
         )
         restrict_duration = None
-        if uk.karma < config.NEGATIVE_KARMA_TO_RESTRICT:
+        if config.AUTO_RESTRICT_ON_NEGATIVE_KARMA and uk.karma < config.NEGATIVE_KARMA_TO_RESTRICT:
             restrict_duration = await auto_restrict(
                 bot=bot,
                 chat=chat,

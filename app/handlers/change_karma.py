@@ -61,7 +61,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)
     )
-    if restrict_duration:
+    if config.AUTO_RESTRICT_ON_NEGATIVE_KARMA and restrict_duration:
         if restrict_duration == config.DURATION_AUTO_RESTRICT:
             about_next = ""
         else:
