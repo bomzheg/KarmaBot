@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiogram import types
 from aiogram.utils.markdown import hlink, quote_html
 from tortoise import fields
@@ -6,6 +8,7 @@ from tortoise.models import Model
 
 from app.utils.exceptions import UserWithoutUserIdError
 from .chat import Chat
+from .common import TypeRestriction
 
 
 class User(Model):
@@ -17,6 +20,8 @@ class User(Model):
     is_bot: bool = fields.BooleanField(null=True)
     # noinspection PyUnresolvedReferences
     karma: fields.ReverseRelation['UserKarma']
+    # noinspection PyUnresolvedReferences
+    my_restriction_events: fields.ReverseRelation['ModeratorEvent']
 
     class Meta:
         table = "users"
@@ -115,6 +120,17 @@ class User(Model):
         # noinspection PyUnresolvedReferences
         uk: "UserKarma" = await self.get_uk(chat)
         return await uk.number_in_top()
+
+    async def has_now_ro(self, chat: Chat):
+        my_restrictions = await self.my_restriction_events.filter(
+            chat=chat,
+            type_restriction=TypeRestriction.ro.name
+        ).all()
+        for my_restriction in my_restrictions:
+            if my_restriction.timedelta_restriction \
+                    and my_restriction.date + my_restriction.timedelta_restriction > datetime.now():
+                return True
+        return False
 
     def to_json(self):
         return dict(

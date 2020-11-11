@@ -28,6 +28,7 @@ class ModeratorEvent(Model):
         table = 'moderator_events'
 
     def __repr__(self):
+        # noinspection PyUnresolvedReferences
         return (
             f"ModeratorEvent {self.id_} from moderator {self.moderator_id} to {self.user_id}, date {self.date}, "
             f"type_restriction {self.type_restriction} timedelta_restriction {self.timedelta_restriction}"
