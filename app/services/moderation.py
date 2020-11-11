@@ -1,7 +1,6 @@
 import json
 import typing
 from datetime import timedelta
-from enum import Enum
 from functools import partial
 
 from aiogram import Bot
@@ -10,17 +9,12 @@ from loguru import logger
 
 from app import config
 from app.models import ModeratorEvent, User, Chat
+from app.models.common import TypeRestriction
 from app.utils.exceptions import CantRestrict
 from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
 
 DEFAULT_DURATION = timedelta(hours=1)
 FOREVER_DURATION = timedelta(days=366)
-
-
-class TypeRestriction(Enum):
-    ro = "ro"
-    ban = "ban"
-    warn = "warn"
 
 
 action_for_restrict = {
@@ -131,7 +125,7 @@ def get_duration(text: str):
     return duration, comment
 
 
-async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> TypeRestriction:
+async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> timedelta:
     bot_user = await User.get_or_create_from_tg_user(await bot.me)
 
     moderator_events = await ModeratorEvent.filter(
@@ -144,6 +138,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> Ty
         events=json.dumps([repr(event) for event in moderator_events], ensure_ascii=False),
     )
 
+    # TODO вот здесь надо выполнять правила для роста количества RO
     if not moderator_events:
         duration = config.DURATION_AUTO_RESTRICT
     else:
