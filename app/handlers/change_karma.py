@@ -1,5 +1,6 @@
 import asyncio
 import typing
+from datetime import timedelta
 
 from aiogram import types
 from aiogram.types import ContentType
@@ -61,27 +62,32 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)
     )
-    if config.AUTO_RESTRICT_ON_NEGATIVE_KARMA and restrict_duration:
-        if restrict_duration == config.DURATION_AUTO_RESTRICT:
-            about_next = ""
-        else:
-            about_next = (
-                f"Вам установлена карма {config.KARMA_AFTER_RESTRICT}. "
-                f"Если Ваша карма снова достигнет {config.NEGATIVE_KARMA_TO_RESTRICT} "
-                f"Ваш RO будет перманентный."
-            )
-        await message.answer(
-            "{target}, Уровень вашей кармы снизился ниже {negative_limit}. "
-            "За это вы попадаете в {type_restriction} на срок {duration}!\n"
-            "{about_next}".format(
-                target=target.mention_link,
-                negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
-                type_restriction=TypeRestriction.ro.name,
-                duration=format_timedelta(restrict_duration),
-                about_next=about_next,
-            )
-        )
+    if restrict_duration:
+        await message.answer(await render_text_auto_restrict(restrict_duration, target))
     asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
+
+
+async def render_text_auto_restrict(restrict_duration: timedelta, target: User):
+    # TODO чото надо сделать с этим чтобы понятно объяснить за что RO и что будет в следующий раз
+    if restrict_duration == config.DURATION_AUTO_RESTRICT:
+        about_next = ""
+    else:
+        about_next = (
+            f"Вам установлена карма {config.KARMA_AFTER_RESTRICT}. "
+            f"Если Ваша карма снова достигнет {config.NEGATIVE_KARMA_TO_RESTRICT} "
+            f"Ваш RO будет перманентный."
+        )
+    return (
+        "{target}, Уровень вашей кармы снизился ниже {negative_limit}. "
+        "За это вы попадаете в {type_restriction} на срок {duration}!\n"
+        "{about_next}".format(
+            target=target.mention_link,
+            negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
+            type_restriction=TypeRestriction.ro.name,
+            duration=format_timedelta(restrict_duration),
+            about_next=about_next,
+        )
+    )
 
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())
