@@ -2,8 +2,8 @@ from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
-from .user import User
-from .chat import Chat
+from app.models.user import User
+from app.models.chat import Chat
 from app import config
 
 

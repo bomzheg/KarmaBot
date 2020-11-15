@@ -5,9 +5,9 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.utils.exceptions import SubZeroKarma
-from .chat import Chat
-from .user import User
-from .db import karma_filters
+from app.models.chat import Chat
+from app.models.user import User
+from app.models.db import karma_filters
 
 
 class UserKarma(Model):
