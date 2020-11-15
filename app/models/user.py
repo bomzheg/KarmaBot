@@ -5,7 +5,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
 from app.utils.exceptions import UserWithoutUserIdError
-from .chat import Chat
+from app.models.chat import Chat
 
 
 class User(Model):

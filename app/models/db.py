@@ -1,15 +1,9 @@
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
+from loguru import logger
 from tortoise import Tortoise, run_async
 
 from app import config
-__models__ = [
-    'app.models.user',
-    'app.models.chat',
-    'app.models.user_karma',
-    'app.models.karma_actions',
-    'app.models.moderator_actions',
-]
 karma_filters = ("-karma", "uc_id")
 
 
@@ -18,6 +12,13 @@ async def on_startup(_: Dispatcher):
 
 
 async def db_init():
+    await Tortoise.init(
+        db_url=get_db_connect_string(),
+        modules={'models': ["app.models"]}
+    )
+
+
+def get_db_connect_string():
     if config.DB_TYPE == 'mysql':
         db_url = (
             f'{config.DB_TYPE}://{config.LOGIN_DB}:{config.PASSWORD_DB}'
@@ -34,11 +35,8 @@ async def db_init():
         )
     else:
         raise ValueError("DB_TYPE not mysql, sqlite or postgres")
-
-    await Tortoise.init(
-        db_url=db_url,
-        modules={'models': __models__}
-    )
+    logger.debug("db url {url}", url=db_url)
+    return db_url
 
 
 async def on_shutdown(_: Dispatcher):
