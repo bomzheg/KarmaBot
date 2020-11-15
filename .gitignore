@@ -10,3 +10,4 @@ log/
 */.pytest_cache/
 jsons/
 *.session
+db_data/
