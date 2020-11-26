@@ -23,6 +23,10 @@ class KarmaError(Exception):
         return str(self)
 
 
+class CantChangeKarma(KarmaError):
+    pass
+
+
 class UserWithoutUserIdError(KarmaError):
     def __init__(self, username: str = None, **kwargs):
         super().__init__(**kwargs)
@@ -33,11 +37,15 @@ class UserWithoutUserIdError(KarmaError):
         )
 
 
-class SubZeroKarma(KarmaError):
+class SubZeroKarma(CantChangeKarma):
     pass
 
 
-class AutoLike(KarmaError):
+class AutoLike(CantChangeKarma):
+    pass
+
+
+class DontOffendRestricted(CantChangeKarma):
     pass
 
 

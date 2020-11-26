@@ -16,7 +16,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
-    elif ChatType.is_private(message):
+    elif ChatType.is_private(message):  # TODO DEPRECATED!
         return await message.reply(
             "Эту команду можно использовать только в группах "
             "или с указанием id нужного чата, например:"
@@ -28,7 +28,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
-@dp.message_handler(ChatType.is_group_or_super_group, commands=["me"], commands_prefix='!')
+@dp.message_handler(chat_type=[ChatType.GROUP, ChatType.SUPERGROUP], commands=["me"], commands_prefix='!')
 @dp.throttled(rate=15)
 async def get_top(message: types.Message, chat: Chat, user: User):
     logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
@@ -36,7 +36,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(f"Ваша карма в данном чате: {uk.karma_round}", disable_web_page_preview=True)
 
 
-@dp.message_handler(ChatType.is_private, commands=["me"], commands_prefix='!')
+@dp.message_handler(chat_type=ChatType.PRIVATE, commands=["me"], commands_prefix='!')
 @dp.throttled(rate=15)
 async def get_top(message: types.Message, user: User):
     logger.info("user {user} ask his karma", user=user.tg_id)

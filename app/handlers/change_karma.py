@@ -4,17 +4,19 @@ import typing
 from aiogram import types
 from aiogram.types import ContentType
 from aiogram.utils.markdown import hbold
+from loguru import logger
 
 from app.misc import dp
 from app import config
 from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
-from app.utils.exceptions import SubZeroKarma, AutoLike
+from app.utils.exceptions import SubZeroKarma, CantChangeKarma
 from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
 from app.services.adaptive_trottle import AdaptiveThrottle
-from app.services.moderation import TypeRestriction, it_was_last_one_auto_restrict
+from app.services.moderation import it_was_last_one_auto_restrict
 from app.utils.timedelta_functions import format_timedelta
+
 
 a_throttle = AdaptiveThrottle()
 
@@ -48,7 +50,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
-    except AutoLike:
+    except CantChangeKarma as e:
+        logger.info("user {user} can't change karma, {e}", user=user.tg_id, e=e)
         return
 
     msg = await message.reply(

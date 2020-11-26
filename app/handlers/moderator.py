@@ -12,7 +12,7 @@ from app.services.remove_message import delete_message
 
 
 @dp.message_handler(
-    types.ChatType.is_group_or_super_group,
+    chat_type=[types.ChatType.GROUP, types.ChatType.SUPERGROUP],
     is_reply=True,
     commands=['report', 'admin'],
     commands_prefix="/!@",

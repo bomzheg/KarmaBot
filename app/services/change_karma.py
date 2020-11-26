@@ -4,8 +4,8 @@ from tortoise.transactions import in_transaction
 
 from app import config
 from app.models import User, Chat, UserKarma, KarmaEvent
-from app.services.moderation import auto_restrict, check_need_auto_restrict
-from app.utils.exceptions import AutoLike
+from app.services.moderation import auto_restrict, check_need_auto_restrict, user_has_now_ro
+from app.utils.exceptions import AutoLike, DontOffendRestricted
 
 
 def can_change_karma(target_user: User, user: User):
@@ -16,6 +16,11 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
     if not can_change_karma(target_user, user):
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
+
+    if how_change < 0 and await user_has_now_ro(user, chat, bot):
+        logger.info("user {user} try to change karma of another user {target} with RO ",
+                    user=user.tg_id, target=target_user.tg_id)
+        raise DontOffendRestricted(user_id=user.tg_id, chat_id=chat.chat_id)
 
     async with in_transaction() as conn:
         uk, abs_change, relative_change = await UserKarma.change_or_create(
@@ -41,16 +46,15 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             chat=chat.chat_id
         )
 
-        if check_need_auto_restrict(uk.karma, target_user, chat):
+        if check_need_auto_restrict(uk.karma):
             count_auto_restrict = await auto_restrict(
                 bot=bot,
                 chat=chat,
                 target=target_user,
                 using_db=conn,
             )
-            if count_auto_restrict < len(config.RESTRICTIONS_PLAN):
-                uk.karma = config.KARMA_AFTER_RESTRICT
-                await uk.save(using_db=conn)
+            uk.karma = config.KARMA_AFTER_RESTRICT
+            await uk.save(using_db=conn)
         else:
             count_auto_restrict = 0
 

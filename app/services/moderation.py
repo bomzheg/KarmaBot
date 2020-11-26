@@ -115,12 +115,16 @@ def get_duration(text: str):
     return duration, comment
 
 
-async def check_need_auto_restrict(karma: float, user: User, chat: Chat):
+def check_need_auto_restrict(karma: float):
     return all([
         config.ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA,
         karma < config.NEGATIVE_KARMA_TO_RESTRICT,
-        not await user.has_now_ro(chat),
     ])
+
+
+async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
+    chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
+    return chat_member.can_send_messages is False
 
 
 async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> int:
@@ -131,7 +135,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> in
 
     count_auto_restrict = await ModeratorEvent.filter(
         moderator=bot_user, user=target, chat=chat,
-        type_restriction=TypeRestriction.auto_for_negative_carma,
+        type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
     ).count()
     logger.info(
         "auto restrict user {user} in chat {chat} for to negative karma. "

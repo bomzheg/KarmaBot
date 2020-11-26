@@ -121,7 +121,7 @@ class User(Model):
         uk: "UserKarma" = await self.get_uk(chat)
         return await uk.number_in_top()
 
-    async def has_now_ro(self, chat: Chat):
+    async def has_now_ro_db(self, chat: Chat):
         my_restrictions = await self.my_restriction_events.filter(
             chat=chat,
             type_restriction=TypeRestriction.ro.name
