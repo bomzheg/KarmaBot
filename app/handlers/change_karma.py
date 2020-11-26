@@ -68,30 +68,30 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
 
 async def render_text_auto_restrict(count_auto_restrict: int, target: User):
     # TODO чото надо сделать с этим чтобы понятно объяснить за что RO и что будет в следующий раз
-    if it_was_last_one_auto_restrict(count_auto_restrict):
-        about_next = ""
-    else:
-        about_next = (
-            f"Вам установлена карма {config.KARMA_AFTER_RESTRICT}. "
-            f"Если Ваша карма снова достигнет {config.NEGATIVE_KARMA_TO_RESTRICT} "
-            f"Ваше наказание будет перманентным."
-        )
-    return (
-        "{target}, Уровень вашей кармы снизился ниже {negative_limit}. "
-        "За это вы наказаны на срок {duration}!\n"
-        "{about_next}".format(
-            target=target.mention_link,
-            negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
-            duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1].duration),
-            about_next=about_next,
-        )
+    text = "{target}, Уровень вашей кармы снизился ниже {negative_limit}.\n".format(
+        target=target.mention_link,
+        negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
     )
+    if it_was_last_one_auto_restrict(count_auto_restrict):
+        text += "Это был последний разрешённый раз. Теперь вы получаете вечное наказание."
+    else:
+        text += (
+            "За это вы наказаны на срок {duration}!\n"
+            "Вам установлена карма {karma_after}. "
+            "Если Ваша карма снова достигнет {karma_to_restrict} "
+            "Ваше наказание будет строже.".format(
+                duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1].duration),
+                karma_after=config.KARMA_AFTER_RESTRICT,
+                karma_to_restrict=config.NEGATIVE_KARMA_TO_RESTRICT,
+            )
+        )
+    return text
 
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())
 async def cancel_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     if int(callback_data['user_id']) != callback_query.from_user.id:
-        return await callback_query.answer("Эта кнопка не для вас", cache_time=3600)
+        return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     await cancel_karma_change(callback_data['action_id'])
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()
