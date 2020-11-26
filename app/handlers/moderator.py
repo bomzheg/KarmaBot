@@ -47,14 +47,14 @@ def need_notify_admin(admin: types.ChatMember):
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ro(message: types.Message, user: User, target: User):
+async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
         return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
 
     try:
-        success_text = await ro_user(message.chat, target, user, duration, comment, message.bot)
+        success_text = await ro_user(chat, target, user, duration, comment, message.bot)
     except ModerationError as e:
         logger.error("Failed to restrict chat member: {error!r}", error=e)
     else:
@@ -68,14 +68,14 @@ async def cmd_ro(message: types.Message, user: User, target: User):
     user_can_restrict_members=True,
     bot_can_restrict_members=True,
 )
-async def cmd_ban(message: types.Message, user: User, target: User):
+async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
         return await message.reply(f"Не могу распознать время. {quote_html(e.text)}")
 
     try:
-        success_text = await ban_user(message.chat, target, user, duration, comment, message.bot)
+        success_text = await ban_user(chat, target, user, duration, comment, message.bot)
     except ModerationError as e:
         logger.error("Failed to kick chat member: {error!r}", error=e)
     else:

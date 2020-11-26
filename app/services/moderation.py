@@ -65,6 +65,7 @@ async def restrict(
         using_db=None
 ):
     try:
+        # restrict in telegram
         await config.action_for_restrict[type_restriction](
             bot,
             chat_id=chat.chat_id,
@@ -77,7 +78,7 @@ async def restrict(
             reason=comment, type_event=type_restriction.name
         )
     else:
-        await ModeratorEvent.save_new_action(
+        moderator_event = await ModeratorEvent.save_new_action(
             moderator=admin,
             user=target,
             chat=chat,
@@ -94,6 +95,7 @@ async def restrict(
             duration=duration,
             chat=chat.chat_id,
         )
+        return moderator_event
 
 
 def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
@@ -118,7 +120,7 @@ def get_duration(text: str):
 def check_need_auto_restrict(karma: float):
     return all([
         config.ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA,
-        karma < config.NEGATIVE_KARMA_TO_RESTRICT,
+        karma <= config.NEGATIVE_KARMA_TO_RESTRICT,
     ])
 
 
@@ -127,7 +129,7 @@ async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
     return chat_member.can_send_messages is False
 
 
-async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> int:
+async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> typing.Tuple[int, ModeratorEvent]:
     """
     return count auto restrict
     """
@@ -150,7 +152,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> in
     else:
         current_restriction = config.RESTRICTIONS_PLAN[count_auto_restrict]
 
-    await restrict(
+    moderator_event = await restrict(
         bot=bot,
         chat=chat,
         target=target,
@@ -160,7 +162,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> in
         type_restriction=current_restriction.type_restriction,
         using_db=using_db,
     )
-    return count_auto_restrict + 1
+    return count_auto_restrict + 1, moderator_event
 
 
 def it_was_last_one_auto_restrict(count_auto_restrict: int) -> bool:

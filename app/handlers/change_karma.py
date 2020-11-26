@@ -40,7 +40,7 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
 
     try:
-        uk, abs_change, karma_event, count_auto_restrict = await change_karma(
+        result_change_karma = await change_karma(
             target_user=target,
             chat=chat,
             user=user,
@@ -53,25 +53,34 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except CantChangeKarma as e:
         logger.info("user {user} can't change karma, {e}", user=user.tg_id, e=e)
         return
+    if result_change_karma.count_auto_restrict:
+        notify_auto_restrict_text = await render_text_auto_restrict(result_change_karma.count_auto_restrict, target)
+    else:
+        notify_auto_restrict_text = ""
 
     msg = await message.reply(
-        "Вы {how_change} карму {name} до {karma_new} ({power:+.2f})".format(
+        "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
+        "\n\n{notify_auto_restrict_text}".format(
             how_change=get_how_change_text(karma['karma_change']),
-            name=hbold(target.fullname),
-            karma_new=hbold(uk.karma_round),
-            power=abs_change,
+            name=target.fullname,
+            karma_new=result_change_karma.karma_after,
+            power=result_change_karma.abs_change,
+            notify_auto_restrict_text=notify_auto_restrict_text
         ),
         disable_web_page_preview=True,
-        reply_markup=kb.get_kb_karma_cancel(user, karma_event)
+        reply_markup=kb.get_kb_karma_cancel(
+            user=user,
+            karma_event=result_change_karma.karma_event,
+            rollback_karma=result_change_karma.karma_after,
+            moderator_event=result_change_karma.moderator_event,
+        )
     )
-    if count_auto_restrict:
-        await message.answer(await render_text_auto_restrict(count_auto_restrict, target))
     asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
 
 
 async def render_text_auto_restrict(count_auto_restrict: int, target: User):
     # TODO чото надо сделать с этим чтобы понятно объяснить за что RO и что будет в следующий раз
-    text = "{target}, Уровень вашей кармы снизился ниже {negative_limit}.\n".format(
+    text = "{target}, Уровень вашей кармы стал ниже {negative_limit}.\n".format(
         target=target.mention_link,
         negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
     )
@@ -79,7 +88,7 @@ async def render_text_auto_restrict(count_auto_restrict: int, target: User):
         text += "Это был последний разрешённый раз. Теперь вы получаете вечное наказание."
     else:
         text += (
-            "За это вы наказаны на срок {duration}!\n"
+            "За это вы наказаны на срок {duration}\n"
             "Вам установлена карма {karma_after}. "
             "Если Ваша карма снова достигнет {karma_to_restrict} "
             "Ваше наказание будет строже.".format(
@@ -93,8 +102,13 @@ async def render_text_auto_restrict(count_auto_restrict: int, target: User):
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())
 async def cancel_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
-    if int(callback_data['user_id']) != callback_query.from_user.id:
+    user_cancel_id = int(callback_data['user_id'])
+    if user_cancel_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
-    await cancel_karma_change(callback_data['action_id'])
+    karma_event_id = int(callback_data['karma_event_id'])
+    karma_after = float(callback_data['rollback_karma'])
+    moderator_event_id = callback_data['moderator_event_id']
+    moderator_event_id = None if moderator_event_id == "null" else int(moderator_event_id)
+    await cancel_karma_change(karma_event_id, karma_after, moderator_event_id, callback_query.bot)
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()
