@@ -70,7 +70,7 @@ class UserGetter:
         return self.get_aiogram_user_by_pyrogram(user)
 
     @staticmethod
-    def get_aiogram_user_by_pyrogram(user: pyrogram.User) -> User:
+    def get_aiogram_user_by_pyrogram(user: pyrogram.types.User) -> User:
         return User(
             id=user.id,
             is_bot=user.is_bot,
@@ -81,7 +81,7 @@ class UserGetter:
         )
 
     @staticmethod
-    def get_user_dict_for_log(user: pyrogram.User) -> dict:
+    def get_user_dict_for_log(user: pyrogram.types.User) -> dict:
         return dict(
             id=user.id,
             is_bot=user.is_bot,
