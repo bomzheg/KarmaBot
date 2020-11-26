@@ -74,16 +74,15 @@ async def render_text_auto_restrict(count_auto_restrict: int, target: User):
         about_next = (
             f"Вам установлена карма {config.KARMA_AFTER_RESTRICT}. "
             f"Если Ваша карма снова достигнет {config.NEGATIVE_KARMA_TO_RESTRICT} "
-            f"Ваш RO будет перманентный."
+            f"Ваше наказание будет перманентным."
         )
     return (
         "{target}, Уровень вашей кармы снизился ниже {negative_limit}. "
-        "За это вы попадаете в {type_restriction} на срок {duration}!\n"
+        "За это вы наказаны на срок {duration}!\n"
         "{about_next}".format(
             target=target.mention_link,
             negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
-            type_restriction=TypeRestriction.ro.name,
-            duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1]),
+            duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1].duration),
             about_next=about_next,
         )
     )
