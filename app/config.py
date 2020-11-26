@@ -3,6 +3,7 @@ constants, settings
 """
 import os
 import secrets
+import typing
 from datetime import timedelta
 from functools import partial
 from pathlib import Path
@@ -37,11 +38,17 @@ ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA = bool(int(os.getenv("ENABLE_AUTO_RESTRIC
 NEGATIVE_KARMA_TO_RESTRICT = -100
 KARMA_AFTER_RESTRICT = -80
 
-RESTRICTIONS_PLAN = (
-    timedelta(days=7),
-    timedelta(days=30),
-    FOREVER_DURATION,
-)
+
+class RestrictionPlanElem(typing.NamedTuple):
+    duration: timedelta
+    type_restriction: TypeRestriction
+
+
+RESTRICTIONS_PLAN: typing.List[RestrictionPlanElem] = [
+    RestrictionPlanElem(timedelta(days=7), TypeRestriction.auto_for_negative_carma),
+    RestrictionPlanElem(timedelta(days=30), TypeRestriction.auto_for_negative_carma),
+    RestrictionPlanElem(FOREVER_DURATION, TypeRestriction.ban),
+]
 
 RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)
 BAN_ACTION = Bot.kick_chat_member

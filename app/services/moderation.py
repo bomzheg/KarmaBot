@@ -142,18 +142,18 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> in
     )
 
     if it_was_last_one_auto_restrict(count_auto_restrict):
-        duration = config.RESTRICTIONS_PLAN[-1]
+        current_restriction = config.RESTRICTIONS_PLAN[-1]
     else:
-        duration = config.RESTRICTIONS_PLAN[count_auto_restrict]
+        current_restriction = config.RESTRICTIONS_PLAN[count_auto_restrict]
 
     await restrict(
         bot=bot,
         chat=chat,
         target=target,
         admin=bot_user,
-        duration=duration,
+        duration=current_restriction.duration,
         comment=config.COMMENT_AUTO_RESTRICT,
-        type_restriction=TypeRestriction.auto_for_negative_carma,
+        type_restriction=current_restriction.type_restriction,
         using_db=using_db,
     )
     return count_auto_restrict + 1
