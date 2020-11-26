@@ -18,8 +18,17 @@ load_dotenv(str(app_dir / '.env'))
 
 PLUS = "+"
 PLUS_WORDS = frozenset({
-    "спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба",
-    "благодарочка", "thx", "мерси", "выручил",
+    "спасибо",
+    "спс",
+    "спасибочки",
+    "благодарю",
+    "пасиба",
+    "пасеба",
+    "посеба",
+    "благодарочка",
+    "thx",
+    "мерси",
+    "выручил",
 })
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
@@ -45,19 +54,19 @@ class RestrictionPlanElem(typing.NamedTuple):
 
 
 RESTRICTIONS_PLAN: typing.List[RestrictionPlanElem] = [
-    RestrictionPlanElem(timedelta(days=7), TypeRestriction.auto_for_negative_carma),
-    RestrictionPlanElem(timedelta(days=30), TypeRestriction.auto_for_negative_carma),
-    RestrictionPlanElem(FOREVER_DURATION, TypeRestriction.ban),
+    RestrictionPlanElem(timedelta(days=7), TypeRestriction.karmic_ro),
+    RestrictionPlanElem(timedelta(days=30), TypeRestriction.karmic_ro),
+    RestrictionPlanElem(FOREVER_DURATION, TypeRestriction.karmic_ban),
 ]
 
 RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)
 BAN_ACTION = Bot.kick_chat_member
-AUTO_RESTRICT_ACTION = RO_ACTION
 
 action_for_restrict = {
     TypeRestriction.ban: BAN_ACTION,
     TypeRestriction.ro: RO_ACTION,
-    TypeRestriction.auto_for_negative_carma: AUTO_RESTRICT_ACTION,
+    TypeRestriction.karmic_ro: RO_ACTION,
+    TypeRestriction.karmic_ban: BAN_ACTION,
 }
 COMMENT_AUTO_RESTRICT = f"Карма ниже {NEGATIVE_KARMA_TO_RESTRICT}"
 
