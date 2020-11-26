@@ -1,6 +1,5 @@
 import asyncio
 import typing
-from datetime import timedelta
 
 from aiogram import types
 from aiogram.types import ContentType
@@ -13,9 +12,9 @@ from app.services.change_karma import change_karma, cancel_karma_change
 from app.utils.exceptions import SubZeroKarma, AutoLike
 from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
-from ..services.adaptive_trottle import AdaptiveThrottle
-from ..services.moderation import TypeRestriction
-from ..utils.timedelta_functions import format_timedelta
+from app.services.adaptive_trottle import AdaptiveThrottle
+from app.services.moderation import TypeRestriction, it_was_last_one_auto_restrict
+from app.utils.timedelta_functions import format_timedelta
 
 a_throttle = AdaptiveThrottle()
 
@@ -39,7 +38,7 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
 
     try:
-        uk, abs_change, karma_event, restrict_duration = await change_karma(
+        uk, abs_change, karma_event, count_auto_restrict = await change_karma(
             target_user=target,
             chat=chat,
             user=user,
@@ -62,14 +61,14 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(user, karma_event)
     )
-    if restrict_duration:
-        await message.answer(await render_text_auto_restrict(restrict_duration, target))
+    if count_auto_restrict:
+        await message.answer(await render_text_auto_restrict(count_auto_restrict, target))
     asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
 
 
-async def render_text_auto_restrict(restrict_duration: timedelta, target: User):
+async def render_text_auto_restrict(count_auto_restrict: int, target: User):
     # TODO чото надо сделать с этим чтобы понятно объяснить за что RO и что будет в следующий раз
-    if restrict_duration == config.DURATION_AUTO_RESTRICT:
+    if it_was_last_one_auto_restrict(count_auto_restrict):
         about_next = ""
     else:
         about_next = (
@@ -84,7 +83,7 @@ async def render_text_auto_restrict(restrict_duration: timedelta, target: User):
             target=target.mention_link,
             negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
             type_restriction=TypeRestriction.ro.name,
-            duration=format_timedelta(restrict_duration),
+            duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1]),
             about_next=about_next,
         )
     )

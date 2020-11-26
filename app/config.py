@@ -4,17 +4,21 @@ constants, settings
 import os
 import secrets
 from datetime import timedelta
+from functools import partial
 from pathlib import Path
 
+from aiogram import Bot
 from dotenv import load_dotenv
+
+from app.models.common import TypeRestriction
 
 app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
 PLUS = "+"
 PLUS_WORDS = frozenset({
-    "спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба", "благодарочка", "thx", "мерси",
-    "выручил",
+    "спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба",
+    "благодарочка", "thx", "мерси", "выручил",
 })
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
@@ -24,11 +28,30 @@ MINUS_EMOJI = frozenset({'👎', })
 
 TIME_TO_CANCEL_ACTIONS = 60
 
+DEFAULT_DURATION = timedelta(hours=1)  # длительность ограничения по умолчанию
+FOREVER_DURATION = timedelta(days=666)  # длительность ограничения "навсегда"
+
 # auto restrict when karma less than NEGATIVE_KARMA_TO_RESTRICT
 ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA = bool(int(os.getenv("ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA", default=0)))
+
 NEGATIVE_KARMA_TO_RESTRICT = -100
 KARMA_AFTER_RESTRICT = -80
-DURATION_AUTO_RESTRICT = timedelta(days=30)
+
+RESTRICTIONS_PLAN = (
+    timedelta(days=7),
+    timedelta(days=30),
+    FOREVER_DURATION,
+)
+
+RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)
+BAN_ACTION = Bot.kick_chat_member
+AUTO_RESTRICT_ACTION = RO_ACTION
+
+action_for_restrict = {
+    TypeRestriction.ban: BAN_ACTION,
+    TypeRestriction.ro: RO_ACTION,
+    TypeRestriction.auto_for_negative_carma: AUTO_RESTRICT_ACTION,
+}
 COMMENT_AUTO_RESTRICT = f"Карма ниже {NEGATIVE_KARMA_TO_RESTRICT}"
 
 PROG_NAME = "KarmaBot"
