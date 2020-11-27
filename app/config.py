@@ -3,17 +3,33 @@ constants, settings
 """
 import os
 import secrets
+import typing
+from datetime import timedelta
+from functools import partial
 from pathlib import Path
 
+from aiogram import Bot
 from dotenv import load_dotenv
+
+from app.models.common import TypeRestriction
 
 app_dir: Path = Path(__file__).parent.parent
 load_dotenv(str(app_dir / '.env'))
 
 PLUS = "+"
-PLUS_WORDS = frozenset(
-    {"спасибо", "спс", "спасибочки", "благодарю", "пасиба", "пасеба", "посеба", "благодарочка", "thx", "мерси", "выручил"}
-)
+PLUS_WORDS = frozenset({
+    "спасибо",
+    "спс",
+    "спасибочки",
+    "благодарю",
+    "пасиба",
+    "пасеба",
+    "посеба",
+    "благодарочка",
+    "thx",
+    "мерси",
+    "выручил",
+})
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
 PLUS_EMOJI = frozenset({"👍", })
 MINUS = "-"
@@ -21,6 +37,39 @@ MINUS_TRIGGERS = frozenset({MINUS, })
 MINUS_EMOJI = frozenset({'👎', })
 
 TIME_TO_CANCEL_ACTIONS = 60
+
+DEFAULT_RESTRICT_DURATION = timedelta(hours=1)
+FOREVER_RESTRICT_DURATION = timedelta(days=666)
+
+# auto restrict when karma less than NEGATIVE_KARMA_TO_RESTRICT
+ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA = bool(int(os.getenv(
+    "ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA", default=0)))
+
+NEGATIVE_KARMA_TO_RESTRICT = -100
+KARMA_AFTER_RESTRICT = -80
+
+
+class RestrictionPlanElem(typing.NamedTuple):
+    duration: timedelta
+    type_restriction: TypeRestriction
+
+
+RESTRICTIONS_PLAN: typing.List[RestrictionPlanElem] = [
+    RestrictionPlanElem(timedelta(days=7), TypeRestriction.karmic_ro),
+    RestrictionPlanElem(timedelta(days=30), TypeRestriction.karmic_ro),
+    RestrictionPlanElem(FOREVER_RESTRICT_DURATION, TypeRestriction.karmic_ban),
+]
+
+RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)
+BAN_ACTION = Bot.kick_chat_member
+
+action_for_restrict = {
+    TypeRestriction.ban: BAN_ACTION,
+    TypeRestriction.ro: RO_ACTION,
+    TypeRestriction.karmic_ro: RO_ACTION,
+    TypeRestriction.karmic_ban: BAN_ACTION,
+}
+COMMENT_AUTO_RESTRICT = f"Карма ниже {NEGATIVE_KARMA_TO_RESTRICT}"
 
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
