@@ -1,7 +1,4 @@
-from contextlib import suppress
-
 from aiogram import Bot
-from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 from tortoise.transactions import in_transaction
 

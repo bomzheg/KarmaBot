@@ -20,8 +20,8 @@ to the group administrators
 * !idchat - get id of chat, your id, and id of replayed user   
 
 moderator commands list:
-* !ro !mute [DURATION] - restrict replyed user for DURATION. 
-* !ban [DURATION] - kick replyed user for DURATION
+* !ro !mute [DURATION] - restrict replied user for DURATION. 
+* !ban [DURATION] - kick replied user for DURATION
   * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
     * AAA - count of years (more that one years is permanent)
     * BBB - count of weeks

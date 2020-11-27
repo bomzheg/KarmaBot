@@ -69,7 +69,6 @@ class User(Model):
     async def get_or_create_from_tg_user(cls, user_tg: types.User):
         if user_tg.id is None:
             try:
-                # __iexact - хотя в документации __iequals
                 return await cls.get(username__iexact=user_tg.username)
             except DoesNotExist:
                 raise UserWithoutUserIdError(username=user_tg.username)

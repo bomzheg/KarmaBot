@@ -3,7 +3,6 @@ import typing
 
 from aiogram import types
 from aiogram.types import ContentType
-from aiogram.utils.markdown import hbold
 from loguru import logger
 
 from app.misc import dp
