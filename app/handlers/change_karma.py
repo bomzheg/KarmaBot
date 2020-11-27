@@ -10,7 +10,7 @@ from app.misc import dp
 from app import config
 from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
-from app.utils.exceptions import SubZeroKarma, CantChangeKarma
+from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
 from app.services.remove_message import remove_kb_after_sleep
 from . import keyboards as kb
 from app.services.adaptive_trottle import AdaptiveThrottle
@@ -50,6 +50,8 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
+    except DontOffendRestricted:
+        return await message.reply("Не обижай его, он и так наказан!")
     except CantChangeKarma as e:
         logger.info("user {user} can't change karma, {e}", user=user.tg_id, e=e)
         return
