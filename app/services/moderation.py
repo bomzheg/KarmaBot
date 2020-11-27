@@ -33,7 +33,7 @@ async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, c
         type_restriction=TypeRestriction.ban
     )
     text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
-    if duration < config.FOREVER_DURATION:
+    if duration < config.FOREVER_RESTRICT_DURATION:
         text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
     return text
 
@@ -113,7 +113,7 @@ def get_duration(text: str):
     if duration_text:
         duration = parse_timedelta_from_text(duration_text)
     else:
-        duration = config.DEFAULT_DURATION
+        duration = config.DEFAULT_RESTRICT_DURATION
     return duration, comment
 
 

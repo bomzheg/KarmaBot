@@ -38,11 +38,12 @@ MINUS_EMOJI = frozenset({'👎', })
 
 TIME_TO_CANCEL_ACTIONS = 60
 
-DEFAULT_DURATION = timedelta(hours=1)  # длительность ограничения по умолчанию
-FOREVER_DURATION = timedelta(days=666)  # длительность ограничения "навсегда"
+DEFAULT_RESTRICT_DURATION = timedelta(hours=1)
+FOREVER_RESTRICT_DURATION = timedelta(days=666)
 
 # auto restrict when karma less than NEGATIVE_KARMA_TO_RESTRICT
-ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA = bool(int(os.getenv("ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA", default=0)))
+ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA = bool(int(os.getenv(
+    "ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA", default=0)))
 
 NEGATIVE_KARMA_TO_RESTRICT = -100
 KARMA_AFTER_RESTRICT = -80
@@ -56,7 +57,7 @@ class RestrictionPlanElem(typing.NamedTuple):
 RESTRICTIONS_PLAN: typing.List[RestrictionPlanElem] = [
     RestrictionPlanElem(timedelta(days=7), TypeRestriction.karmic_ro),
     RestrictionPlanElem(timedelta(days=30), TypeRestriction.karmic_ro),
-    RestrictionPlanElem(FOREVER_DURATION, TypeRestriction.karmic_ban),
+    RestrictionPlanElem(FOREVER_RESTRICT_DURATION, TypeRestriction.karmic_ban),
 ]
 
 RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)
