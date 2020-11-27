@@ -23,6 +23,10 @@ class KarmaError(Exception):
         return str(self)
 
 
+class CantChangeKarma(KarmaError):
+    pass
+
+
 class UserWithoutUserIdError(KarmaError):
     def __init__(self, username: str = None, **kwargs):
         super().__init__(**kwargs)
@@ -33,11 +37,15 @@ class UserWithoutUserIdError(KarmaError):
         )
 
 
-class SubZeroKarma(KarmaError):
+class SubZeroKarma(CantChangeKarma):
     pass
 
 
-class AutoLike(KarmaError):
+class AutoLike(CantChangeKarma):
+    pass
+
+
+class DontOffendRestricted(CantChangeKarma):
     pass
 
 
@@ -58,4 +66,15 @@ class InvalidFormatDuration(TimedeltaParseError):
 
 
 class NotHaveNeighbours(KarmaError):
+    pass
+
+
+class ModerationError(KarmaError):
+    def __init__(self, reason: str = None, type_event: str = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reason = reason
+        self.type_event = type_event
+
+
+class CantRestrict(ModerationError):
     pass

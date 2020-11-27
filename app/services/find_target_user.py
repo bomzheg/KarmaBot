@@ -21,7 +21,7 @@ def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False)
 
     author_user = message.from_user
 
-    target_user = get_replyed_user(message)
+    target_user = get_replied_user(message)
     if has_target_user(target_user, author_user, can_be_same, can_be_bot):
         return target_user
 
@@ -78,7 +78,7 @@ def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
     return None
 
 
-def get_replyed_user(message: types.Message) -> typing.Optional[types.User]:
+def get_replied_user(message: types.Message) -> typing.Optional[types.User]:
     if message.reply_to_message:
         return message.reply_to_message.from_user
     return None

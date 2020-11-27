@@ -19,7 +19,7 @@ def parse_rating(html):
             name = tds[0].text
             try:
                 username = username_by_link(tds[0].find('a').get('href'))
-            except Exception:
+            except AttributeError:
                 username = None
             karma = tds[1].text
             yield name, username, karma

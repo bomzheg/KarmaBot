@@ -28,8 +28,9 @@ class ModeratorEvent(Model):
         table = 'moderator_events'
 
     def __repr__(self):
+        # noinspection PyUnresolvedReferences
         return (
-            f"KarmaEvent {self.id_} from moderator {self.moderator.id} to {self.user.id}, date {self.date}, "
+            f"ModeratorEvent {self.id_} from moderator {self.moderator_id} to {self.user_id}, date {self.date}, "
             f"type_restriction {self.type_restriction} timedelta_restriction {self.timedelta_restriction}"
         )
 
@@ -41,7 +42,8 @@ class ModeratorEvent(Model):
             chat: Chat,
             type_restriction: str,
             duration: timedelta = None,
-            comment: str = ""
+            comment: str = "",
+            using_db=None,
     ):
         moderator_event = ModeratorEvent(
             moderator=moderator,
@@ -51,7 +53,7 @@ class ModeratorEvent(Model):
             timedelta_restriction=duration,
             comment=comment
         )
-        await moderator_event.save()
+        await moderator_event.save(using_db=using_db)
         return moderator_event
 
     @classmethod
