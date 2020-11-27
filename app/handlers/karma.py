@@ -17,6 +17,7 @@ async def get_top_from_private(message: types.Message, chat: Chat, user: User):
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
+    else:
         return await message.reply(
             "Эту команду можно использовать только в группах "
             "или с указанием id нужного чата, например:"
