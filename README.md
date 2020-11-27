@@ -20,8 +20,8 @@ to the group administrators
 * !idchat - get id of chat, your id, and id of replayed user   
 
 moderator commands list:
-* !ro !mute [DURATION] - restrict replied user for DURATION. 
-* !ban [DURATION] - kick replied user for DURATION
+* !ro !mute [DURATION] [@mention] - restrict replied or mentioned user for DURATION. 
+* !ban [DURATION] [@mention] - kick replied user for DURATION
   * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
     * AAA - count of years (more that one years is permanent)
     * BBB - count of weeks
@@ -30,8 +30,8 @@ moderator commands list:
     * EEE - count of minutes
     * FFF - count of seconds (less that 30 seconds will be mean 30 seconds)
   * you have to specify one or more duration part without spaces
-* !warn, !w - official warn user from moderator
-* !info - information about user (karma changes, restrictions, warns)
+* !warn, !w [@mention] - official warn user from moderator
+* !info [@mention] - information about user (karma changes, restrictions, warns)
 
 superuser commands list:
 * /generate_invite_logchat - if bot is admin in chat of LOG_CHAT_ID from config.py bot generates invite link to that
