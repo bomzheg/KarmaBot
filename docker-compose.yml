@@ -8,16 +8,17 @@ services:
     build: .
     volumes:
       - type: "mount"
-        source: "/home/bomzheg/log/karmabot/"
+        source: "${HOME}/KarmaBot/log/karmabot/"
         target: "/log"
       - type: "mount"
-        source: "/home/bomzheg/sqlite/db_data"
+        source: "${HOME}/KarmaBot/db_data"
         target: "/db_data"
 
       - type: "mount"
         source: problems
         target: "/jsons"
     env_file: .env
+    entrypoint: ["python3", "-m", "app", "-p"]
     networks:
       - reverse-proxy
 
