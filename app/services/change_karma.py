@@ -72,7 +72,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
     )
 
 
-async def cancel_karma_change(karma_event_id: int, karma_after: float, moderator_event_id: int, bot: Bot):
+async def cancel_karma_change(karma_event_id: int, rollback_karma: float, moderator_event_id: int, bot: Bot):
     async with in_transaction() as conn:
         karma_event = await KarmaEvent.get(id_=karma_event_id)
 
@@ -84,7 +84,7 @@ async def cancel_karma_change(karma_event_id: int, karma_after: float, moderator
         chat_id = karma_event.chat_id
 
         user_karma = await UserKarma.get(chat_id=chat_id, user_id=user_to_id)
-        user_karma.karma = karma_after - karma_event.how_change_absolute
+        user_karma.karma = user_karma.karma + rollback_karma
         await user_karma.save(update_fields=['karma'], using_db=conn)
         await karma_event.delete(using_db=conn)
         if moderator_event_id is not None:

@@ -59,6 +59,11 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     else:
         notify_auto_restrict_text = ""
 
+    # How match karma was changed. Sign show changed difference, not difference for cancel
+    how_changed_karma = result_change_karma.user_karma.karma \
+        - result_change_karma.karma_after \
+        + result_change_karma.abs_change
+
     msg = await message.reply(
         "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
         "\n\n{notify_auto_restrict_text}".format(
@@ -72,7 +77,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         reply_markup=kb.get_kb_karma_cancel(
             user=user,
             karma_event=result_change_karma.karma_event,
-            rollback_karma=result_change_karma.karma_after,
+            rollback_karma=-how_changed_karma,
             moderator_event=result_change_karma.moderator_event,
         )
     )
@@ -107,9 +112,9 @@ async def cancel_karma(callback_query: types.CallbackQuery, callback_data: typin
     if user_cancel_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     karma_event_id = int(callback_data['karma_event_id'])
-    karma_after = float(callback_data['rollback_karma'])
+    rollback_karma = float(callback_data['rollback_karma'])
     moderator_event_id = callback_data['moderator_event_id']
     moderator_event_id = None if moderator_event_id == "null" else int(moderator_event_id)
-    await cancel_karma_change(karma_event_id, karma_after, moderator_event_id, callback_query.bot)
+    await cancel_karma_change(karma_event_id, rollback_karma, moderator_event_id, callback_query.bot)
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()
