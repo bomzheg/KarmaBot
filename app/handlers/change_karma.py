@@ -10,7 +10,7 @@ from app import config
 from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
 from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
-from app.services.remove_message import remove_kb_after_sleep
+from app.services.remove_message import remove_kb
 from . import keyboards as kb
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.moderation import it_was_last_one_auto_restrict
@@ -81,7 +81,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             moderator_event=result_change_karma.moderator_event,
         )
     )
-    asyncio.create_task(remove_kb_after_sleep(msg, config.TIME_TO_CANCEL_ACTIONS))
+    asyncio.create_task(remove_kb(msg, config.TIME_TO_CANCEL_ACTIONS))
 
 
 async def render_text_auto_restrict(count_auto_restrict: int, target: User):
