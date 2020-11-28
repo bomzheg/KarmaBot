@@ -1,13 +1,12 @@
 from aiogram import types
 from aiogram.types import ChatType
-from aiogram.utils.markdown import hbold, hpre
+from aiogram.utils.markdown import hpre
 from loguru import logger
 
 from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
-from app.models.user_karma import UserKarma
-from app.services.karma_top import get_karma_top
+from app.services.karma import get_karma_top, get_me_info, get_me_chat_info
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!', chat_type=types.ChatType.PRIVATE)
@@ -41,18 +40,21 @@ async def get_top(message: types.Message, chat: Chat, user: User):
 @dp.throttled(rate=15)
 async def get_top(message: types.Message, chat: Chat, user: User):
     logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
-    uk, _ = await UserKarma.get_or_create(chat=chat, user=user)
-    await message.reply(f"Ваша карма в данном чате: {uk.karma_round}", disable_web_page_preview=True)
+    uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
+    await message.reply(
+        f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",
+        disable_web_page_preview=True
+    )
 
 
 @dp.message_handler(chat_type=ChatType.PRIVATE, commands=["me"], commands_prefix='!')
 @dp.throttled(rate=15)
 async def get_top(message: types.Message, user: User):
     logger.info("user {user} ask his karma", user=user.tg_id)
-    uks = await UserKarma.filter(user=user).prefetch_related('chat').all()
+    uks = await get_me_info(user)
     text = ""
-    for uk in uks:
-        text += f"\n{uk.chat.mention} {hbold(uk.karma_round)}"
+    for uk, number_in_top in uks:
+        text += f"\n{uk.chat.mention} <b>{uk.karma:.2f}</b> ({number_in_top})"
     if text:
         return await message.reply(
             f"У Вас есть карма в следующих чатах:{text}",
