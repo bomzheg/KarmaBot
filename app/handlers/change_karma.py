@@ -33,7 +33,18 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
-@dp.message_handler(karma_change=True, has_target=True, content_types=[ContentType.STICKER, ContentType.TEXT])
+@dp.message_handler(karma_change=True, has_target=True, content_types=[
+        ContentType.TEXT,
+
+        ContentType.STICKER,
+
+        ContentType.ANIMATION,
+        ContentType.AUDIO,
+        ContentType.DOCUMENT,
+        ContentType.PHOTO,
+        ContentType.VIDEO,
+        ContentType.VOICE,
+])
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
 @dp.throttled(rate=1)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
