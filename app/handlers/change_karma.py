@@ -3,6 +3,7 @@ import typing
 
 from aiogram import types
 from aiogram.types import ContentType
+from aiogram.utils.markdown import quote_html
 from loguru import logger
 
 from app.misc import dp
@@ -79,7 +80,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
         "\n\n{notify_auto_restrict_text}".format(
             how_change=get_how_change_text(karma['karma_change']),
-            name=target.fullname,
+            name=quote_html(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
             notify_auto_restrict_text=notify_auto_restrict_text
