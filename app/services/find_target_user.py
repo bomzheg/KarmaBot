@@ -65,15 +65,17 @@ def is_one_user(user_1: types.User, user_2: types.User):
 
 
 def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
-    if not message.text:
+    possible_mentioned_text = message.text or message.caption
+    if not possible_mentioned_text:
         return None
-    if not message.entities:
+    entities = message.entities or message.caption_entities
+    if not entities:
         return None
-    for ent in message.entities:
+    for ent in entities:
         if ent.type == "text_mention":
             return ent.user
         elif ent.type == "mention":
-            username = ent.get_text(message.text).lstrip("@")
+            username = ent.get_text(possible_mentioned_text).lstrip("@")
             return types.User(username=username)
     return None
 

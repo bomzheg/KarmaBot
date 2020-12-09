@@ -3,6 +3,7 @@ import typing
 
 from aiogram import types
 from aiogram.types import ContentType
+from aiogram.utils.markdown import quote_html
 from loguru import logger
 
 from app.misc import dp
@@ -33,7 +34,18 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
-@dp.message_handler(karma_change=True, has_target=True, content_types=[ContentType.STICKER, ContentType.TEXT])
+@dp.message_handler(karma_change=True, has_target=True, content_types=[
+        ContentType.TEXT,
+
+        ContentType.STICKER,
+
+        ContentType.ANIMATION,
+        ContentType.AUDIO,
+        ContentType.DOCUMENT,
+        ContentType.PHOTO,
+        ContentType.VIDEO,
+        ContentType.VOICE,
+])
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
 @dp.throttled(rate=1)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
@@ -68,7 +80,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
         "\n\n{notify_auto_restrict_text}".format(
             how_change=get_how_change_text(karma['karma_change']),
-            name=target.fullname,
+            name=quote_html(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
             notify_auto_restrict_text=notify_auto_restrict_text
