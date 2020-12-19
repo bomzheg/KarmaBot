@@ -9,7 +9,11 @@ from app import config
 from app.misc import dp
 from app.models.chat import Chat
 from app.models.user import User
-from app.services.karma import get_karma_top, get_me_info, get_me_chat_info
+from app.services.karma import (
+    get_top as get_karma_top,
+    get_me_info,
+    get_me_chat_info
+)
 from app.services.remove_message import delete_message
 
 
