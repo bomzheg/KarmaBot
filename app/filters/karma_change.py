@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import BoundFilter
 
 from app.config import PLUS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS, MINUS_EMOJI, MINUS_TRIGGERS
 
-PUNCTUATIONS = ",.!"
+PUNCTUATIONS = ",.!)"
 INF = float('inf')
 
 
@@ -40,10 +40,10 @@ def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
     """
     if text is not None:
         possible_trigger, comment = get_first_word(text)
+
         changer = has_plus_karma(possible_trigger)
         if changer:
             return changer, comment
-        possible_trigger, comment = get_first_line(text)
         changer = has_minus_karma(possible_trigger)
         if changer:
             return changer, comment
@@ -62,33 +62,42 @@ def get_first_word(text: str) -> typing.Tuple[str, str]:
     return possible_trigger.lower().rstrip(PUNCTUATIONS), " ".join(comment)
 
 
-def has_plus_karma(word: str) -> typing.Optional[float]:
-    if len(word) == 0:
+def has_plus_karma(possible_trigger: str) -> typing.Optional[float]:
+    if len(possible_trigger) == 0:
+        # blank line has no triggers
         return None
-    if len(word) > 1 and word[1:] == word[:-1] and word[0:len(PLUS)] == PLUS:  # contains only ++..+
+    if all([
+        len(possible_trigger) > 1,
+        possible_trigger[1:] == possible_trigger[:-1],
+        possible_trigger[0:len(PLUS)] == PLUS
+    ]):
+        # contains only ++..+
         return INF
-    if word in PLUS_TRIGGERS:
+    if possible_trigger in PLUS_TRIGGERS:
         return INF
-    if word[0] in PLUS_EMOJI:
+    if possible_trigger[0] in PLUS_EMOJI:
         return INF
-    if word[0:len(PLUS)] == PLUS:
+    if possible_trigger[0:len(PLUS)] == PLUS:
         try:
-            return +int(word[len(PLUS):])
+            return +int(possible_trigger[len(PLUS):])
         except ValueError:
             pass
     return None
 
 
-def has_minus_karma(first_line: str) -> typing.Optional[float]:
-    if len(first_line) == 0:
+def has_minus_karma(possible_trigger: str) -> typing.Optional[float]:
+    if len(possible_trigger) == 0:
         return None
-    if first_line in MINUS_TRIGGERS:
+    if possible_trigger in MINUS_TRIGGERS:
         return -INF
-    if not has_spaces(first_line) and first_line[0] in MINUS_EMOJI:
+    # i think next function run:
+    # has_spaces(possible_trigger)
+    # newer will be true. may be we can remove it from condition
+    if not has_spaces(possible_trigger) and possible_trigger[0] in MINUS_EMOJI:
         return -INF
-    if first_line[0:len(MINUS)] == MINUS:
+    if possible_trigger[0:len(MINUS)] == MINUS:
         try:
-            return -int(first_line[len(MINUS):])
+            return -int(possible_trigger[len(MINUS):])
         except ValueError:
             pass
     return None
