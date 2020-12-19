@@ -69,5 +69,36 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_PATH = os.getenv("DB_PATH", default=app_dir / "db_data" / "karma.db")
 
+
+def get_db_connect_string():
+    if DB_TYPE == 'mysql':
+        db_url = (
+            f'{DB_TYPE}://{LOGIN_DB}:{PASSWORD_DB}'
+            f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        )
+    elif DB_TYPE == 'postgres':
+        db_url = (
+            f'{DB_TYPE}://{LOGIN_DB}:{PASSWORD_DB}'
+            f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        )
+    elif DB_TYPE == 'sqlite':
+        db_url = (
+            f'{DB_TYPE}://{DB_PATH}'
+        )
+    else:
+        raise ValueError("DB_TYPE not mysql, sqlite or postgres")
+    return db_url
+
+
+TORTOISE_ORM = {
+    "connections": {"default": get_db_connect_string()},
+    "apps": {
+        "models": {
+            "models": ["app.models", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+}
+
 API_ID = os.getenv("API_ID", default=6)
 API_HASH = os.getenv("API_HASH", default='eb06d4abfb49dc3eeb1aeb98ae0f581e')

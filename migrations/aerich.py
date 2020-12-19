@@ -1,11 +1,3 @@
-from app.models.db import get_db_connect_string
+from app.config import TORTOISE_ORM
 
-TORTOISE_ORM = {
-   "connections": {"default": get_db_connect_string()},
-   "apps": {
-       "models": {
-           "models": ["app.models", "aerich.models"],
-           "default_connection": "default",
-       },
-   },
-}
+__all__ = (TORTOISE_ORM, )
