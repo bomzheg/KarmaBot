@@ -16,7 +16,7 @@ def check_plus(text_with_plus_trigger: str):
 
 def test_correct_minus():
     for text in minus_texts:
-        for phrase in generate_phrases_next_word(text, ("",), ("\n",)):
+        for phrase in generate_phrases_next_word(text, punctuations, SPACES):
             check_minus_reply(phrase)
 
 

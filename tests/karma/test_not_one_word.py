@@ -16,8 +16,12 @@ def check_plus(text_with_plus_trigger: str):
     assert filter_rez == {}, str(msg)
 
 
-def test_minus():
-    """проверка что триггер не находится, если кроме триггера на первой строке сообщения есть посторонние символы"""
+def _test_minus():
+    """
+    проверка что триггер не находится, если кроме триггера на первой строке сообщения есть посторонние символы
+    TODO тест сломан, надо или удалить или переделать.
+     дело в том, что теперь минус кармы можно в той же строке комментить
+    """
     spaces_without_new_lines = (" ", "\t")
     for text in MINUS_TRIGGERS:
         # next words on the same line. in message with minus trigger can't not
