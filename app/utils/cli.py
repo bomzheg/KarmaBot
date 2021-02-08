@@ -14,7 +14,6 @@ from app import config
 
 def create_parser():
     arg_parser = argparse.ArgumentParser(prog=config.PROG_NAME, description=config.PROG_DESC, epilog=config.PROG_EP)
-    arg_parser.add_argument('-b', '--beta', action='store_const', const=True, help=config.DESC_BETA)
     arg_parser.add_argument('-p', '--polling', action='store_const', const=True, help=config.DESC_POLLING)
     arg_parser.add_argument('-a', '--autoreload', action='store_const', const=True,
                             help="Reload application on file changes")
@@ -64,12 +63,6 @@ def cli():
 
     parser = create_parser()
     namespace = parser.parse_args()
-    if namespace.beta:
-        config.now_token = config.TEST_BOT_TOKEN
-        logger.info("use beta bot")
-    else:
-        config.now_token = config.BOT_TOKEN
-        logger.info("use production bot")
 
     from app.utils import log
     from app import misc
