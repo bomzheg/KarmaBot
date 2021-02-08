@@ -10,6 +10,9 @@ from .user import User
 from .db import karma_filters
 
 
+DEFAULT_KARMA = 50
+
+
 class UserKarma(Model):
     """
     information about (karma) (user) in (chat)
@@ -17,7 +20,7 @@ class UserKarma(Model):
     uc_id = fields.IntField(pk=True)
     user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User', related_name='karma')
     chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField('models.Chat', related_name='user_karma')
-    karma = fields.FloatField(default=1)
+    karma = fields.FloatField(default=DEFAULT_KARMA)
 
     class Meta:
         table = 'user_karma'

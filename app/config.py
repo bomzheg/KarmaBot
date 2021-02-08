@@ -82,8 +82,6 @@ DESC_BETA = "Run the program in beta test mode"
 DESC_POLLING = "Run tg bot with polling. Default use WebHook"
 
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
-TEST_BOT_TOKEN = os.getenv("TEST_KARMA_BOT_TOKEN")
-now_token: str  # in that variable setting token, that be used in this instance of bot
 secret_str = secrets.token_urlsafe(16)  # for webhook path
 
 PRINT_LOG = "print.log"

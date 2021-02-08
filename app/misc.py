@@ -9,7 +9,7 @@ from app import config
 
 app_dir: Path = Path(__file__).parent.parent
 
-bot = Bot(config.TEST_BOT_TOKEN, parse_mode=types.ParseMode.HTML)
+bot = Bot(config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 
