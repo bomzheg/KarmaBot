@@ -119,7 +119,11 @@ async def get_info_about_user(message: types.Message, chat: Chat, target: User):
             disable_web_page_preview=True
         )
     except Unauthorized:
-        await message.reply(f"{message.from_user.get_mention()}, напишите мне в личку /start и повторите команду.")
+        me = await bot.me
+        await message.reply(
+            f'{message.from_user.get_mention()}, напишите мне в личку '
+            f'<a href="https://t.me/{me.username}?start">/start</a> и повторите команду.'
+        )
     finally:
         await delete_message(message)
 
