@@ -15,7 +15,7 @@ SLEEP_TIME = 100
 
 class UserGetter:
     def __init__(self):
-        self._client_api_bot = Client("karma_bot", bot_token=config.now_token, api_id=config.API_ID,
+        self._client_api_bot = Client("karma_bot", bot_token=config.BOT_TOKEN, api_id=config.API_ID,
                                       api_hash=config.API_HASH, no_updates=True)
 
     async def get_user(self, username: str = None, fullname: str = None, chat_id: int = None) -> User:
