@@ -1,8 +1,8 @@
 import sqlite3
 
-from app.config import DB_PATH
+from app.config import db_config
 
-with sqlite3.connect(DB_PATH) as conn:
+with sqlite3.connect(db_config.db_path) as conn:
     cur = conn.cursor()
     cur.execute("""
         UPDATE user_karma 

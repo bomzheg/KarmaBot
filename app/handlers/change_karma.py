@@ -14,8 +14,6 @@ from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestri
 from app.services.remove_message import remove_kb
 from . import keyboards as kb
 from app.services.adaptive_trottle import AdaptiveThrottle
-from app.services.moderation import it_was_last_one_auto_restrict
-from app.utils.timedelta_functions import format_timedelta
 
 
 a_throttle = AdaptiveThrottle()
@@ -66,10 +64,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except CantChangeKarma as e:
         logger.info("user {user} can't change karma, {e}", user=user.tg_id, e=e)
         return
-    if result_change_karma.count_auto_restrict:
-        notify_auto_restrict_text = await render_text_auto_restrict(result_change_karma.count_auto_restrict, target)
-    else:
-        notify_auto_restrict_text = ""
+    notify_auto_restrict_text = config.auto_restrict_config.render_auto_restriction(
+        target, result_change_karma.count_auto_restrict)
+
+    if not notify_auto_restrict_text and result_change_karma.karma_after < 0:
+        notify_auto_restrict_text = config.auto_restrict_config.render_negative_karma_notification(
+            target, result_change_karma.count_auto_restrict)
 
     # How match karma was changed. Sign show changed difference, not difference for cancel
     how_changed_karma = result_change_karma.user_karma.karma \
@@ -94,28 +94,6 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         )
     )
     asyncio.create_task(remove_kb(msg, config.TIME_TO_CANCEL_ACTIONS))
-
-
-async def render_text_auto_restrict(count_auto_restrict: int, target: User):
-    # TODO чото надо сделать с этим чтобы понятно объяснить за что RO и что будет в следующий раз
-    text = "{target}, Уровень вашей кармы стал ниже {negative_limit}.\n".format(
-        target=target.mention_link,
-        negative_limit=config.NEGATIVE_KARMA_TO_RESTRICT,
-    )
-    if it_was_last_one_auto_restrict(count_auto_restrict):
-        text += "Это был последний разрешённый раз. Теперь вы получаете вечное наказание."
-    else:
-        text += (
-            "За это вы наказаны на срок {duration}\n"
-            "Вам установлена карма {karma_after}. "
-            "Если Ваша карма снова достигнет {karma_to_restrict} "
-            "Ваше наказание будет строже.".format(
-                duration=format_timedelta(config.RESTRICTIONS_PLAN[count_auto_restrict - 1].duration),
-                karma_after=config.KARMA_AFTER_RESTRICT,
-                karma_to_restrict=config.NEGATIVE_KARMA_TO_RESTRICT,
-            )
-        )
-    return text
 
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())

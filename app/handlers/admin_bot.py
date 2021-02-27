@@ -6,9 +6,11 @@ from loguru import logger
 
 from app import config
 from app.misc import bot, dp
-from app.models.chat import Chat
-from app.models.user import User
-from app.models.user_karma import UserKarma
+from app.models import (
+    Chat,
+    User,
+    UserKarma,
+)
 from app.utils.send_text_file import send_log_files
 
 
@@ -45,7 +47,7 @@ async def get_dump(_: types.Message):
 
 
 async def send_dump_bd():
-    with open(config.DB_PATH, 'rb') as f:
+    with open(config.db_config.db_path, 'rb') as f:
         await bot.send_document(config.DUMP_CHAT_ID, f)
 
 

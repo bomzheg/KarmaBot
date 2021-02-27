@@ -6,6 +6,7 @@ from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
 from app import config
+from app.config import moderation
 from app.models import ModeratorEvent, User, Chat
 from app.models.common import TypeRestriction
 from app.utils.exceptions import CantRestrict
@@ -33,7 +34,7 @@ async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, c
         type_restriction=TypeRestriction.ban
     )
     text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
-    if duration < config.FOREVER_RESTRICT_DURATION:
+    if duration < moderation.FOREVER_RESTRICT_DURATION:
         text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
     return text
 
@@ -66,7 +67,7 @@ async def restrict(
 ):
     try:
         # restrict in telegram
-        await config.action_for_restrict[type_restriction](
+        await moderation.action_for_restrict[type_restriction](
             bot,
             chat_id=chat.chat_id,
             user_id=target.tg_id,
@@ -113,15 +114,8 @@ def get_duration(text: str):
     if duration_text:
         duration = parse_timedelta_from_text(duration_text)
     else:
-        duration = config.DEFAULT_RESTRICT_DURATION
+        duration = moderation.DEFAULT_RESTRICT_DURATION
     return duration, comment
-
-
-def check_need_auto_restrict(karma: float):
-    return all([
-        config.ENABLE_AUTO_RESTRICT_ON_NEGATIVE_KARMA,
-        karma <= config.NEGATIVE_KARMA_TO_RESTRICT,
-    ])
 
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
@@ -147,10 +141,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
         count=count_auto_restrict,
     )
 
-    if it_was_last_one_auto_restrict(count_auto_restrict):
-        current_restriction = config.RESTRICTIONS_PLAN[-1]
-    else:
-        current_restriction = config.RESTRICTIONS_PLAN[count_auto_restrict]
+    current_restriction = config.auto_restrict_config.get_next_restriction(count_auto_restrict)
 
     moderator_event = await restrict(
         bot=bot,
@@ -158,12 +149,8 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
         target=target,
         admin=bot_user,
         duration=current_restriction.duration,
-        comment=config.COMMENT_AUTO_RESTRICT,
+        comment=config.auto_restrict_config.comment_for_auto_restrict,
         type_restriction=current_restriction.type_restriction,
         using_db=using_db,
     )
     return count_auto_restrict + 1, moderator_event
-
-
-def it_was_last_one_auto_restrict(count_auto_restrict: int) -> bool:
-    return count_auto_restrict >= len(config.RESTRICTIONS_PLAN)

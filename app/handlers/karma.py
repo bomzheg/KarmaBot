@@ -7,8 +7,10 @@ from loguru import logger
 
 from app import config
 from app.misc import dp
-from app.models.chat import Chat
-from app.models.user import User
+from app.models import (
+    Chat,
+    User
+)
 from app.services.karma import (
     get_top as get_karma_top,
     get_me_info,

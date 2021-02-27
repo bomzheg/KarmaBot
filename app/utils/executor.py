@@ -8,7 +8,7 @@ from loguru import logger
 
 from app import config
 from app.misc import dp
-from app.models import db
+from app.models.db import db
 
 runner = Executor(dp)
 
