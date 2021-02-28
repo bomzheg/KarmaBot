@@ -129,10 +129,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
     """
     bot_user = await User.get_or_create_from_tg_user(await bot.me)
 
-    count_auto_restrict = await ModeratorEvent.filter(
-        moderator=bot_user, user=target, chat=chat,
-        type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
-    ).count()
+    count_auto_restrict = await get_count_auto_restrict(target, chat, bot_user=bot_user)
     logger.info(
         "auto restrict user {user} in chat {chat} for to negative karma. "
         "previous restrict count: {count}",
@@ -154,3 +151,13 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
         using_db=using_db,
     )
     return count_auto_restrict + 1, moderator_event
+
+
+async def get_count_auto_restrict(target: User, chat: Chat, bot_user: User = None, bot: Bot = None):
+    assert bot is not None or bot_user is not None, "One of bot and bot_user must be not None"
+    if bot_user is None:
+        bot_user = await User.get_or_create_from_tg_user(await bot.me)
+    return await ModeratorEvent.filter(
+        moderator=bot_user, user=target, chat=chat,
+        type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
+    ).count()

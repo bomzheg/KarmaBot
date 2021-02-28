@@ -28,7 +28,7 @@ class RestrictionPlan:
             return NO_RESTRICTION
         if self.it_was_last_restriction(count):
             return self.plan[-1]
-        return self.plan[count]
+        return self.plan[count - 1]
 
     def get_early_restriction_printable_duration(self, count: int) -> str:
         return self.get_early_restriction(count).printable_duration
@@ -43,3 +43,6 @@ class RestrictionPlan:
 
     def it_was_last_restriction(self, count: int) -> bool:
         return count >= len(self.plan)
+
+    def next_will_be_last_restriction(self, count: int) -> bool:
+        return count + 1 >= len(self.plan)

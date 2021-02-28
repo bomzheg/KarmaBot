@@ -64,12 +64,15 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     except CantChangeKarma as e:
         logger.info("user {user} can't change karma, {e}", user=user.tg_id, e=e)
         return
-    notify_auto_restrict_text = config.auto_restrict_config.render_auto_restriction(
-        target, result_change_karma.count_auto_restrict)
 
-    if not notify_auto_restrict_text and result_change_karma.karma_after < 0:
-        notify_auto_restrict_text = config.auto_restrict_config.render_negative_karma_notification(
+    if result_change_karma.was_auto_restricted:
+        notify_text = config.auto_restrict_config.render_auto_restriction(
             target, result_change_karma.count_auto_restrict)
+    elif result_change_karma.karma_after < 0:
+        notify_text = config.auto_restrict_config.render_negative_karma_notification(
+            target, result_change_karma.count_auto_restrict)
+    else:
+        notify_text = ""
 
     # How match karma was changed. Sign show changed difference, not difference for cancel
     how_changed_karma = result_change_karma.user_karma.karma \
@@ -78,12 +81,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
 
     msg = await message.reply(
         "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
-        "\n\n{notify_auto_restrict_text}".format(
+        "\n\n{notify_text}".format(
             how_change=get_how_change_text(karma['karma_change']),
             name=quote_html(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
-            notify_auto_restrict_text=notify_auto_restrict_text
+            notify_text=notify_text,
         ),
         disable_web_page_preview=True,
         reply_markup=kb.get_kb_karma_cancel(

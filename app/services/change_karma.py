@@ -5,7 +5,7 @@ from tortoise.transactions import in_transaction
 from app import config
 from app.models import User, Chat, UserKarma, KarmaEvent, ModeratorEvent
 from app.models.common import TypeRestriction
-from app.services.moderation import auto_restrict, user_has_now_ro
+from app.services.moderation import auto_restrict, user_has_now_ro, get_count_auto_restrict
 from app.utils.exceptions import AutoLike, DontOffendRestricted
 from app.utils.types import ResultChangeKarma
 
@@ -58,9 +58,11 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             )
             uk.karma = config.auto_restrict_config.after_restriction_karma
             await uk.save(using_db=conn)
+            was_restricted = True
         else:
-            count_auto_restrict = 0
+            count_auto_restrict = await get_count_auto_restrict(target_user, chat, bot=bot)
             moderator_event = None
+            was_restricted = False
 
     return ResultChangeKarma(
         user_karma=uk,
@@ -68,7 +70,8 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         karma_event=ke,
         count_auto_restrict=count_auto_restrict,
         karma_after=karma_after,
-        moderator_event=moderator_event
+        moderator_event=moderator_event,
+        was_auto_restricted=was_restricted,
     )
 
 

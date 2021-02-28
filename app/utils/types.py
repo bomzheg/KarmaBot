@@ -10,3 +10,4 @@ class ResultChangeKarma(NamedTuple):
     count_auto_restrict: int
     karma_after: float
     moderator_event: ModeratorEvent
+    was_auto_restricted: bool
