@@ -40,6 +40,11 @@ async def cmd_exception(_: types.Message):
     raise Exception('user press /exception')
 
 
+@dp.message_handler(is_superuser=True, commands='get_out')
+async def leave_chat(message: types.Message):
+    await message.bot.leave_chat(message.chat.id)
+
+
 @dp.message_handler(is_superuser=True, commands='dump')
 @dp.throttled(rate=120)
 async def get_dump(_: types.Message):
