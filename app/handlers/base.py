@@ -5,7 +5,7 @@ from loguru import logger
 
 from app.config import PLUS_TRIGGERS, MINUS_TRIGGERS, PLUS_EMOJI, MINUS_EMOJI
 from app.misc import dp
-from app.models.chat import Chat
+from app.models import Chat
 
 
 @dp.message_handler(commands=["start"], commands_prefix='!/')

@@ -61,7 +61,7 @@ class AdaptiveThrottle:
         try:
             last = bucket[key]
         except KeyError:
-            logger.debug("there is no last call", )
+            logger.debug("there is no one last call", )
             return True
         finally:
             bucket[key] = call_at

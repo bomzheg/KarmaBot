@@ -12,9 +12,11 @@ from aiogram.utils.markdown import hbold, quote_html
 
 from app import config
 from app.misc import dp, bot
-from app.models.chat import Chat
-from app.models.user import User
-from app.models.user_karma import UserKarma
+from app.models import (
+    Chat,
+    User,
+    UserKarma,
+)
 from app.services.user_getter import UserGetter
 from app.utils.from_axenia import axenia_rating
 from app.utils.exceptions import CantImportFromAxenia
@@ -168,12 +170,12 @@ def get_kb_approve(index: int, chat_id: int) -> InlineKeyboardMarkup:
             text="Да", callback_data=approve_cb.new(index=index, chat_id=chat_id, y_n="yes")
         ),
         InlineKeyboardButton(
-            text="Нет", callback_data=approve_cb.new(index=index, chat_id=chat_id, y_n="no")
+            text="Нет", callback_data=approve_cb.new(index=index, chat_id=chat_id, y_n="no_one")
         )
     ]])
 
 
-@dp.callback_query_handler(approve_cb.filter(y_n="no"), is_superuser=True)
+@dp.callback_query_handler(approve_cb.filter(y_n="no_one"), is_superuser=True)
 @dp.throttled(rate=3)
 async def not_save_user_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     await callback_query.answer()

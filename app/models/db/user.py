@@ -8,7 +8,7 @@ from tortoise.models import Model
 
 from app.utils.exceptions import UserWithoutUserIdError
 from .chat import Chat
-from .common import TypeRestriction
+from app.models.common import TypeRestriction
 
 
 class User(Model):

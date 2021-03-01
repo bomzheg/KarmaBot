@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import BoundFilter
 from aiogram.dispatcher.handler import ctx_data
 
 from app import config
-from app.models.user import User
+from app.models import User
 
 
 @dataclass

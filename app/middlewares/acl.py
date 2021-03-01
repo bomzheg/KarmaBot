@@ -6,8 +6,7 @@ from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from loguru import logger
 
-from app.models.chat import Chat
-from app.models.user import User
+from app.models import Chat, User
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.utils.lock_factory import LockFactory
 

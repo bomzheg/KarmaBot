@@ -1,4 +1,4 @@
-FROM python:3.7-slim-buster
+FROM python:3.9-slim-buster
 LABEL maintainer="bomzheg <bomzheg@gmail.com>" \
       description="Karma Telegram Bot"
 COPY requirements.txt requirements.txt
