@@ -1,8 +1,12 @@
+from functools import partialmethod
+
 from aiogram import Dispatcher
 from loguru import logger
 
+from app.models.config import Config
 
-def setup(dispatcher: Dispatcher):
+
+def setup(dispatcher: Dispatcher, config: Config):
     logger.info("Configure filters...")
     from .superuser import IsSuperuserFilter
     from .karma_change import KarmaFilter
@@ -14,6 +18,7 @@ def setup(dispatcher: Dispatcher):
         dispatcher.edited_message_handlers,
         dispatcher.callback_query_handlers,
     ]
+    IsSuperuserFilter.check = partialmethod(IsSuperuserFilter.check, config.superusers)
 
     dispatcher.filters_factory.bind(KarmaFilter, event_handlers=text_messages)
     dispatcher.filters_factory.bind(IsSuperuserFilter, event_handlers=text_messages)

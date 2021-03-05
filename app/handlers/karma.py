@@ -5,9 +5,9 @@ from aiogram.types import ChatType
 from aiogram.utils.markdown import hpre
 from loguru import logger
 
-from app import config
+from app.config.main import load_config
 from app.misc import dp
-from app.models import (
+from app.models.db import (
     Chat,
     User
 )
@@ -17,6 +17,9 @@ from app.services.karma import (
     get_me_chat_info
 )
 from app.services.remove_message import delete_message
+
+
+config = load_config()
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!', chat_type=types.ChatType.PRIVATE)
@@ -55,8 +58,8 @@ async def get_top(message: types.Message, chat: Chat, user: User):
         f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",
         disable_web_page_preview=True
     )
-    asyncio.create_task(delete_message(msg, config.TIME_TO_REMOVE_TEMP_MESSAGES))
-    asyncio.create_task(delete_message(message, config.TIME_TO_REMOVE_TEMP_MESSAGES))
+    asyncio.create_task(delete_message(msg, config.time_to_remove_temp_messages))
+    asyncio.create_task(delete_message(message, config.time_to_remove_temp_messages))
 
 
 @dp.message_handler(chat_type=ChatType.PRIVATE, commands=["me"], commands_prefix='!')

@@ -7,7 +7,7 @@ from aiogram import types
 from aiogram.utils.exceptions import Throttled
 from loguru import logger
 
-from app.models import User, Chat
+from app.models.db import User, Chat
 
 DEFAULT_RATE = 1
 

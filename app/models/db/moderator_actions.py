@@ -7,8 +7,11 @@ from tortoise.models import Model
 from .user import User
 from .chat import Chat
 
-from app import config
+from app.config import load_config
 from app.utils.timedelta_functions import format_timedelta
+
+
+config = load_config()
 
 
 class ModeratorEvent(Model):
@@ -64,7 +67,7 @@ class ModeratorEvent(Model):
         ).order_by('-date').limit(limit).prefetch_related('moderator').all()
 
     def format_event(self) -> str:
-        rez = f"{self.date.date().strftime(config.DATE_FORMAT)} {self.type_restriction} "
+        rez = f"{self.date.date().strftime(config.date_format)} {self.type_restriction} "
 
         if self.timedelta_restriction:
             rez += f"{format_timedelta(self.timedelta_restriction)} "

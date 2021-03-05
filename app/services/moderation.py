@@ -5,12 +5,15 @@ from aiogram import Bot
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
-from app import config
+from app.config.main import load_config
 from app.config import moderation
-from app.models import ModeratorEvent, User, Chat
+from app.models.db import ModeratorEvent, User, Chat
 from app.models.common import TypeRestriction
 from app.utils.exceptions import CantRestrict
 from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
+
+
+config = load_config()
 
 
 async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str):
@@ -138,7 +141,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
         count=count_auto_restrict,
     )
 
-    current_restriction = config.auto_restrict_config.get_next_restriction(count_auto_restrict)
+    current_restriction = config.auto_restriction.get_next_restriction(count_auto_restrict)
 
     moderator_event = await restrict(
         bot=bot,
@@ -146,7 +149,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
         target=target,
         admin=bot_user,
         duration=current_restriction.duration,
-        comment=config.auto_restrict_config.comment_for_auto_restrict,
+        comment=config.auto_restriction.comment_for_auto_restrict,
         type_restriction=current_restriction.type_restriction,
         using_db=using_db,
     )

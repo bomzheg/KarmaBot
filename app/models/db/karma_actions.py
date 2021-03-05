@@ -4,7 +4,9 @@ from tortoise.models import Model
 
 from .user import User
 from .chat import Chat
-from app import config
+from app.config import load_config
+
+config = load_config()
 
 
 class KarmaEvent(Model):
@@ -43,7 +45,7 @@ class KarmaEvent(Model):
 
     def format_event(self):
         rez = (
-            f"{self.date.date().strftime(config.DATE_FORMAT)} "
+            f"{self.date.date().strftime(config.date_format)} "
             f"{self.user_from.mention_no_link} изменил карму на "
             f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )

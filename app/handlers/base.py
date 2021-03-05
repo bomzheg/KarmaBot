@@ -3,9 +3,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hpre, hbold
 from loguru import logger
 
-from app.config import PLUS_TRIGGERS, MINUS_TRIGGERS, PLUS_EMOJI, MINUS_EMOJI
+from app.config.karmic_triggers import PLUS_TRIGGERS, MINUS_TRIGGERS, PLUS_EMOJI, MINUS_EMOJI
 from app.misc import dp
-from app.models import Chat
+from app.models.db import Chat
 
 
 @dp.message_handler(commands=["start"], commands_prefix='!/')

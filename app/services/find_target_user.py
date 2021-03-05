@@ -5,7 +5,8 @@ from loguru import logger
 from pyrogram.errors import UsernameNotOccupied
 from tortoise.exceptions import MultipleObjectsReturned
 
-from app.models import User
+from app.models.db import User
+from app.models.config import TgClientConfig
 from app.services.user_getter import UserGetter
 from app.utils.exceptions import UserWithoutUserIdError
 
@@ -93,7 +94,7 @@ def is_bot_username(username: str):
     return username is not None and username[-3:] == "bot"
 
 
-async def get_db_user_by_tg_user(target: types.User) -> User:
+async def get_db_user_by_tg_user(target: types.User, tg_client_config: TgClientConfig) -> User:
     exception: Exception
     try:
         target_user = await User.get_or_create_from_tg_user(target)
@@ -108,7 +109,7 @@ async def get_db_user_by_tg_user(target: types.User) -> User:
         return target_user
 
     try:
-        async with UserGetter() as user_getter:
+        async with UserGetter(tg_client_config) as user_getter:
             tg_user = await user_getter.get_user_by_username(target.username)
 
         target_user = await User.get_or_create_from_tg_user(tg_user)

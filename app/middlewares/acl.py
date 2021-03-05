@@ -6,15 +6,17 @@ from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from loguru import logger
 
-from app.models import Chat, User
+from app.models.db import Chat, User
+from app.models.config import TgClientConfig
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.utils.lock_factory import LockFactory
 
 
 class ACLMiddleware(BaseMiddleware):
-    def __init__(self):
+    def __init__(self, tg_client_config: TgClientConfig):
         super(ACLMiddleware, self).__init__()
         self.lock_factory = LockFactory()
+        self.tg_client_config = tg_client_config
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
         try:
@@ -30,13 +32,12 @@ class ACLMiddleware(BaseMiddleware):
         data["user"] = user
         data["chat"] = chat
 
-    @staticmethod
-    async def fix_target(data: dict):
+    async def fix_target(self, data: dict):
         try:
             target: types.User = data['target']
         except KeyError:
             return
-        target = await get_db_user_by_tg_user(target)
+        target = await get_db_user_by_tg_user(target, self.tg_client_config)
         data['target'] = target
 
     async def on_pre_process_message(self, message: types.Message, data: dict):

@@ -1,4 +1,4 @@
-from app.models import User, Chat, ModeratorEvent, KarmaEvent
+from app.models.db import User, Chat, ModeratorEvent, KarmaEvent
 
 
 async def get_user_info(user: User, chat: Chat):

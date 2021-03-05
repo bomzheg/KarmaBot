@@ -10,9 +10,9 @@ from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.markdown import hbold, quote_html
 
-from app import config
+from app.config.main import load_config
 from app.misc import dp, bot
-from app.models import (
+from app.models.db import (
     Chat,
     User,
     UserKarma,
@@ -21,6 +21,8 @@ from app.services.user_getter import UserGetter
 from app.utils.from_axenia import axenia_rating
 from app.utils.exceptions import CantImportFromAxenia
 
+
+config = load_config()
 type_karmas = typing.Tuple[str, typing.Optional[str], float]
 type_approve_item = typing.Dict[str, typing.Union[str, float, types.User]]
 approve_cb = CallbackData("approve_import", "chat_id", "index", "y_n")
@@ -58,7 +60,7 @@ async def init_from_axenia(message: types.Message, chat: Chat):
     if problems:
         await send_problems_list(problems, chat.chat_id)
     if to_approve:
-        await start_approve_karmas(to_approve, config.DUMP_CHAT_ID)
+        await start_approve_karmas(to_approve, config.dump_chat_id)
 
 
 async def process_import_users_karmas(karmas_list: typing.List[type_karmas], chat: Chat, message: types.Message = None):
@@ -76,7 +78,7 @@ async def process_import_users_karmas(karmas_list: typing.List[type_karmas], cha
     log_users = []
     problems = []
     to_approve = []
-    async with UserGetter() as user_getter:
+    async with UserGetter(config.tg_client) as user_getter:
         for i, karma_elem in enumerate(karmas_list):
             if message is not None and i % 5 == 0:
                 with suppress(TelegramAPIError):

@@ -1,7 +1,10 @@
+import typing
 from dataclasses import dataclass
 
 from app.config.restriction_plan import RestrictionPlan, RestrictionPlanElem
-from app.models.db import User
+
+if typing.TYPE_CHECKING:
+    from app.models.db import User
 
 
 @dataclass
@@ -32,7 +35,7 @@ class AutoRestrictionConfig:
     def next_will_be_last_restriction(self, count: int) -> bool:
         return self.plan.next_will_be_last_restriction(count)
 
-    def render_auto_restriction(self, user: User, count_auto_restrict: int):
+    def render_auto_restriction(self, user: 'User', count_auto_restrict: int):
         if count_auto_restrict <= 0:
             return ""
         text = "{target}, Уровень вашей кармы стал ниже {negative_limit}.\n".format(
@@ -54,7 +57,7 @@ class AutoRestrictionConfig:
             )
         return text
 
-    def render_negative_karma_notification(self, user: User, count_auto_restrict: int):
+    def render_negative_karma_notification(self, user: 'User', count_auto_restrict: int):
         if self.next_will_be_last_restriction(count_auto_restrict):
             template = (
                 "Внимание {username}!\nУ Вас отрицательная карма. "
