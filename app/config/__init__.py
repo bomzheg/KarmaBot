@@ -2,13 +2,12 @@
 constants, settings
 """
 import os
-import secrets
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .db import init_from_environment
-from .karmic_restriction import init_default
+from .db import load_db_config
+from .karmic_restriction import load_karmic_restriction_config
 from .karmic_triggers import (
     PLUS,
     PLUS_TRIGGERS,
@@ -18,6 +17,7 @@ from .karmic_triggers import (
     MINUS_TRIGGERS,
     MINUS_EMOJI,
 )
+from .webhook import load_webhook_config
 
 app_dir: Path = Path(__file__).parent.parent.parent
 load_dotenv(str(app_dir / '.env'))
@@ -25,7 +25,7 @@ load_dotenv(str(app_dir / '.env'))
 TIME_TO_CANCEL_ACTIONS = 60
 TIME_TO_REMOVE_TEMP_MESSAGES = 30
 
-auto_restrict_config = init_default()
+auto_restrict_config = load_karmic_restriction_config()
 PROG_NAME = "KarmaBot"
 PROG_DESC = (
     "This program is a Python 3+ script. The script launches a bot in Telegram,"
@@ -36,7 +36,6 @@ DESC_BETA = "Run the program in beta test mode"
 DESC_POLLING = "Run tg bot with polling. Default use WebHook"
 
 BOT_TOKEN = os.getenv("KARMA_BOT_TOKEN")
-secret_str = secrets.token_urlsafe(16)  # for webhook path
 
 PRINT_LOG = "print.log"
 
@@ -55,15 +54,9 @@ DUMP_CHAT_ID = -1001459777201  # ⚙️Testing Area >>> Python Scripts
 
 DATE_FORMAT = '%d.%m.%Y'
 
-WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
-WEBHOOK_PORT = os.getenv("WEBHOOK_PORT", default=443)
-WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", default='/karmabot/')
-WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_PATH}"
+webhook_config = load_webhook_config()
 
-LISTEN_IP = os.getenv("LISTEN_IP", default='0.0.0.0')
-LISTEN_PORT = int(os.getenv("LISTEN_PORT", default=3000))
-
-db_config = init_from_environment(app_dir)
+db_config = load_db_config(app_dir)
 
 API_ID = os.getenv("API_ID", default=6)
 API_HASH = os.getenv("API_HASH", default='eb06d4abfb49dc3eeb1aeb98ae0f581e')

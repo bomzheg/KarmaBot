@@ -54,12 +54,7 @@ def cli():
         """
         from app.utils.executor import runner
         logger.info("starting webhook...")
-        runner.start_webhook(
-            webhook_path=f'/{config.secret_str}/',
-
-            host=config.LISTEN_IP,
-            port=config.LISTEN_PORT,
-        )
+        runner.start_webhook(**config.webhook_config.listener_kwargs)
 
     parser = create_parser()
     namespace = parser.parse_args()

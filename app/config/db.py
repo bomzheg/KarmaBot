@@ -4,7 +4,7 @@ from pathlib import Path
 from app.models.config.db import DBConfig
 
 
-def init_from_environment(app_dir: Path):
+def load_db_config(app_dir: Path):
     db_config = DBConfig()
     db_config.db_type = os.getenv("DB_TYPE", default='sqlite')
     db_config.login = os.getenv("DB_LOGIN")
