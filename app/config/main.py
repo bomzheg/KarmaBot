@@ -2,14 +2,14 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
+import yaml
 from dotenv import load_dotenv
 
+from app.models.config import Config, TgClientConfig
 from .karmic_restriction import load_karmic_restriction_config
 from .db import load_db_config
 from .webhook import load_webhook_config
 from .log import load_log_config
-from app.models.config import Config, TgClientConfig
-import yaml
 
 
 @lru_cache
