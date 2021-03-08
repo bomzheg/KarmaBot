@@ -90,7 +90,7 @@ class Chat(Model):
         return rez
 
     # noinspection PyUnresolvedReferences
-    async def get_neighbours(self, user) -> typing.Tuple["UserKarma", "UserKarma", "UserKarma"]:
+    async def get_neighbours(self, user) -> tuple:
         prev_id, next_id = await get_neighbours_id(self.chat_id, user.id)
         uk = await self.user_karma.filter(
             user_id__in=(prev_id, next_id)
