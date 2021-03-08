@@ -39,7 +39,7 @@ class Chat(Model):
     username = fields.CharField(max_length=32, null=True)
     description = fields.CharField(max_length=255, null=True)
     # noinspection PyUnresolvedReferences
-    user_karma: fields.ReverseRelation['UserKarma']
+    user_karma: fields.ReverseRelation['UserKarma']  # noqa: F821
 
     class Meta:
         table = "chats"
@@ -90,7 +90,7 @@ class Chat(Model):
         return rez
 
     # noinspection PyUnresolvedReferences
-    async def get_neighbours(self, user) -> tuple:
+    async def get_neighbours(self, user) -> tuple['UserKarma', 'UserKarma', 'UserKarma']:  # noqa: F821
         prev_id, next_id = await get_neighbours_id(self.chat_id, user.id)
         uk = await self.user_karma.filter(
             user_id__in=(prev_id, next_id)

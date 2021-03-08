@@ -19,9 +19,9 @@ class User(Model):
     username = fields.CharField(max_length=32, null=True)
     is_bot: bool = fields.BooleanField(null=True)
     # noinspection PyUnresolvedReferences
-    karma: fields.ReverseRelation['UserKarma']
+    karma: fields.ReverseRelation['UserKarma']  # noqa: F821
     # noinspection PyUnresolvedReferences
-    my_restriction_events: fields.ReverseRelation['ModeratorEvent']
+    my_restriction_events: fields.ReverseRelation['ModeratorEvent']  # noqa: F821
 
     class Meta:
         table = "users"
@@ -100,7 +100,7 @@ class User(Model):
         return self.first_name or self.username or self.tg_id or self.id
 
     # noinspection PyUnresolvedReferences
-    async def get_uk(self, chat: Chat) -> "UserKarma":
+    async def get_uk(self, chat: Chat) -> "UserKarma":  # noqa: F821
         return await self.karma.filter(chat=chat).first()
 
     async def get_karma(self, chat: Chat):
@@ -117,7 +117,7 @@ class User(Model):
 
     async def get_number_in_top_karma(self, chat: Chat) -> int:
         # noinspection PyUnresolvedReferences
-        uk: "UserKarma" = await self.get_uk(chat)
+        uk: "UserKarma" = await self.get_uk(chat)  # noqa: F821
         return await uk.number_in_top()
 
     async def has_now_ro_db(self, chat: Chat):
