@@ -33,6 +33,13 @@ moderator commands list:
 * !warn, !w [@mention] - official warn user from moderator
 * !info [@mention] - information about user (karma changes, restrictions, warns)
 
+
+chat settings commands list:
+* !enable_karmic_ro - enable restrictions on low karma reason 
+  (need to have right for ban users for bot and user asked for that command)
+* !disable_karmic_ro - disable restrictions on low karma reason
+  (need to have right for ban users for bot and user asked for that command)
+
 superuser commands list:
 * /generate_invite_logchat - if bot is admin in the chat of LOG_CHAT_ID from `config.py` bot generates invite link to that
 * /logchat - get logchat invite link if it's generated earlier
