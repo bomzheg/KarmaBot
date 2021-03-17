@@ -5,7 +5,16 @@ from .db import (
     UserKarma,
     KarmaEvent,
     ModeratorEvent,
+    ChatSettings,
 )
 
 
-__all__ = [Chat, ChatType, User, UserKarma, KarmaEvent, ModeratorEvent]
+__all__ = [
+    Chat,
+    ChatType,
+    User,
+    UserKarma,
+    KarmaEvent,
+    ModeratorEvent,
+    ChatSettings
+]

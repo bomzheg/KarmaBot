@@ -10,6 +10,7 @@ from app.misc import dp
 from app import config
 from app.models import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
+from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
 from app.services.remove_message import remove_kb
 from . import keyboards as kb
@@ -68,7 +69,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     if result_change_karma.was_auto_restricted:
         notify_text = config.auto_restrict_config.render_auto_restriction(
             target, result_change_karma.count_auto_restrict)
-    elif result_change_karma.karma_after < 0:
+    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(chat):
         notify_text = config.auto_restrict_config.render_negative_karma_notification(
             target, result_change_karma.count_auto_restrict)
     else:
