@@ -40,6 +40,8 @@ class Chat(Model):
     description = fields.CharField(max_length=255, null=True)
     # noinspection PyUnresolvedReferences
     user_karma: fields.ReverseRelation['UserKarma']  # noqa: F821
+    # noinspection PyUnresolvedReferences
+    settings: fields.ReverseRelation['ChatSettings']  # noqa: F821
 
     class Meta:
         table = "chats"
