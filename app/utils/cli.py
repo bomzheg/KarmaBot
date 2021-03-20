@@ -4,6 +4,7 @@ import functools
 
 from loguru import logger
 
+import app
 from app.models.config import WebhookConfig, Config
 
 try:
@@ -12,16 +13,15 @@ except ImportError:
     aiohttp_autoreload = None
 
 
-PROG_NAME = "KarmaBot"
-PROG_DESC = (
+PROGRAM_DESC = (
     "This program is a Python 3+ script. The script launches a bot in Telegram,"
     " allowing change karma for chat members"
 )
-PROG_EP = "© bomzheg. License WTFPL."
+PROGRAM_EP = f"{app.__copyright__} {app.__author__} License {app.__license__}."
 
 
 def create_parser():
-    arg_parser = argparse.ArgumentParser(prog=PROG_NAME, description=PROG_DESC, epilog=PROG_EP)
+    arg_parser = argparse.ArgumentParser(prog=app.__application_name__, description=PROGRAM_DESC, epilog=PROGRAM_EP)
     arg_parser.add_argument('-p', '--polling', action='store_const', const=True,
                             help="Run tg bot with polling. Default use WebHook")
     arg_parser.add_argument('-a', '--autoreload', action='store_const', const=True,
