@@ -4,8 +4,10 @@ from asyncio import sleep
 from aiogram.utils.markdown import hbold, hpre
 from loguru import logger
 
-from app.utils.log import log_path
+from app.config import load_config
 
+
+config = load_config()
 MAX_MESSAGE_SYMBOLS = 4000
 
 PAUSE_SEC = 3
@@ -55,5 +57,5 @@ async def send_text_file(bot, file_name, chat_id):
 
 async def send_log_files(bot, chat_id):
     logger.debug('send logs file')
-    for file_name in log_path.glob('*.log'):
+    for file_name in config.log.log_path.glob('*.log'):
         await send_text_file(bot, file_name, chat_id)

@@ -7,16 +7,21 @@ from loguru import logger
 from pyrogram import Client
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
-from app import config
+from app.models.config import TgClientConfig
 from app.services.restrict_call import RestrictCall
 
 SLEEP_TIME = 100
 
 
 class UserGetter:
-    def __init__(self):
-        self._client_api_bot = Client("karma_bot", bot_token=config.BOT_TOKEN, api_id=config.API_ID,
-                                      api_hash=config.API_HASH, no_updates=True)
+    def __init__(self, client_config: TgClientConfig):
+        self._client_api_bot = Client(
+            "karma_bot",
+            bot_token=client_config.bot_token,
+            api_id=client_config.api_id,
+            api_hash=client_config.api_hash,
+            no_updates=True
+        )
 
     async def get_user(self, username: str = None, fullname: str = None, chat_id: int = None) -> User:
         async def try_by_name() -> typing.Optional[User]:

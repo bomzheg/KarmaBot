@@ -7,8 +7,8 @@ from aiogram.utils.markdown import quote_html
 from loguru import logger
 
 from app.misc import dp
-from app import config
-from app.models import Chat, User
+from app.config.main import load_config
+from app.models.db import Chat, User
 from app.services.change_karma import change_karma, cancel_karma_change
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
@@ -18,6 +18,7 @@ from app.services.adaptive_trottle import AdaptiveThrottle
 
 
 a_throttle = AdaptiveThrottle()
+config = load_config()
 
 
 def get_how_change_text(number: float) -> str:
@@ -67,10 +68,10 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
         return
 
     if result_change_karma.was_auto_restricted:
-        notify_text = config.auto_restrict_config.render_auto_restriction(
+        notify_text = config.auto_restriction.render_auto_restriction(
             target, result_change_karma.count_auto_restrict)
     elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(chat):
-        notify_text = config.auto_restrict_config.render_negative_karma_notification(
+        notify_text = config.auto_restriction.render_negative_karma_notification(
             target, result_change_karma.count_auto_restrict)
     else:
         notify_text = ""
@@ -97,7 +98,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             moderator_event=result_change_karma.moderator_event,
         )
     )
-    asyncio.create_task(remove_kb(msg, config.TIME_TO_CANCEL_ACTIONS))
+    asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
 
 
 @dp.callback_query_handler(kb.cb_karma_cancel.filter())

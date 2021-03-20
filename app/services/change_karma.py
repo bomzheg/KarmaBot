@@ -2,19 +2,23 @@ from aiogram import Bot
 from loguru import logger
 from tortoise.transactions import in_transaction
 
-from app import config
-from app.models import (
+from app.config.main import load_config
+from app.models.db import (
     User,
     Chat,
     UserKarma,
     KarmaEvent,
     ModeratorEvent
 )
+
 from app.models.common import TypeRestriction
 from app.services.moderation import auto_restrict, user_has_now_ro, get_count_auto_restrict
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted
 from app.utils.types import ResultChangeKarma
+
+
+config = load_config()
 
 
 def can_change_karma(target_user: User, user: User):
@@ -56,7 +60,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
         )
         karma_after = uk.karma
 
-        if config.auto_restrict_config.need_restrict(uk.karma) \
+        if config.auto_restriction.need_restrict(uk.karma) \
                 and await is_enable_karmic_restriction(chat):
 
             count_auto_restrict, moderator_event = await auto_restrict(
@@ -65,7 +69,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
                 target=target_user,
                 using_db=conn,
             )
-            uk.karma = config.auto_restrict_config.after_restriction_karma
+            uk.karma = config.auto_restriction.after_restriction_karma
             await uk.save(using_db=conn)
             was_restricted = True
         else:

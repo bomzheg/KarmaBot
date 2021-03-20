@@ -15,7 +15,7 @@ RESTRICTIONS_PLAN = RestrictionPlan([
 ])
 
 
-def init_default() -> AutoRestrictionConfig:
+def load_karmic_restriction_config() -> AutoRestrictionConfig:
     return AutoRestrictionConfig(
         plan=RESTRICTIONS_PLAN,
         threshold=NEGATIVE_KARMA_TO_RESTRICT,

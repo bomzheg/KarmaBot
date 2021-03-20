@@ -1,7 +1,7 @@
 from aiogram import types
 
 from app.misc import dp
-from app.models import Chat
+from app.models.db import Chat
 from app.services.settings import enable_karmic_restriction, disable_karmic_restriction
 
 

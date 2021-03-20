@@ -5,7 +5,7 @@ from loguru import logger
 
 from app.misc import dp, bot
 from app.utils.exceptions import TimedeltaParseError, ModerationError
-from app.models import Chat, User
+from app.models.db import Chat, User
 from app.services.user_info import get_user_info
 from app.services.moderation import warn_user, ro_user, ban_user, get_duration
 from app.services.remove_message import delete_message

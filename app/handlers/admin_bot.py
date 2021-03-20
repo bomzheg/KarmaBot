@@ -4,9 +4,9 @@ import json
 from aiogram import types
 from loguru import logger
 
-from app import config
+from app.config.main import load_config
 from app.misc import bot, dp
-from app.models import (
+from app.models.db import (
     Chat,
     User,
     UserKarma,
@@ -14,24 +14,27 @@ from app.models import (
 from app.utils.send_text_file import send_log_files
 
 
+config = load_config()
+
+
 @dp.message_handler(is_superuser=True, commands='update_log')
 @dp.throttled(rate=30)
 @dp.async_task
 async def get_log(_: types.Message):
-    await send_log_files(bot, config.LOG_CHAT_ID)
+    await send_log_files(bot, config.log.log_chat_id)
 
 
 @dp.message_handler(is_superuser=True, commands='logchat')
 @dp.throttled(rate=30)
-async def get_logchat(_: types.Message):
-    log_ch = (await bot.get_chat(config.LOG_CHAT_ID)).invite_link
-    await bot.send_message(config.GLOBAL_ADMIN_ID, log_ch, disable_notification=True)
+async def get_logchat(message: types.Message):
+    log_ch = await bot.get_chat(config.log.log_chat_id)
+    await message.answer(log_ch.invite_link, disable_notification=True)
 
 
 @dp.message_handler(is_superuser=True, commands='generate_invite_logchat')
 @dp.throttled(rate=120)
 async def generate_logchat_link(message: types.Message):
-    await message.reply(await bot.export_chat_invite_link(config.LOG_CHAT_ID), disable_notification=True)
+    await message.reply(await bot.export_chat_invite_link(config.log.log_chat_id), disable_notification=True)
 
 
 @dp.message_handler(is_superuser=True, commands=["exception"])
@@ -52,8 +55,8 @@ async def get_dump(_: types.Message):
 
 
 async def send_dump_bd():
-    with open(config.db_config.db_path, 'rb') as f:
-        await bot.send_document(config.DUMP_CHAT_ID, f)
+    with open(config.db.db_path, 'rb') as f:
+        await bot.send_document(config.dump_chat_id, f)
 
 
 @dp.message_handler(is_superuser=True, commands='json')
@@ -62,7 +65,7 @@ async def get_dump(_: types.Message):
     dct = await UserKarma.all_to_json()
 
     await bot.send_document(
-        config.DUMP_CHAT_ID,
+        config.dump_chat_id,
         ("dump.json", io.StringIO(json.dumps(dct, ensure_ascii=False, indent=2)))
     )
 

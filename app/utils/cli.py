@@ -4,24 +4,34 @@ import functools
 
 from loguru import logger
 
+import app
+from app.models.config import WebhookConfig, Config
+
 try:
     import aiohttp_autoreload
 except ImportError:
     aiohttp_autoreload = None
 
-from app import config
+
+PROGRAM_DESC = (
+    "This program is a Python 3+ script. The script launches a bot in Telegram,"
+    " allowing change karma for chat members"
+)
+PROGRAM_EP = f"{app.__copyright__} {app.__author__} License {app.__license__}."
 
 
 def create_parser():
-    arg_parser = argparse.ArgumentParser(prog=config.PROG_NAME, description=config.PROG_DESC, epilog=config.PROG_EP)
-    arg_parser.add_argument('-p', '--polling', action='store_const', const=True, help=config.DESC_POLLING)
+    arg_parser = argparse.ArgumentParser(prog=app.__application_name__, description=PROGRAM_DESC, epilog=PROGRAM_EP)
+    arg_parser.add_argument('-p', '--polling', action='store_const', const=True,
+                            help="Run tg bot with polling. Default use WebHook")
     arg_parser.add_argument('-a', '--autoreload', action='store_const', const=True,
                             help="Reload application on file changes")
-    arg_parser.add_argument('-s', '--skip-updates', action='store_const', const=True, help="Skip pending updates")
+    arg_parser.add_argument('-s', '--skip-updates', action='store_const', const=True,
+                            help="Skip pending updates")
     return arg_parser
 
 
-def cli():
+def cli(config: Config):
     def auto_reload_mixin(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -48,18 +58,13 @@ def cli():
         runner.start_polling(reset_webhook=True)
 
     @auto_reload_mixin
-    def webhook():
+    def webhook(webhook_config: WebhookConfig):
         """
         Run application in webhook mode
         """
         from app.utils.executor import runner
         logger.info("starting webhook...")
-        runner.start_webhook(
-            webhook_path=f'/{config.secret_str}/',
-
-            host=config.LISTEN_IP,
-            port=config.LISTEN_PORT,
-        )
+        runner.start_webhook(**webhook_config.listener_kwargs)
 
     parser = create_parser()
     namespace = parser.parse_args()
@@ -67,9 +72,9 @@ def cli():
     from app.utils import log
     from app import misc
 
-    log.setup()
-    misc.setup()
+    log.setup(config.log)
+    misc.setup(config)
     if namespace.polling:
         polling(namespace.skip_updates)
     else:
-        webhook()
+        webhook(config.webhook)
