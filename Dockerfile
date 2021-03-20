@@ -14,6 +14,6 @@ VOLUME /db_data
 VOLUME /jsons
 WORKDIR "."
 EXPOSE 3000
-COPY initialize.py initialize.py
+COPY bot-config.yml bot-config.yml
 COPY app app
-ENTRYPOINT ["python3", "-m", "app"]
+ENTRYPOINT ["python3", "-m", "app", "-p"]
