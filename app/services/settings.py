@@ -1,4 +1,4 @@
-from app.models import Chat, ChatSettings
+from app.models.db import Chat, ChatSettings
 
 
 async def is_enable_karmic_restriction(chat: Chat):
