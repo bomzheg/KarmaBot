@@ -1,16 +1,17 @@
 from aiogram import types
 from aiogram.utils.exceptions import Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
-from app.utils.log import Logger
-
-logger = Logger(__name__)
 
 from app.misc import dp, bot
-from app.utils.exceptions import TimedeltaParseError, ModerationError
 from app.models.db import Chat, User
-from app.services.user_info import get_user_info
 from app.services.moderation import warn_user, ro_user, ban_user, get_duration
 from app.services.remove_message import delete_message
+from app.services.user_info import get_user_info
+from app.utils.exceptions import TimedeltaParseError, ModerationError
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 @dp.message_handler(

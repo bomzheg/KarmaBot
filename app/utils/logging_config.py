@@ -5,6 +5,7 @@ import yaml
 from app.models.config import Config
 from app.utils.log import Logger
 
+
 logger = Logger(__name__)
 
 

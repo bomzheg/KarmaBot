@@ -4,8 +4,6 @@ import functools
 
 from app.utils.log import Logger
 
-logger = Logger(__name__)
-
 import app
 from app.models.config import WebhookConfig, Config
 
@@ -15,6 +13,7 @@ except ImportError:
     aiohttp_autoreload = None
 
 
+logger = Logger(__name__)
 PROGRAM_DESC = (
     "This program is a Python 3+ script. The script launches a bot in Telegram,"
     " allowing change karma for chat members"

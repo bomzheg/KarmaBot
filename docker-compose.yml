@@ -18,7 +18,7 @@ services:
         source: problems
         target: "/jsons"
     env_file: .env
-    entrypoint: ["python3", "-m", "app", "-p"]
+    entrypoint: [ "python3", "-m", "app", "-p" ]
     networks:
       - reverse-proxy
 

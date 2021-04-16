@@ -21,7 +21,7 @@ handlers:
     filename: app.log
 root:
   level: DEBUG
-  handlers: [console, file]
+  handlers: [ console, file ]
 loggers:
   aiosqlite:
     level: INFO

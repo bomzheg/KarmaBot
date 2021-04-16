@@ -1,8 +1,8 @@
 from .chat import Chat, ChatType
-from .user import User
-from .user_karma import UserKarma
+from .chat_settings import ChatSettings
 from .karma_actions import KarmaEvent
 from .moderator_actions import ModeratorEvent
-from .chat_settings import ChatSettings
+from .user import User
+from .user_karma import UserKarma
 
 __all__ = [Chat, ChatType, User, UserKarma, KarmaEvent, ModeratorEvent, ChatSettings]

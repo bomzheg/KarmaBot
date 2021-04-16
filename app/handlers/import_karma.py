@@ -18,8 +18,8 @@ from app.models.db import (
     UserKarma,
 )
 from app.services.user_getter import UserGetter
-from app.utils.from_axenia import axenia_rating
 from app.utils.exceptions import CantImportFromAxenia
+from app.utils.from_axenia import axenia_rating
 
 
 config = load_config()
@@ -40,7 +40,7 @@ async def check_chat_creator(message: types.Message) -> bool:
 
 
 @dp.message_handler(check_chat_creator, commands="init_from_axenia", commands_prefix='!')
-@dp.throttled(rate=24*3600)
+@dp.throttled(rate=24 * 3600)
 async def init_from_axenia(message: types.Message, chat: Chat):
     msg = await message.reply(processing_text.format(-0.01))
     chat_id = chat.chat_id

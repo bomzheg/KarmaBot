@@ -2,9 +2,6 @@ import io
 import json
 
 from aiogram import types
-from app.utils.log import Logger
-
-logger = Logger(__name__)
 
 from app.config.main import load_config
 from app.misc import bot, dp
@@ -13,9 +10,10 @@ from app.models.db import (
     User,
     UserKarma,
 )
+from app.utils.log import Logger
 from app.utils.send_text_file import send_log_files
 
-
+logger = Logger(__name__)
 config = load_config()
 
 

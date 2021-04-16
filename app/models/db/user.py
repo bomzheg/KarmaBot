@@ -6,9 +6,9 @@ from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
+from app.models.common import TypeRestriction
 from app.utils.exceptions import UserWithoutUserIdError
 from .chat import Chat
-from app.models.common import TypeRestriction
 
 
 class User(Model):

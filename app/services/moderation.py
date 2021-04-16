@@ -3,18 +3,17 @@ from datetime import timedelta
 
 from aiogram import Bot
 from aiogram.utils.exceptions import BadRequest
-from app.utils.log import Logger
 
-logger = Logger(__name__)
-
-from app.config.main import load_config
 from app.config import moderation
-from app.models.db import ModeratorEvent, User, Chat
+from app.config.main import load_config
 from app.models.common import TypeRestriction
+from app.models.db import ModeratorEvent, User, Chat
 from app.utils.exceptions import CantRestrict
+from app.utils.log import Logger
 from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
 
 
+logger = Logger(__name__)
 config = load_config()
 
 

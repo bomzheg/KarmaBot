@@ -2,7 +2,9 @@ import asyncio
 import typing
 
 from aiogram import types
+
 from app.filters.has_target import HasTargetFilter
+
 
 CONF_CAN_BE_SAME = dict(can_be_same=True)
 CONF_CANT_BE_SAME = dict(can_be_same=False)

@@ -2,16 +2,14 @@ import textwrap
 from asyncio import sleep
 
 from aiogram.utils.markdown import hbold, hpre
-from app.utils.log import Logger
-
-logger = Logger(__name__)
 
 from app.config import load_config
+from app.utils.log import Logger
 
 
+logger = Logger(__name__)
 config = load_config()
 MAX_MESSAGE_SYMBOLS = 4000
-
 PAUSE_SEC = 3
 
 
