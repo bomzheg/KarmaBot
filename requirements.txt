@@ -8,3 +8,4 @@ beautifulsoup4  #  для парсинга кармы из Аксении
 python-dotenv
 Pyrogram # для резолва username через клиент апи
 pyyml
+colorlog

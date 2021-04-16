@@ -7,4 +7,5 @@ class Logger(logging.LoggerAdapter):
 
     def log(self, level, msg: str, *args, **kwargs):
         if self.isEnabledFor(level):
+            # noinspection PyProtectedMember
             self.logger._log(level, msg.format(*args, **kwargs), ())

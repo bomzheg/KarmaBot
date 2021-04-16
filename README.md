@@ -23,12 +23,12 @@ moderator commands list:
 * !ro !mute [DURATION] [@mention] - restrict replied or mentioned user for DURATION. 
 * !ban [DURATION] [@mention] - kick replied user for DURATION
   * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
-    * AAA - count of years (more that one year is permanent)
+    * AAA - count of years (more than one year is permanent)
     * BBB - count of weeks
     * CCC - count of days
     * DDD - count of hours
     * EEE - count of minutes
-    * FFF - count of seconds (less that 30 seconds will be mean 30 seconds)
+    * FFF - count of seconds (less than 30 seconds will be mean 30 seconds)
   * you have to specify one or more duration part without spaces
 * !warn, !w [@mention] - official warn user from moderator
 * !info [@mention] - information about user (karma changes, restrictions, warns)

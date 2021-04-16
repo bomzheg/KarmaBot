@@ -139,7 +139,7 @@ async def get_info_about_user(message: types.Message, chat: Chat, target: User):
 )
 async def cmd_ro_bot_not_admin(message: types.Message):
     """бот без прав модератора"""
-    await message.reply("Чтобы я выполнял функции модератора, дайте мне соотвествующие права")
+    await message.reply("Чтобы я выполнял функции модератора, дайте мне соответствующие права")
 
 
 @dp.message_handler(
