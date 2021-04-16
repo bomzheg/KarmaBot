@@ -1,7 +1,9 @@
 from aiogram import types
 from aiogram.utils.exceptions import CantParseEntities
 from aiogram.utils.markdown import quote_html
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.config.main import load_config
 from app.misc import dp, bot

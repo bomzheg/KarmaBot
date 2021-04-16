@@ -18,7 +18,7 @@ def load_config() -> Config:
     load_dotenv(str(app_dir / '.env'))
 
     _bot_token = os.getenv("KARMA_BOT_TOKEN")
-    with (app_dir / "bot-config.yml").open('r', encoding="utf-8") as f:
+    with (app_dir / 'config' / "bot-config.yml").open('r', encoding="utf-8") as f:
         config_file_data = yaml.load(f, Loader=yaml.FullLoader)
 
     return Config(

@@ -1,7 +1,9 @@
 import typing
 
 from aiogram import types
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 from pyrogram.errors import UsernameNotOccupied
 from tortoise.exceptions import MultipleObjectsReturned
 

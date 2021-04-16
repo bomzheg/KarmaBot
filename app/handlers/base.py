@@ -1,7 +1,9 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hpre, hbold
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.misc import dp
 from app.models.db import Chat

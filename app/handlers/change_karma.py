@@ -4,7 +4,9 @@ import typing
 from aiogram import types
 from aiogram.types import ContentType
 from aiogram.utils.markdown import quote_html
-from loguru import logger
+from ..utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.misc import dp
 from app.config.main import load_config

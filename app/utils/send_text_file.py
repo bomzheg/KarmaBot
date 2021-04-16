@@ -2,7 +2,9 @@ import textwrap
 from asyncio import sleep
 
 from aiogram.utils.markdown import hbold, hpre
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.config import load_config
 

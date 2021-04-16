@@ -1,6 +1,8 @@
 from math import sqrt
 
-from loguru import logger
+from ...utils.log import Logger
+
+logger = Logger(__name__)
 from tortoise import fields
 from tortoise.models import Model
 

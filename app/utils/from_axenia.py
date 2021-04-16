@@ -1,6 +1,8 @@
 import aiohttp
 from bs4 import BeautifulSoup as Soup
-from loguru import logger
+from .log import Logger
+
+logger = Logger(__name__)
 
 from .exceptions import CantImportFromAxenia
 

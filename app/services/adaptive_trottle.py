@@ -5,7 +5,9 @@ from datetime import datetime, timedelta
 
 from aiogram import types
 from aiogram.utils.exceptions import Throttled
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.models.db import User, Chat
 

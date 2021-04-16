@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 
 @dataclass

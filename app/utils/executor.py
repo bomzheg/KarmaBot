@@ -5,7 +5,9 @@ from functools import partial
 from aiogram import Dispatcher
 from aiogram.utils.exceptions import TelegramAPIError
 from aiogram.utils.executor import Executor
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.misc import dp
 from app.models.config import Config, WebhookConfig

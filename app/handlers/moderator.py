@@ -1,7 +1,9 @@
 from aiogram import types
 from aiogram.utils.exceptions import Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.misc import dp, bot
 from app.utils.exceptions import TimedeltaParseError, ModerationError

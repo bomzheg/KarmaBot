@@ -3,7 +3,9 @@ import typing
 
 import pyrogram
 from aiogram.types import User
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 from pyrogram import Client
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 

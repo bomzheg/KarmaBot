@@ -1,6 +1,8 @@
 # partially from https://github.com/aiogram/bot
 from aiogram import Dispatcher
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.middlewares.acl import ACLMiddleware
 from app.models.config import Config

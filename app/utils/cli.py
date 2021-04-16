@@ -2,7 +2,9 @@
 import argparse
 import functools
 
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 import app
 from app.models.config import WebhookConfig, Config
@@ -69,10 +71,10 @@ def cli(config: Config):
     parser = create_parser()
     namespace = parser.parse_args()
 
-    from app.utils import log
+    from app.utils import logging_config as log
     from app import misc
 
-    log.setup(config.log)
+    log.setup(config)
     misc.setup(config)
     if namespace.polling:
         polling(namespace.skip_updates)

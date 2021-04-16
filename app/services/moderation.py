@@ -3,7 +3,9 @@ from datetime import timedelta
 
 from aiogram import Bot
 from aiogram.utils.exceptions import BadRequest
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.config.main import load_config
 from app.config import moderation

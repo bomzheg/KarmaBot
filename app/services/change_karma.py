@@ -1,5 +1,7 @@
 from aiogram import Bot
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config

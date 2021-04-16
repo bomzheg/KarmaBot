@@ -4,7 +4,9 @@ from typing import Optional
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 from app.models.db import Chat, User
 from app.models.config import TgClientConfig

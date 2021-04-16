@@ -2,7 +2,9 @@ from functools import partial
 
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
-from loguru import logger
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 from tortoise import Tortoise, run_async
 
 from app.models.config import DBConfig
