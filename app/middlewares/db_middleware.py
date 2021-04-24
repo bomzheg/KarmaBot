@@ -15,9 +15,9 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-class ACLMiddleware(BaseMiddleware):
+class DBMiddleware(BaseMiddleware):
     def __init__(self, tg_client_config: TgClientConfig):
-        super(ACLMiddleware, self).__init__()
+        super(DBMiddleware, self).__init__()
         self.lock_factory = LockFactory()
         self.tg_client_config = tg_client_config
 
