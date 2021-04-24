@@ -2,12 +2,8 @@ from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
-from app.config import load_config
 from .chat import Chat
 from .user import User
-
-
-config = load_config()
 
 
 class KarmaEvent(Model):
@@ -44,14 +40,12 @@ class KarmaEvent(Model):
             chat=chat
         ).order_by('-date').limit(limit).prefetch_related("user_from").all()
 
-    def format_event(self):
+    def format_event(self, date_format: str):
         rez = (
-            f"{self.date.date().strftime(config.date_format)} "
+            f"{self.date.date().strftime(date_format)} "
             f"{self.user_from.mention_no_link} изменил карму на "
             f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
             rez += f'"{quote_html(self.comment)}"'
         return rez
-
-    __str__ = format_event

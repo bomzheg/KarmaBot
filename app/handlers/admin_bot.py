@@ -3,8 +3,8 @@ import json
 
 from aiogram import types
 
-from app.config.main import load_config
 from app.misc import bot, dp
+from app.models.config import Config
 from app.models.db import (
     Chat,
     User,
@@ -14,26 +14,25 @@ from app.utils.log import Logger
 from app.utils.send_text_file import send_log_files
 
 logger = Logger(__name__)
-config = load_config()
 
 
 @dp.message_handler(is_superuser=True, commands='update_log')
 @dp.throttled(rate=30)
 @dp.async_task
-async def get_log(_: types.Message):
+async def get_log(_: types.Message, config: Config):
     await send_log_files(bot, config.log.log_chat_id)
 
 
 @dp.message_handler(is_superuser=True, commands='logchat')
 @dp.throttled(rate=30)
-async def get_logchat(message: types.Message):
+async def get_logchat(message: types.Message, config: Config):
     log_ch = await bot.get_chat(config.log.log_chat_id)
     await message.answer(log_ch.invite_link, disable_notification=True)
 
 
 @dp.message_handler(is_superuser=True, commands='generate_invite_logchat')
 @dp.throttled(rate=120)
-async def generate_logchat_link(message: types.Message):
+async def generate_logchat_link(message: types.Message, config: Config):
     await message.reply(await bot.export_chat_invite_link(config.log.log_chat_id), disable_notification=True)
 
 
@@ -50,18 +49,18 @@ async def leave_chat(message: types.Message):
 
 @dp.message_handler(is_superuser=True, commands='dump')
 @dp.throttled(rate=120)
-async def get_dump(_: types.Message):
-    await send_dump_bd()
+async def get_dump(_: types.Message, config: Config):
+    await send_dump_bd(config)
 
 
-async def send_dump_bd():
+async def send_dump_bd(config: Config):
     with open(config.db.db_path, 'rb') as f:
         await bot.send_document(config.dump_chat_id, f)
 
 
 @dp.message_handler(is_superuser=True, commands='json')
 @dp.throttled(rate=120)
-async def get_dump(_: types.Message):
+async def get_dump(_: types.Message, config: Config):
     dct = await UserKarma.all_to_json()
 
     await bot.send_document(
