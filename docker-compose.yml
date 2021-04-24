@@ -17,7 +17,7 @@ services:
       - type: "mount"
         source: problems
         target: "/jsons"
-    env_file: .env
+    env_file: config/.env
     entrypoint: [ "python3", "-m", "app", "-p" ]
     networks:
       - reverse-proxy

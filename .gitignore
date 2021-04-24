@@ -1,6 +1,5 @@
 .idea/
 *.pyc
-.env
 *.psd
 log/
 *.log
