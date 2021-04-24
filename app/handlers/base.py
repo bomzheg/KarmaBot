@@ -1,10 +1,13 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hpre, hbold
-from loguru import logger
 
 from app.misc import dp
 from app.models.db import Chat
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 @dp.message_handler(commands=["start"], commands_prefix='!/')

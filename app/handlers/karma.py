@@ -3,7 +3,6 @@ import asyncio
 from aiogram import types
 from aiogram.types import ChatType
 from aiogram.utils.markdown import hpre
-from loguru import logger
 
 from app.config.main import load_config
 from app.misc import dp
@@ -17,8 +16,10 @@ from app.services.karma import (
     get_me_chat_info
 )
 from app.services.remove_message import delete_message
+from app.utils.log import Logger
 
 
+logger = Logger(__name__)
 config = load_config()
 
 

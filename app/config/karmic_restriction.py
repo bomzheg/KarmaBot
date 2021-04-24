@@ -2,9 +2,10 @@
 from datetime import timedelta
 
 from app.models.common import TypeRestriction
+from app.models.config import AutoRestrictionConfig
 from .moderation import FOREVER_RESTRICT_DURATION
 from .restriction_plan import RestrictionPlan, RestrictionPlanElem
-from app.models.config import AutoRestrictionConfig
+
 
 NEGATIVE_KARMA_TO_RESTRICT = -100
 KARMA_AFTER_RESTRICT = -80

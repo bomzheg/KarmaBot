@@ -1,4 +1,3 @@
-
 PLUS = "+"
 PLUS_WORDS = frozenset({
     "спасибо",

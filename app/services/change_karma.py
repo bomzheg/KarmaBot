@@ -1,8 +1,8 @@
 from aiogram import Bot
-from loguru import logger
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
+from app.models.common import TypeRestriction
 from app.models.db import (
     User,
     Chat,
@@ -10,14 +10,14 @@ from app.models.db import (
     KarmaEvent,
     ModeratorEvent
 )
-
-from app.models.common import TypeRestriction
 from app.services.moderation import auto_restrict, user_has_now_ro, get_count_auto_restrict
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted
+from app.utils.log import Logger
 from app.utils.types import ResultChangeKarma
 
 
+logger = Logger(__name__)
 config = load_config()
 
 

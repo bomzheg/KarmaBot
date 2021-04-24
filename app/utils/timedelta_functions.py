@@ -4,6 +4,7 @@ import typing
 
 from app.utils.exceptions import ToLongDuration, InvalidFormatDuration
 
+
 MODIFIERS = {
     "y": datetime.timedelta(days=365),  # простим один день если кому-то попадётся високосный
     "w": datetime.timedelta(weeks=1),

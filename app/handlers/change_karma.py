@@ -4,19 +4,20 @@ import typing
 from aiogram import types
 from aiogram.types import ContentType
 from aiogram.utils.markdown import quote_html
-from loguru import logger
 
-from app.misc import dp
 from app.config.main import load_config
+from app.misc import dp
 from app.models.db import Chat, User
+from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import change_karma, cancel_karma_change
+from app.services.remove_message import remove_kb
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
-from app.services.remove_message import remove_kb
+from app.utils.log import Logger
 from . import keyboards as kb
-from app.services.adaptive_trottle import AdaptiveThrottle
 
 
+logger = Logger(__name__)
 a_throttle = AdaptiveThrottle()
 config = load_config()
 
@@ -35,21 +36,20 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
 
 
 @dp.message_handler(karma_change=True, has_target=True, content_types=[
-        ContentType.TEXT,
+    ContentType.TEXT,
 
-        ContentType.STICKER,
+    ContentType.STICKER,
 
-        ContentType.ANIMATION,
-        ContentType.AUDIO,
-        ContentType.DOCUMENT,
-        ContentType.PHOTO,
-        ContentType.VIDEO,
-        ContentType.VOICE,
+    ContentType.ANIMATION,
+    ContentType.AUDIO,
+    ContentType.DOCUMENT,
+    ContentType.PHOTO,
+    ContentType.VIDEO,
+    ContentType.VOICE,
 ])
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
 @dp.throttled(rate=1)
 async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User):
-
     try:
         result_change_karma = await change_karma(
             target_user=target,

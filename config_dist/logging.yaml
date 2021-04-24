@@ -1,0 +1,34 @@
+version: 1
+formatters:
+  simple:
+    format: '{asctime} - {name}:{lineno} - {levelname} - {message}'
+    style: '{'
+  colored:
+    (): colorlog.ColoredFormatter
+    format: '{asctime} - {name}:{lineno} - {log_color}{levelname} - {blue}{message}'
+    style: '{'
+    datefmt: '%H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: colored
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: simple
+    filename: app.log
+root:
+  level: DEBUG
+  handlers: [ console, file ]
+loggers:
+  aiosqlite:
+    level: INFO
+  aiogram:
+    level: INFO
+  tortoise:
+    level: INFO
+  db_client:
+    level: INFO
+disable_existing_loggers: false

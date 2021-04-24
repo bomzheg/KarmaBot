@@ -5,6 +5,7 @@ from aiogram import Bot
 
 from app.models.common import TypeRestriction
 
+
 DEFAULT_RESTRICT_DURATION = timedelta(hours=1)
 FOREVER_RESTRICT_DURATION = timedelta(days=666)
 RO_ACTION = partial(Bot.restrict_chat_member, can_send_messages=False)

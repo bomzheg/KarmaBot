@@ -1,15 +1,16 @@
 from math import sqrt
 
-from loguru import logger
 from tortoise import fields
 from tortoise.models import Model
 
 from app.utils.exceptions import SubZeroKarma
+from app.utils.log import Logger
 from .chat import Chat
-from .user import User
 from .db import karma_filters
+from .user import User
 
 
+logger = Logger(__name__)
 DEFAULT_KARMA = 50
 
 

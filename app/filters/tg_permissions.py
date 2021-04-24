@@ -40,7 +40,7 @@ class HasPermissions(Filter):
 
     @classmethod
     def validate(
-        cls, full_config: typing.Dict[str, typing.Any]
+            cls, full_config: typing.Dict[str, typing.Any]
     ) -> typing.Optional[typing.Dict[str, typing.Any]]:
         config = {}
         for alias, argument in cls.ARGUMENTS.items():
@@ -70,7 +70,7 @@ class HasPermissions(Filter):
         return chat_member
 
     async def check(
-        self, message: types.Message
+            self, message: types.Message
     ) -> typing.Union[bool, typing.Dict[str, typing.Any]]:
         chat_member = await self._get_chat_member(message)
         if not chat_member:

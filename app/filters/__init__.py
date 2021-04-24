@@ -1,9 +1,12 @@
 from functools import partialmethod
 
 from aiogram import Dispatcher
-from loguru import logger
 
 from app.models.config import Config
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 def setup(dispatcher: Dispatcher, config: Config):

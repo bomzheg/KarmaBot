@@ -4,12 +4,15 @@ from typing import Optional
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from loguru import logger
 
-from app.models.db import Chat, User
 from app.models.config import TgClientConfig
+from app.models.db import Chat, User
 from app.services.find_target_user import get_db_user_by_tg_user
 from app.utils.lock_factory import LockFactory
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 class ACLMiddleware(BaseMiddleware):

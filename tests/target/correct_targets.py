@@ -1,4 +1,3 @@
-
 from aiogram import types
 
 from .common import filter_check, CONF_CANT_BE_SAME

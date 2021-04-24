@@ -1,14 +1,17 @@
 from aiogram import types
 from aiogram.utils.exceptions import Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
-from loguru import logger
 
 from app.misc import dp, bot
-from app.utils.exceptions import TimedeltaParseError, ModerationError
 from app.models.db import Chat, User
-from app.services.user_info import get_user_info
 from app.services.moderation import warn_user, ro_user, ban_user, get_duration
 from app.services.remove_message import delete_message
+from app.services.user_info import get_user_info
+from app.utils.exceptions import TimedeltaParseError, ModerationError
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 @dp.message_handler(
@@ -136,7 +139,7 @@ async def get_info_about_user(message: types.Message, chat: Chat, target: User):
 )
 async def cmd_ro_bot_not_admin(message: types.Message):
     """бот без прав модератора"""
-    await message.reply("Чтобы я выполнял функции модератора, дайте мне соотвествующие права")
+    await message.reply("Чтобы я выполнял функции модератора, дайте мне соответствующие права")
 
 
 @dp.message_handler(

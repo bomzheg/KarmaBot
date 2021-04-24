@@ -3,13 +3,15 @@ import typing
 
 import pyrogram
 from aiogram.types import User
-from loguru import logger
 from pyrogram import Client
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
 from app.models.config import TgClientConfig
 from app.services.restrict_call import RestrictCall
+from app.utils.log import Logger
 
+
+logger = Logger(__name__)
 SLEEP_TIME = 100
 
 

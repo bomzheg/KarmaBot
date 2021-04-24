@@ -2,12 +2,13 @@ from functools import partial
 
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
-from loguru import logger
 from tortoise import Tortoise, run_async
 
 from app.models.config import DBConfig
+from app.utils.log import Logger
 
 
+logger = Logger(__name__)
 __models__ = ['app.models.db']
 karma_filters = ("-karma", "uc_id")
 

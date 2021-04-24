@@ -12,3 +12,4 @@ jsons/
 *.session
 __pycache__/
 db_data/
+/config/

@@ -1,14 +1,17 @@
 import typing
 
 from aiogram import types
-from loguru import logger
 from pyrogram.errors import UsernameNotOccupied
 from tortoise.exceptions import MultipleObjectsReturned
 
-from app.models.db import User
 from app.models.config import TgClientConfig
+from app.models.db import User
 from app.services.user_getter import UserGetter
 from app.utils.exceptions import UserWithoutUserIdError
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> typing.Optional[types.user.User]:

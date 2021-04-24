@@ -5,10 +5,12 @@ from datetime import datetime, timedelta
 
 from aiogram import types
 from aiogram.utils.exceptions import Throttled
-from loguru import logger
 
 from app.models.db import User, Chat
+from app.utils.log import Logger
 
+
+logger = Logger(__name__)
 DEFAULT_RATE = 1
 
 
@@ -40,6 +42,7 @@ class AdaptiveThrottle:
                     await process_on_throttled(on_throttled, current_key, rate, *args, **kwargs)
 
             return wrapped
+
         return decorator
 
     def check_time_throttle(

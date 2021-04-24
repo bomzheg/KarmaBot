@@ -5,8 +5,8 @@ from typing import Iterable
 from .auto_restriction import AutoRestrictionConfig
 from .db import DBConfig
 from .log import LogConfig
-from .webhook import WebhookConfig
 from .tg_client import TgClientConfig
+from .webhook import WebhookConfig
 
 
 @dataclass

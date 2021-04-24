@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
+
 from app.services.find_target_user import get_target_user
 
 

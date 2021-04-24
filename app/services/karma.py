@@ -1,6 +1,7 @@
 import typing
 
 from aiogram.utils.markdown import hbold
+
 from app.models.db import Chat, User, UserKarma
 from app.utils.exceptions import NotHaveNeighbours
 

@@ -1,8 +1,11 @@
 import aiohttp
 from bs4 import BeautifulSoup as Soup
-from loguru import logger
 
-from .exceptions import CantImportFromAxenia
+from app.utils.exceptions import CantImportFromAxenia
+from app.utils.log import Logger
+
+
+logger = Logger(__name__)
 
 
 def username_by_link(link: str) -> str:

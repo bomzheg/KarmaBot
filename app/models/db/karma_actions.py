@@ -2,9 +2,10 @@ from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
-from .user import User
-from .chat import Chat
 from app.config import load_config
+from .chat import Chat
+from .user import User
+
 
 config = load_config()
 
