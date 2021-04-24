@@ -43,9 +43,18 @@ class KarmaEvent(Model):
     def format_event(self, date_format: str):
         rez = (
             f"{self.date.date().strftime(date_format)} "
+            f"{get_emoji_by_karma_sign(self.how_change_absolute)}"
             f"{self.user_from.mention_no_link} изменил карму на "
             f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
             rez += f'"{quote_html(self.comment)}"'
         return rez
+
+
+def get_emoji_by_karma_sign(value: float):
+    if value > 0:
+        return "⏫"
+    if value < 0:
+        return "⏬"
+    return ""

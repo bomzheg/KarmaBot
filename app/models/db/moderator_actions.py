@@ -7,6 +7,7 @@ from tortoise.models import Model
 from app.utils.timedelta_functions import format_timedelta
 from .chat import Chat
 from .user import User
+from ..common import TypeRestriction
 
 
 class ModeratorEvent(Model):
@@ -62,7 +63,8 @@ class ModeratorEvent(Model):
         ).order_by('-date').limit(limit).prefetch_related('moderator').all()
 
     def format_event(self, date_format: str) -> str:
-        rez = f"{self.date.date().strftime(date_format)} {self.type_restriction} "
+        rez = f"{self.date.date().strftime(date_format)} " \
+              f"{TypeRestriction[self.type_restriction].get_emoji()}{self.type_restriction} "
 
         if self.timedelta_restriction:
             rez += f"{format_timedelta(self.timedelta_restriction)} "
