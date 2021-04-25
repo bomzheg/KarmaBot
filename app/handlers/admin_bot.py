@@ -20,7 +20,7 @@ logger = Logger(__name__)
 @dp.throttled(rate=30)
 @dp.async_task
 async def get_log(_: types.Message, config: Config):
-    await send_log_files(bot, config.log.log_chat_id)
+    await send_log_files(bot, config.log)
 
 
 @dp.message_handler(is_superuser=True, commands='logchat')
