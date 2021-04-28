@@ -3,6 +3,7 @@ from aiogram.utils.exceptions import Unauthorized
 from aiogram.utils.markdown import hide_link, quote_html
 
 from app.misc import dp, bot
+from app.models.config import Config
 from app.models.db import Chat, User
 from app.services.moderation import warn_user, ro_user, ban_user, get_duration
 from app.services.remove_message import delete_message
@@ -109,8 +110,8 @@ async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User)
 
 
 @dp.message_handler(commands="info", commands_prefix='!', has_target=dict(can_be_same=True))
-async def get_info_about_user(message: types.Message, chat: Chat, target: User):
-    info = await get_user_info(target, chat)
+async def get_info_about_user(message: types.Message, chat: Chat, target: User, config: Config):
+    info = await get_user_info(target, chat, config.date_format)
     target_karma = await target.get_karma(chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"

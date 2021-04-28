@@ -31,4 +31,6 @@ loggers:
     level: INFO
   db_client:
     level: INFO
+  asyncio:
+    level: INFO
 disable_existing_loggers: false

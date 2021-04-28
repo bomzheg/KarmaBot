@@ -4,13 +4,10 @@ from aiogram.utils.markdown import quote_html
 from tortoise import fields
 from tortoise.models import Model
 
-from app.config import load_config
 from app.utils.timedelta_functions import format_timedelta
 from .chat import Chat
 from .user import User
-
-
-config = load_config()
+from ..common import TypeRestriction
 
 
 class ModeratorEvent(Model):
@@ -65,8 +62,9 @@ class ModeratorEvent(Model):
             chat=chat
         ).order_by('-date').limit(limit).prefetch_related('moderator').all()
 
-    def format_event(self) -> str:
-        rez = f"{self.date.date().strftime(config.date_format)} {self.type_restriction} "
+    def format_event(self, date_format: str) -> str:
+        rez = f"{self.date.date().strftime(date_format)} " \
+              f"{TypeRestriction[self.type_restriction].get_emoji()}{self.type_restriction} "
 
         if self.timedelta_restriction:
             rez += f"{format_timedelta(self.timedelta_restriction)} "
@@ -76,5 +74,3 @@ class ModeratorEvent(Model):
         if self.comment:
             rez += f" \"{quote_html(self.comment)}\""
         return rez
-
-    __str__ = format_event

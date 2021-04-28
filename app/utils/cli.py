@@ -6,7 +6,6 @@ from app.utils.log import Logger
 
 import app
 from app.models.config import WebhookConfig, Config
-from app.utils import logging_config as log
 
 try:
     import aiohttp_autoreload
@@ -34,7 +33,6 @@ def create_parser():
 
 
 def cli(config: Config):
-    log.setup(config)
 
     def auto_reload_mixin(func):
         @functools.wraps(func)

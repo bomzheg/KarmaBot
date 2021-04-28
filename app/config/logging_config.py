@@ -1,18 +1,19 @@
 import logging.config
+from pathlib import Path
 
 import yaml
 
-from app.models.config import Config
+from app.models.config import LogConfig
 from app.utils.log import Logger
 
 
 logger = Logger(__name__)
 
 
-def setup(config: Config):
-    log_dir = config.log.log_path
+def logging_setup(config_path: Path, log_config: LogConfig):
+    log_dir = log_config.log_path
     log_dir.mkdir(exist_ok=True)
-    with (config.app_dir / "config" / "logging.yaml").open("r") as f:
+    with (config_path / "logging.yaml").open("r") as f:
         logging_config = yaml.safe_load(f)
         logging_config['handlers']['file']['filename'] = log_dir / "app.log"
         logging.config.dictConfig(logging_config)

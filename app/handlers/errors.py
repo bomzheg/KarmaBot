@@ -8,7 +8,6 @@ from app.utils.log import Logger
 
 
 logger = Logger(__name__)
-config = load_config()
 
 
 @dp.errors_handler()
@@ -22,7 +21,7 @@ async def errors_handler(update: types.Update, exception: Exception):
         logger.exception("Cause exception {e} in update {update}", e=e, update=update)
 
     await bot.send_message(
-        config.log.log_chat_id,
+        load_config().log.log_chat_id,
         f"Получено исключение {quote_html(exception)}\n"
         f"во время обработки апдейта {quote_html(update)}\n"
         f"{quote_html(exception.args)}"

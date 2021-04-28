@@ -4,8 +4,8 @@ from aiogram import types
 from aiogram.types import ChatType
 from aiogram.utils.markdown import hpre
 
-from app.config.main import load_config
 from app.misc import dp
+from app.models.config import Config
 from app.models.db import (
     Chat,
     User
@@ -20,7 +20,6 @@ from app.utils.log import Logger
 
 
 logger = Logger(__name__)
-config = load_config()
 
 
 @dp.message_handler(commands=["top"], commands_prefix='!', chat_type=types.ChatType.PRIVATE)
@@ -52,7 +51,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
 
 @dp.message_handler(chat_type=[ChatType.GROUP, ChatType.SUPERGROUP], commands=["me"], commands_prefix='!')
 @dp.throttled(rate=15)
-async def get_top(message: types.Message, chat: Chat, user: User):
+async def get_top(message: types.Message, chat: Chat, user: User, config: Config):
     logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
     msg = await message.reply(
