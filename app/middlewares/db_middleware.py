@@ -3,6 +3,7 @@
 from typing import Optional
 
 from aiogram import types
+from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
 from app.models.config import TgClientConfig
@@ -44,6 +45,8 @@ class DBMiddleware(BaseMiddleware):
         data['target'] = target
 
     async def on_pre_process_message(self, message: types.Message, data: dict):
+        if message.from_user.id == 777000:
+            raise CancelHandler
         await self.setup_chat(data, message.from_user, message.chat)
 
     async def on_process_message(self, _: types.Message, data: dict):
