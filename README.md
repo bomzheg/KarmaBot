@@ -5,6 +5,8 @@
 This telegram bot is designed to track karma in chats.
 Just add him to the chat and thank each other for helpful answers.
 
+[![wakatime](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/42faabfe-94b1-41c8-ad2f-6bb491731777.svg)](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/42faabfe-94b1-41c8-ad2f-6bb491731777)
+
 For deploy info look at [docs/deploy_manual.md](./docs/deploy_manual.md)
 
 most bot command use throttle mechanism, it means the bot wouldn't answer if you send many identical requests in a row
