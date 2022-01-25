@@ -45,7 +45,7 @@ class DBMiddleware(BaseMiddleware):
         data['target'] = target
 
     async def on_pre_process_message(self, message: types.Message, data: dict):
-        if message.from_user.id == 777000:
+        if message.sender_chat:
             raise CancelHandler
         await self.setup_chat(data, message.from_user, message.chat)
 
