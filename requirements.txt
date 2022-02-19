@@ -1,6 +1,5 @@
 aiogram
 aiohttp  #  для загрузки кармы с сайта Аксении для последующего парсинга
-aiohttp-autoreload
 loguru
 tortoise-orm
 lxml  #  для парсинга кармы из Аксении
