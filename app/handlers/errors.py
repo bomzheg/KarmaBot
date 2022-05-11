@@ -18,7 +18,10 @@ async def errors_handler(update: types.Update, exception: Exception):
         logger.error("Cause exception {e} in update {update}", e=e, update=update)
 
     except Exception as e:
-        logger.exception("Cause exception {e} in update {update}", e=e, update=update)
+        logger.exception(
+            "Cause exception {e} in update {update}",
+            e=e, update=update, exc_info=e
+        )
 
     await bot.send_message(
         load_config().log.log_chat_id,

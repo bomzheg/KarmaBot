@@ -81,7 +81,7 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat):
     try:
         success_text = await ban_user(chat, target, user, duration, comment, message.bot)
     except ModerationError as e:
-        logger.error("Failed to kick chat member: {error!r}", error=e)
+        logger.error("Failed to kick chat member: {error!r}", error=e, exc_info=e)
     else:
         await message.reply(success_text)
 
