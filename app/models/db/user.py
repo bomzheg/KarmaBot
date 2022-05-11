@@ -97,7 +97,7 @@ class User(Model):
     def fullname(self):
         if self.last_name is not None:
             return ' '.join((self.first_name, self.last_name))
-        return self.first_name or self.username or self.tg_id or self.id
+        return self.first_name or self.username or str(self.tg_id) or str(self.id)
 
     # noinspection PyUnresolvedReferences
     async def get_uk(self, chat: Chat) -> "UserKarma":  # noqa: F821

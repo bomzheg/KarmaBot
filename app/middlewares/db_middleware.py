@@ -31,7 +31,7 @@ class DBMiddleware(BaseMiddleware):
                     chat = await Chat.get_or_create_from_tg_chat(chat)
 
         except Exception as e:
-            logger.error("troubles with db")
+            logger.exception("troubles with db", exc_info=e)
             raise e
         data["user"] = user
         data["chat"] = chat
