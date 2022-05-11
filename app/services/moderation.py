@@ -2,7 +2,7 @@ import typing
 from datetime import timedelta
 
 from aiogram import Bot
-from aiogram.types import ChatMemberStatus
+from aiogram.types import ChatMemberStatus, ChatMemberRestricted
 from aiogram.utils.exceptions import BadRequest
 
 from app.config import moderation
@@ -125,7 +125,10 @@ def get_duration(text: str):
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
     chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
-    return chat_member.status in (ChatMemberStatus.BANNED, ChatMemberStatus.KICKED, ChatMemberStatus.RESTRICTED,)
+    if chat_member.status == ChatMemberStatus.RESTRICTED:
+        assert isinstance(chat_member, ChatMemberRestricted)
+        return not chat_member.can_send_messages
+    return chat_member.status in (ChatMemberStatus.BANNED, ChatMemberStatus.KICKED)
 
 
 async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> typing.Tuple[int, ModeratorEvent]:
