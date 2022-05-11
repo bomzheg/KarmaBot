@@ -40,7 +40,7 @@ async def get_mentions_admins(chat: types.Chat):
     return admins_mention
 
 
-def need_notify_admin(admin: types.ChatMember):
+def need_notify_admin(admin: types.ChatMemberAdministrator | types.ChatMemberOwner):
     return admin.can_delete_messages or admin.can_restrict_members or admin.status == types.ChatMemberStatus.CREATOR
 
 
