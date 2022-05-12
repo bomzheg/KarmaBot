@@ -1,4 +1,5 @@
 import typing
+from contextlib import suppress
 
 from aiogram import types
 from pyrogram.errors import UsernameNotOccupied
@@ -95,11 +96,12 @@ def get_replied_user(message: types.Message) -> typing.Optional[types.User]:
 
 
 def get_id_user(message: types.Message) -> types.User | None:
-    for word in message.text.split():
-        word: str
-        if word.lower().startswith("id"):
-            user_id = int(word.lower().removeprefix("id"))
-            return types.User(id=user_id)
+    text = message.text or message.caption or ""
+    for word in text.lower().split():
+        if word.startswith("id"):
+            with suppress(ValueError):
+                user_id = int(word.removeprefix("id"))
+                return types.User(id=user_id)
     return None
 
 
