@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
+from aiogram.dispatcher.handler import ctx_data
 
 from app.config.karmic_triggers import (
     PLUS,
@@ -12,6 +13,7 @@ from app.config.karmic_triggers import (
     MINUS_EMOJI,
     MINUS_TRIGGERS,
 )
+from app.models.db import ChatSettings
 
 PUNCTUATIONS = ",.!)"
 INF = float('inf')
@@ -27,18 +29,26 @@ class KarmaFilter(BoundFilter):
 
     karma_change: bool
 
-    async def check(self, message: types.Message) -> typing.Dict[str, typing.Dict[str, float]]:
-        possible_trigger_text = message.text or message.caption
-        if possible_trigger_text is None and message.sticker:
-            possible_trigger_text = message.sticker.emoji or None
-        karma_change, comment = get_karma_trigger(possible_trigger_text)
-        if karma_change is None:
+    async def check(self, message: types.Message) -> dict[str, dict[str, float]]:
+        data = ctx_data.get()
+        settings: ChatSettings = data["chat_settings"]
+        if not settings.karma_counting:
             return {}
-        rez = {'karma': {'karma_change': karma_change, 'comment': comment}}
-        return rez
+        return await check(message)
 
 
-def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
+async def check(message: types.Message) -> dict[str, dict[str, float]]:
+    possible_trigger_text = message.text or message.caption
+    if possible_trigger_text is None and message.sticker:
+        possible_trigger_text = message.sticker.emoji or None
+    karma_change, comment = get_karma_trigger(possible_trigger_text)
+    if karma_change is None:
+        return {}
+    rez = {'karma': {'karma_change': karma_change, 'comment': comment}}
+    return rez
+
+
+def get_karma_trigger(text: str) -> tuple[typing.Optional[float], str]:
     """
     :return: tuple (how_change, comment)
         how_change: shows how much to change karma wants user
@@ -57,7 +67,7 @@ def get_karma_trigger(text: str) -> typing.Tuple[typing.Optional[float], str]:
     return None, ""
 
 
-def get_first_word(text: str) -> typing.Tuple[str, str]:
+def get_first_word(text: str) -> tuple[str, str]:
     args = text.split(maxsplit=1)
 
     possible_trigger = args[0]
@@ -110,7 +120,7 @@ def has_minus_karma(possible_trigger: str) -> typing.Optional[float]:
     return None
 
 
-def get_first_line(text: str) -> typing.Tuple[str, str]:
+def get_first_line(text: str) -> tuple[str, str]:
     args = text.splitlines()
 
     possible_trigger = args[0]

@@ -9,6 +9,7 @@ from aiogram.dispatcher.middlewares import BaseMiddleware
 from app.models.config import TgClientConfig
 from app.models.db import Chat, User
 from app.services.find_target_user import get_db_user_by_tg_user
+from app.services.settings import get_chat_settings
 from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger
 
@@ -35,6 +36,7 @@ class DBMiddleware(BaseMiddleware):
             raise e
         data["user"] = user
         data["chat"] = chat
+        data["chat_settings"] = await get_chat_settings(chat=chat)
 
     async def fix_target(self, data: dict):
         try:

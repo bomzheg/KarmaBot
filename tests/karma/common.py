@@ -3,7 +3,8 @@ import asyncio
 from aiogram import types
 
 from app.filters.karma_change import (
-    KarmaFilter, PUNCTUATIONS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS_TRIGGERS, MINUS_EMOJI, PLUS, INF
+    KarmaFilter, PUNCTUATIONS, PLUS_TRIGGERS, PLUS_EMOJI, MINUS_TRIGGERS,
+    MINUS_EMOJI, PLUS, INF, check,
 )
 
 
@@ -14,8 +15,7 @@ SPACES = (" ", "\t", "\n", "\r")
 
 
 def filter_check(message: types.Message):
-    karma_filter = KarmaFilter(karma_change=True)
-    return asyncio.run(karma_filter.check(message))
+    return asyncio.run(check(message))
 
 
 __all__ = [
