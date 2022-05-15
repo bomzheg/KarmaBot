@@ -34,14 +34,18 @@ class KarmaFilter(BoundFilter):
         settings: ChatSettings = data["chat_settings"]
         if not settings.karma_counting:
             return {}
-        possible_trigger_text = message.text or message.caption
-        if possible_trigger_text is None and message.sticker:
-            possible_trigger_text = message.sticker.emoji or None
-        karma_change, comment = get_karma_trigger(possible_trigger_text)
-        if karma_change is None:
-            return {}
-        rez = {'karma': {'karma_change': karma_change, 'comment': comment}}
-        return rez
+        return await check(message)
+
+
+async def check(message: types.Message) -> dict[str, dict[str, float]]:
+    possible_trigger_text = message.text or message.caption
+    if possible_trigger_text is None and message.sticker:
+        possible_trigger_text = message.sticker.emoji or None
+    karma_change, comment = get_karma_trigger(possible_trigger_text)
+    if karma_change is None:
+        return {}
+    rez = {'karma': {'karma_change': karma_change, 'comment': comment}}
+    return rez
 
 
 def get_karma_trigger(text: str) -> tuple[typing.Optional[float], str]:
