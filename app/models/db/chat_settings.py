@@ -12,6 +12,7 @@ class ChatSettings(Model):
     chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
         'models.Chat', related_name='settings')
     karmic_restrictions: bool = fields.BooleanField()
+    karma_counting: bool = fields.BooleanField()
 
     class Meta:
         table = 'chat_settings'
@@ -20,6 +21,7 @@ class ChatSettings(Model):
         # noinspection PyUnresolvedReferences
         rez = (
             f'Settings {self.id} of chat: {self.chat_id} '
+            f'enable karma {self.karma_counting}'
             f'enable karmic restrictions {self.karmic_restrictions}'
         )
         return rez
