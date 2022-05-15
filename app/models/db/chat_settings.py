@@ -11,8 +11,8 @@ class ChatSettings(Model):
     id = fields.IntField(pk=True)
     chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
         'models.Chat', related_name='settings')
-    karmic_restrictions: bool = fields.BooleanField()
-    karma_counting: bool = fields.BooleanField()
+    karmic_restrictions: bool = fields.BooleanField(default=False)
+    karma_counting: bool = fields.BooleanField(null=False, default=True)
 
     class Meta:
         table = 'chat_settings'
