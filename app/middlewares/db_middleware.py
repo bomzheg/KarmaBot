@@ -30,13 +30,13 @@ class DBMiddleware(BaseMiddleware):
             if chat and chat.type != 'private':
                 async with self.lock_factory.get_lock(f"{chat.id}"):
                     chat = await Chat.get_or_create_from_tg_chat(chat)
+                    data["chat"] = chat
+                    data["chat_settings"] = await get_chat_settings(chat=chat)
 
         except Exception as e:
             logger.exception("troubles with db", exc_info=e)
             raise e
         data["user"] = user
-        data["chat"] = chat
-        data["chat_settings"] = await get_chat_settings(chat=chat)
 
     async def fix_target(self, data: dict):
         try:
