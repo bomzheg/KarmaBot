@@ -89,6 +89,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             notify_text=notify_text,
         ),
         disable_web_page_preview=True,
+        allow_sending_without_reply=True,
         reply_markup=kb.get_kb_karma_cancel(
             user=user,
             karma_event=result_change_karma.karma_event,
