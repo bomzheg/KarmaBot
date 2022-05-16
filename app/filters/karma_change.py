@@ -31,8 +31,8 @@ class KarmaFilter(BoundFilter):
 
     async def check(self, message: types.Message) -> dict[str, dict[str, float]]:
         data = ctx_data.get()
-        settings: ChatSettings = data["chat_settings"]
-        if not settings.karma_counting:
+        settings: ChatSettings = data.get("chat_settings", None)
+        if settings is None or not settings.karma_counting:
             return {}
         return await check(message)
 
