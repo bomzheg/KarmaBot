@@ -1,6 +1,5 @@
 # partially from https://github.com/aiogram/bot
 from aiogram import Bot, Dispatcher, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from app.config import load_config
 from app.models.config import Config
@@ -11,7 +10,7 @@ logger = Logger(__name__)
 current_config = load_config()
 
 bot = Bot(current_config.bot_token, parse_mode=types.ParseMode.HTML)
-dp = Dispatcher(bot, storage=MemoryStorage())
+dp = Dispatcher(bot, storage=current_config.storage.create_storage())
 
 
 def setup(config: Config):

@@ -9,6 +9,7 @@ from app.models.config import Config, TgClientConfig
 from .db import load_db_config
 from .karmic_restriction import load_karmic_restriction_config
 from .log import load_log_config
+from .storage import load_storage
 from .webhook import load_webhook_config
 from .logging_config import logging_setup
 
@@ -35,4 +36,5 @@ def load_config(config_dir: Path = None) -> Config:
         log=log_config,
         dump_chat_id=-1001459777201,  # ⚙️Testing Area >>> Python Scripts,
         tg_client=TgClientConfig(bot_token=_bot_token),
+        storage=load_storage(config_file_data["storage"]),
     )

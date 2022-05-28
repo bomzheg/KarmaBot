@@ -7,6 +7,7 @@ from .db import DBConfig
 from .log import LogConfig
 from .tg_client import TgClientConfig
 from .webhook import WebhookConfig
+from .storage import StorageConfig
 
 
 @dataclass
@@ -20,6 +21,7 @@ class Config:
     log: LogConfig
     dump_chat_id: int
     tg_client: TgClientConfig
+    storage: StorageConfig
     date_format: str = '%d.%m.%Y'
     time_to_cancel_actions: int = 60
     time_to_remove_temp_messages: int = 30
