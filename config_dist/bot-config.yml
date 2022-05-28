@@ -2,9 +2,9 @@ superusers:
   - 111111111
   - 222222222
 storage:
-  type: redis
-  # type: memory
-  redis:
-    url: http://localhost
-    port: 6379
-    db: 1
+  type: memory
+  # type: redis
+  # redis:
+  #   url: http://localhost
+  #   port: 6379
+  #   db: 1
