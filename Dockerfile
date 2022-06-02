@@ -16,6 +16,6 @@ VOLUME /db_data
 VOLUME /jsons
 WORKDIR "."
 EXPOSE 3000
-COPY config config
+VOLUME /config
 COPY app app
 ENTRYPOINT ["python3", "-m", "app", "-p"]

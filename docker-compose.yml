@@ -5,16 +5,18 @@ services:
   karmabot:
     container_name: karmabot
     restart: always
-    build: .
+    image: bomzheg/karmabot
     volumes:
-      - type: "mount"
+      - type: "bind"
         source: "${HOME}/KarmaBot/log/karmabot/"
         target: "/log"
-      - type: "mount"
+      - type: "bind"
         source: "${HOME}/KarmaBot/db_data"
         target: "/db_data"
-
-      - type: "mount"
+      - type: "bind"
+        source: "${HOME}/KarmaBot/config"
+        target: "/config"
+      - type: "bind"
         source: problems
         target: "/jsons"
     env_file: config/.env
