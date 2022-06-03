@@ -14,6 +14,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 VOLUME /log
 VOLUME /db_data
 VOLUME /jsons
+VOLUME /config
 WORKDIR "."
 EXPOSE 3000
 VOLUME /config
