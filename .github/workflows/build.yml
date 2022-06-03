@@ -1,16 +1,14 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: KarmaBotTest
+name: KarmaBotBuild
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -34,3 +32,15 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mr-smithers-excellent/docker-build-push@v5.6
+        with:
+          image: bomzheg/karmabot
+          addLatest: true
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
