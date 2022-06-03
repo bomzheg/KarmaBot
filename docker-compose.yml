@@ -14,7 +14,7 @@ services:
         source: "${HOME}/KarmaBot/db_data"
         target: "/db_data"
       - type: "bind"
-        source: "${HOME}/KarmaBot/config"
+        source: "./config"
         target: "/config"
       - type: "bind"
         source: problems
