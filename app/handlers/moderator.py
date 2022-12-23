@@ -18,7 +18,7 @@ logger = Logger(__name__)
 @dp.message_handler(
     chat_type=[types.ChatType.GROUP, types.ChatType.SUPERGROUP],
     is_reply=True,
-    commands=['report', 'admin'],
+    commands=['report', 'admin', 'spam'],
     commands_prefix="/!@",
 )
 @dp.throttled(rate=5)
