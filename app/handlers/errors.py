@@ -1,5 +1,5 @@
 from aiogram import types
-from aiogram.utils.exceptions import CantParseEntities
+from aiogram.utils.exceptions import CantParseEntities, BadRequest
 from aiogram.utils.markdown import quote_html
 
 from app.config.main import load_config
@@ -16,12 +16,19 @@ async def errors_handler(update: types.Update, exception: Exception):
         raise exception
     except CantParseEntities as e:
         logger.error("Cause exception {e} in update {update}", e=e, update=update)
+        return True
+    except BadRequest as e:
+        if "Have no rights to send a message" in e.args[0]:
+            if update.message and update.message.chat:
+                logger.info("bot are muted in chat {chat}", chat=update.message.chat.id)
+            else:
+                logger.info("bot can't send message (no rights) in update {update}", update=update)
+            return True
 
-    except Exception as e:
-        logger.exception(
-            "Cause exception {e} in update {update}",
-            e=e, update=update, exc_info=e
-        )
+    logger.exception(
+        "Cause exception {e} in update {update}",
+        e=exception, update=update, exc_info=exception
+    )
 
     await bot.send_message(
         load_config().log.log_chat_id,
