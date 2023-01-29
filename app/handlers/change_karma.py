@@ -74,16 +74,17 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     else:
         notify_text = ""
 
-    # How match karma was changed. Sign show changed difference, not difference for cancel
+    # How much karma was changed. Sign show changed difference, not difference for cancel
     how_changed_karma = result_change_karma.user_karma.karma \
         - result_change_karma.karma_after \
         + result_change_karma.abs_change
 
     msg = await message.reply(
-        "Вы {how_change} карму <b>{name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
+        "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
         "\n\n{notify_text}".format(
+            actor_name=quote_html(user.fullname),
             how_change=get_how_change_text(karma['karma_change']),
-            name=quote_html(target.fullname),
+            target_name=quote_html(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
             notify_text=notify_text,
