@@ -18,7 +18,7 @@ async def errors_handler(update: types.Update, exception: Exception):
         logger.error("Cause exception {e} in update {update}", e=e, update=update)
         return True
     except BadRequest as e:
-        if "Have no rights to send a message" in e.args[0]:
+        if "rights" in e.args[0] and "send" in e.args[0]:
             if update.message and update.message.chat:
                 logger.info("bot are muted in chat {chat}", chat=update.message.chat.id)
             else:
