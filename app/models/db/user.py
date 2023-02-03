@@ -9,6 +9,7 @@ from tortoise.models import Model
 from app.models.common import TypeRestriction
 from app.utils.exceptions import UserWithoutUserIdError
 from .chat import Chat
+from .. import dto
 
 
 class User(Model):
@@ -66,7 +67,7 @@ class User(Model):
             await self.save()
 
     @classmethod
-    async def get_or_create_from_tg_user(cls, user_tg: types.User):
+    async def get_or_create_from_tg_user(cls, user_tg: types.User | dto.TargetUser):
         if user_tg.id is None:
             try:
                 return await cls.get(username__iexact=user_tg.username)

@@ -1,4 +1,5 @@
 import typing
+from datetime import datetime
 from random import choice
 from string import ascii_letters
 
@@ -55,6 +56,9 @@ def get_next_words(count_symbols: int = 10) -> str:
 
 
 def get_message_with_text(text: str) -> types.Message:
-    return types.Message(**{
-        'text': text,
-    })
+    return types.Message(
+        message_id=1,
+        date=datetime.now(),
+        text=text,
+        chat=types.Chat(id=1, type="group"),
+    )

@@ -1,3 +1,4 @@
+import pytest
 from aiogram import types
 
 from .common import filter_check, CONF_CANT_BE_SAME
@@ -12,21 +13,20 @@ def test_reply_target():
     check_target(target_user, msg)
 
 
-def test_mention_target():
+@pytest.mark.parametrize("phrase", get_parts())
+def test_mention_target(phrase: list[str]):
     author_user = get_from_user(36, "Rajesh")
     target_user = get_from_user(99, "Howard")
-    for phrase in get_parts():
-        msg = get_message_with_mention(author_user, target_user, phrase)
-        check_target(target_user, msg)
+    msg = get_message_with_mention(author_user, target_user, phrase)
+    check_target(target_user, msg)
 
 
-def test_text_mention_target():
+@pytest.mark.parametrize("phrase", get_parts())
+def test_text_mention_target(phrase: list[str]):
     target_user = get_from_user(69, "Bernadette")
     author_user = get_from_user(53, "Amy")
-
-    for phrase in get_parts():
-        msg = get_message_with_text_mention(author_user, target_user, phrase)
-        check_target(target_user, msg)
+    msg = get_message_with_text_mention(author_user, target_user, phrase)
+    check_target(target_user, msg)
 
 
 def check_target(target_user: dict, msg: types.Message):

@@ -5,6 +5,7 @@ from aiogram import types
 from pyrogram.errors import UsernameNotOccupied
 from tortoise.exceptions import MultipleObjectsReturned
 
+from app.models import dto
 from app.models.config import TgClientConfig
 from app.models.db import User
 from app.services.user_getter import UserGetter
@@ -15,7 +16,7 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> typing.Optional[types.user.User]:
+def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> typing.Optional[dto.TargetUser]:
     """
     Target user can be take from reply or by mention
     :param message:
@@ -23,7 +24,7 @@ def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False)
     :param can_be_bot:
     :return:
     """
-    author_user = message.from_user
+    author_user = dto.TargetUser.from_aiogram(message.from_user)
 
     target_user = get_replied_user(message)
     if has_target_user(target_user, author_user, can_be_same, can_be_bot):
@@ -40,7 +41,7 @@ def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False)
     return None
 
 
-def has_target_user(target_user: types.User, author_user: types.User, can_be_same, can_be_bot):
+def has_target_user(target_user: dto.TargetUser, author_user: dto.TargetUser, can_be_same, can_be_bot):
     """
     :return: True if target_user exist, not is author and not bot
     """
@@ -56,7 +57,7 @@ def has_target_user(target_user: types.User, author_user: types.User, can_be_sam
     return True
 
 
-def is_one_user(user_1: types.User, user_2: types.User):
+def is_one_user(user_1: dto.TargetUser, user_2: dto.TargetUser):
     if all([
         user_1.id is not None,
         user_2.id is not None,
@@ -73,7 +74,7 @@ def is_one_user(user_1: types.User, user_2: types.User):
     return False
 
 
-def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
+def get_mentioned_user(message: types.Message) -> typing.Optional[dto.TargetUser]:
     possible_mentioned_text = message.text or message.caption
     if not possible_mentioned_text:
         return None
@@ -82,26 +83,26 @@ def get_mentioned_user(message: types.Message) -> typing.Optional[types.User]:
         return None
     for ent in entities:
         if ent.type == "text_mention":
-            return ent.user
+            return dto.TargetUser.from_aiogram(ent.user)
         elif ent.type == "mention":
-            username = ent.get_text(possible_mentioned_text).lstrip("@")
-            return types.User(username=username)
+            username = ent.extract_from(possible_mentioned_text).lstrip("@")
+            return dto.TargetUser(username=username)
     return None
 
 
-def get_replied_user(message: types.Message) -> typing.Optional[types.User]:
+def get_replied_user(message: types.Message) -> typing.Optional[dto.TargetUser]:
     if message.reply_to_message:
-        return message.reply_to_message.from_user
+        return dto.TargetUser.from_aiogram(message.reply_to_message.from_user)
     return None
 
 
-def get_id_user(message: types.Message) -> types.User | None:
+def get_id_user(message: types.Message) -> dto.TargetUser | None:
     text = message.text or message.caption or ""
     for word in text.lower().split():
         if word.startswith("id"):
             with suppress(ValueError):
                 user_id = int(word.removeprefix("id"))
-                return types.User(id=user_id)
+                return dto.TargetUser(id=user_id)
     return None
 
 
@@ -112,12 +113,12 @@ def is_bot_username(username: str):
     return username is not None and username[-3:] == "bot"
 
 
-async def get_db_user_by_tg_user(target: types.User, tg_client_config: TgClientConfig) -> User:
+async def get_db_user_by_tg_user(target: dto.TargetUser, tg_client_config: TgClientConfig) -> User:
     exception: Exception
     try:
         target_user = await User.get_or_create_from_tg_user(target)
     except MultipleObjectsReturned as e:
-        logger.warning("Strange, multiple username? chek id={id}, username={username}",
+        logger.warning("Strange, multiple username? check id={id}, username={username}",
                        id=target.id, username=target.username)
         exception = e
     # In target can be user with only username

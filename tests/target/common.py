@@ -11,5 +11,5 @@ CONF_CANT_BE_SAME = dict(can_be_same=False)
 
 
 def filter_check(message: types.Message, conf: typing.Dict[str, bool]):
-    target_filter = HasTargetFilter(has_target=conf)
-    return asyncio.run(target_filter.check(message))
+    target_filter = HasTargetFilter(**conf)
+    return asyncio.run(target_filter(message))
