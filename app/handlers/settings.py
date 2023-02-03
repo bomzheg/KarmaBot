@@ -1,11 +1,13 @@
-from aiogram import types
+from aiogram import types, Router
 from aiogram.filters import Command
 
 from app.filters import HasPermissions
-from app.misc import router
 from app.models.db import Chat
 from app.services.settings import enable_karmic_restriction, disable_karmic_restriction, get_settings_card, \
     enable_karma_counting, disable_karma_counting
+
+
+router = Router(name=__name__)
 
 
 @router.message(Command(commands="settings", prefix="!/"))

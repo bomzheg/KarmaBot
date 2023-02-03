@@ -1,10 +1,9 @@
-from aiogram import types, F, Bot
+from aiogram import types, F, Bot, Router
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import HasTargetFilter, HasPermissions, BotHasPermissions
-from app.misc import router
 from app.models.config import Config
 from app.models.db import Chat, User
 from app.services.moderation import warn_user, ro_user, ban_user, get_duration
@@ -15,6 +14,7 @@ from app.utils.log import Logger
 
 
 logger = Logger(__name__)
+router = Router(name=__name__)
 
 
 @router.message(

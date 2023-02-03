@@ -1,8 +1,8 @@
+from aiogram import Dispatcher
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types.error_event import ErrorEvent
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.misc import dp
 from app.utils.exceptions import Throttled
 from app.utils.log import Logger
 
@@ -10,7 +10,6 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-@dp.errors()
 async def errors_handler(error: ErrorEvent):
     try:
         raise error.exception
@@ -36,3 +35,7 @@ async def errors_handler(error: ErrorEvent):
     #     f"{hd.quote(error.exception.args)}"
     # )
     return True
+
+
+def setup(dp: Dispatcher):
+    dp.errors.register(errors_handler)

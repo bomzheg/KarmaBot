@@ -1,10 +1,9 @@
 import asyncio
 
-from aiogram import types, F, Bot
+from aiogram import types, F, Bot, Router
 from aiogram.types import ContentType
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.misc import router
 from app.models.db import Chat, User
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import change_karma, cancel_karma_change
@@ -17,6 +16,7 @@ from app.models.config import Config
 from app.filters import HasTargetFilter, KarmaFilter
 
 logger = Logger(__name__)
+router = Router(name=__name__)
 a_throttle = AdaptiveThrottle()
 
 

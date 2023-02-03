@@ -1,14 +1,14 @@
-from aiogram import types, F
+from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hpre, hbold
 
-from app.misc import router
 from app.models.db import Chat
 from app.utils.log import Logger
 
 
 logger = Logger(__name__)
+router = Router(name=__name__)
 
 
 @router.message(Command("start", prefix='!/'))
