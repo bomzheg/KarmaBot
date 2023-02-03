@@ -4,9 +4,9 @@ import typing
 from datetime import datetime, timedelta
 
 from aiogram import types
-from aiogram.utils.exceptions import Throttled
 
 from app.models.db import User, Chat
+from app.utils.exceptions import Throttled
 from app.utils.log import Logger
 
 
@@ -95,4 +95,9 @@ async def process_on_throttled(
     else:
         chat: Chat = kwargs['chat']
         user: User = kwargs['user']
-        raise Throttled(key=key, rate=rate, chat_id=chat.chat_id, user_id=user.tg_id)
+        raise Throttled(
+            key=key,
+            rate=rate,
+            chat_id=chat.chat_id,
+            user_id=user.tg_id,
+        )

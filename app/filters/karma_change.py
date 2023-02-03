@@ -2,8 +2,7 @@ import typing
 from dataclasses import dataclass
 
 from aiogram import types
-from aiogram.dispatcher.filters import BoundFilter
-from aiogram.dispatcher.handler import ctx_data
+from aiogram.filters import BaseFilter
 
 from app.config.karmic_triggers import (
     PLUS,
@@ -20,19 +19,15 @@ INF = float('inf')
 
 
 @dataclass
-class KarmaFilter(BoundFilter):
+class KarmaFilter(BaseFilter):
     """
     Filtered message should be change karma
     """
 
-    key = "karma_change"
-
-    karma_change: bool
-
-    async def check(self, message: types.Message) -> dict[str, dict[str, float]]:
-        data = ctx_data.get()
-        settings: ChatSettings = data.get("chat_settings", None)
-        if settings is None or not settings.karma_counting:
+    async def __call__(
+        self, message: types.Message, chat_settings: ChatSettings,
+    ) -> dict[str, dict[str, float]]:
+        if chat_settings is None or not chat_settings.karma_counting:
             return {}
         return await check(message)
 

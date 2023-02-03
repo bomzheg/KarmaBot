@@ -1,6 +1,8 @@
 # partially from https://github.com/aiogram/bot
 import argparse
 
+from app.models.db import db
+from app.utils.executor import on_startup_webhook, on_startup_notify
 from app.utils.log import Logger
 
 import app
@@ -24,20 +26,22 @@ def create_parser():
     return arg_parser
 
 
-def cli(config: Config):
-
+async def cli(config: Config):
     parser = create_parser()
     namespace = parser.parse_args()
 
     from app import misc
-    from app.utils.executor import runner
 
     misc.setup(config)
-    if namespace.polling:
-        logger.info("starting polling...")
+    await db.db_init(config.db)
+    await on_startup_notify(misc.bot, config)
+    try:
+        if namespace.polling:
+            logger.info("starting polling...")
 
-        runner.skip_updates = namespace.skip_updates
-        runner.start_polling(reset_webhook=True)
-    else:
-        logger.info("starting webhook...")
-        runner.start_webhook(**config.webhook.listener_kwargs)
+            await misc.dp.start_polling(misc.bot)
+        else:
+            logger.info("starting webhook...")
+            await on_startup_webhook(misc.bot, config.webhook)
+    finally:
+        await db.on_shutdown()

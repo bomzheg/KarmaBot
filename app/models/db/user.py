@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from aiogram import types
-from aiogram.utils.markdown import hlink, quote_html
+from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
@@ -83,14 +83,14 @@ class User(Model):
 
     @property
     def mention_link(self):
-        return hlink(self.fullname, f"tg://user?id={self.tg_id}")
+        return hd.link(self.fullname, f"tg://user?id={self.tg_id}")
 
     @property
     def mention_no_link(self):
         if self.username:
-            rez = hlink(self.fullname, f"t.me/{self.username}")
+            rez = hd.link(self.fullname, f"t.me/{self.username}")
         else:
-            rez = quote_html(self.fullname)
+            rez = hd.quote(self.fullname)
         return rez
 
     @property

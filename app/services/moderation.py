@@ -2,8 +2,8 @@ import typing
 from datetime import timedelta
 
 from aiogram import Bot
-from aiogram.types import ChatMemberStatus, ChatMemberRestricted
-from aiogram.utils.exceptions import BadRequest
+from aiogram.types import ChatMemberRestricted
+from aiogram.exceptions import TelegramBadRequest
 
 from app.config import moderation
 from app.config.main import load_config
@@ -78,9 +78,9 @@ async def restrict(
             user_id=target.tg_id,
             until_date=duration,
         )
-    except BadRequest as e:
+    except TelegramBadRequest as e:
         raise CantRestrict(
-            text=e.text, user_id=target.tg_id, chat_id=chat.chat_id,
+            text=e.message, user_id=target.tg_id, chat_id=chat.chat_id,
             reason=comment, type_event=type_restriction.name
         )
     else:
@@ -125,17 +125,17 @@ def get_duration(text: str):
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
     chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
-    if chat_member.status == ChatMemberStatus.RESTRICTED:
+    if chat_member.status == "restricted":
         assert isinstance(chat_member, ChatMemberRestricted)
         return not chat_member.can_send_messages
-    return chat_member.status in (ChatMemberStatus.BANNED, ChatMemberStatus.KICKED)
+    return chat_member.status in ("banned", "kicked")
 
 
 async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> typing.Tuple[int, ModeratorEvent]:
     """
     return count auto restrict
     """
-    bot_user = await User.get_or_create_from_tg_user(await bot.me)
+    bot_user = await User.get_or_create_from_tg_user(await bot.me())
 
     count_auto_restrict = await get_count_auto_restrict(target, chat, bot_user=bot_user)
     logger.info(
@@ -164,7 +164,7 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
 async def get_count_auto_restrict(target: User, chat: Chat, bot_user: User = None, bot: Bot = None):
     assert bot is not None or bot_user is not None, "One of bot and bot_user must be not None"
     if bot_user is None:
-        bot_user = await User.get_or_create_from_tg_user(await bot.me)
+        bot_user = await User.get_or_create_from_tg_user(await bot.me())
     return await ModeratorEvent.filter(
         moderator=bot_user, user=target, chat=chat,
         type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),

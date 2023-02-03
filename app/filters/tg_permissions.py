@@ -1,9 +1,9 @@
 # from https://github.com/aiogram/bot/blob/master/app/filters/has_permissions.py
-import typing
 from dataclasses import dataclass
+from typing import Any, Union, Dict
 
-from aiogram import types
-from aiogram.dispatcher.filters import Filter
+from aiogram import types, Bot
+from aiogram.filters import Filter
 
 
 @dataclass
@@ -11,7 +11,6 @@ class HasPermissions(Filter):
     """
     Validate the user has specified permissions in chat
     """
-
     can_post_messages: bool = False
     can_edit_messages: bool = False
     can_delete_messages: bool = False
@@ -38,30 +37,17 @@ class HasPermissions(Filter):
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
 
-    @classmethod
-    def validate(
-            cls, full_config: typing.Dict[str, typing.Any]
-    ) -> typing.Optional[typing.Dict[str, typing.Any]]:
-        config = {}
-        for alias, argument in cls.ARGUMENTS.items():
-            if alias in full_config:
-                config[argument] = full_config.pop(alias)
-        return config
-
     def _get_cached_value(self, message: types.Message):
-        try:
-            return message.conf[self.PAYLOAD_ARGUMENT_NAME]
-        except KeyError:
-            return None
+        return None  # TODO
 
     def _set_cached_value(self, message: types.Message, member: types.ChatMember):
-        message.conf[self.PAYLOAD_ARGUMENT_NAME] = member
+        return None  # TODO
 
-    async def _get_chat_member(self, message: types.Message):
+    async def _get_chat_member(self, message: types.Message, bot: Bot):
         chat_member: types.ChatMember = self._get_cached_value(message)
         if chat_member is None:
-            admins = await message.chat.get_administrators()
-            target_user_id = self.get_target_id(message)
+            admins = await bot.get_chat_administrators(message.chat.id)
+            target_user_id = self.get_target_id(message, bot)
             try:
                 chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
             except StopIteration:
@@ -69,13 +55,11 @@ class HasPermissions(Filter):
             self._set_cached_value(message, chat_member)
         return chat_member
 
-    async def check(
-            self, message: types.Message
-    ) -> typing.Union[bool, typing.Dict[str, typing.Any]]:
-        chat_member = await self._get_chat_member(message)
+    async def __call__(self, message: types.Message, bot: Bot) -> Union[bool, Dict[str, Any]]:
+        chat_member = await self._get_chat_member(message, bot)
         if not chat_member:
             return False
-        if chat_member.status == types.ChatMemberStatus.CREATOR:
+        if chat_member.status == "creator":
             return chat_member
         for permission, value in self.required_permissions.items():
             if not getattr(chat_member, permission):
@@ -83,7 +67,7 @@ class HasPermissions(Filter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, message: types.Message) -> int:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int:
         return message.from_user.id
 
 
@@ -104,5 +88,5 @@ class BotHasPermissions(HasPermissions):
     }
     PAYLOAD_ARGUMENT_NAME = "bot_member"
 
-    def get_target_id(self, message: types.Message) -> int:
-        return message.bot.id
+    def get_target_id(self, message: types.Message, bot: Bot) -> int:
+        return bot.id

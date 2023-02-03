@@ -1,10 +1,10 @@
 import asyncio
 
-from aiogram import types
-from aiogram.types import ChatType
-from aiogram.utils.markdown import hpre
+from aiogram import types, F
+from aiogram.filters import Command
+from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.misc import dp
+from app.misc import router
 from app.models.config import Config
 from app.models.db import (
     Chat,
@@ -22,8 +22,7 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-@dp.message_handler(commands=["top"], commands_prefix='!', chat_type=types.ChatType.PRIVATE)
-@dp.throttled(rate=2)
+@router.message(Command("top", prefix='!'), F.chat.type == "private")
 async def get_top_from_private(message: types.Message, user: User):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
@@ -32,7 +31,7 @@ async def get_top_from_private(message: types.Message, user: User):
         return await message.reply(
             "Эту команду можно использовать только в группах "
             "или с указанием id нужного чата, например:"
-            "\n" + hpre("!top -1001399056118")
+            "\n" + hd.code("!top -1001399056118")
         )
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user)
@@ -40,8 +39,7 @@ async def get_top_from_private(message: types.Message, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
-@dp.message_handler(commands=["top"], commands_prefix='!')
-@dp.throttled(rate=60 * 5)
+@router.message(Command("top", prefix='!'))
 async def get_top(message: types.Message, chat: Chat, user: User):
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user)
@@ -49,8 +47,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
     await message.reply(text, disable_web_page_preview=True)
 
 
-@dp.message_handler(chat_type=[ChatType.GROUP, ChatType.SUPERGROUP], commands=["me"], commands_prefix='!')
-@dp.throttled(rate=15)
+@router.message(F.chat.type.in_(["group", "supergroup"]), Command("me", prefix='!'))
 async def get_top(message: types.Message, chat: Chat, user: User, config: Config):
     logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
@@ -62,8 +59,7 @@ async def get_top(message: types.Message, chat: Chat, user: User, config: Config
     asyncio.create_task(delete_message(message, config.time_to_remove_temp_messages))
 
 
-@dp.message_handler(chat_type=ChatType.PRIVATE, commands=["me"], commands_prefix='!')
-@dp.throttled(rate=15)
+@router.message(F.chat.type == "private", Command("me", prefix='!'))
 async def get_top(message: types.Message, user: User):
     logger.info("user {user} ask his karma", user=user.tg_id)
     uks = await get_me_info(user)

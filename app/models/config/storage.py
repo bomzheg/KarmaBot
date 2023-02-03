@@ -3,10 +3,14 @@ from dataclasses import dataclass
 
 from enum import Enum
 
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.contrib.fsm_storage.redis import RedisStorage2
-from aiogram.dispatcher.storage import BaseStorage
-from loguru import logger
+from aiogram.fsm.storage.base import BaseStorage
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio.client import Redis
+
+from app.utils.log import Logger
+
+logger = Logger(__name__)
 
 
 class StorageType(Enum):
@@ -36,7 +40,7 @@ class RedisConfig:
     port: int = 6379
     db: int = 1
 
-    def create_redis_storage(self) -> RedisStorage2:
+    def create_redis_storage(self) -> RedisStorage:
         logger.info("created storage for {self}", self=self)
-        return RedisStorage2(host=self.url, port=self.port, db=self.db)
+        return RedisStorage(Redis(host=self.url, port=self.port, db=self.db))
 

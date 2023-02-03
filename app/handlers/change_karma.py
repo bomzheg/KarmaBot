@@ -1,11 +1,10 @@
 import asyncio
-import typing
 
-from aiogram import types
+from aiogram import types, F, Bot
 from aiogram.types import ContentType
-from aiogram.utils.markdown import quote_html
+from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.misc import dp
+from app.misc import router
 from app.models.db import Chat, User
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import change_karma, cancel_karma_change
@@ -15,6 +14,7 @@ from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestri
 from app.utils.log import Logger
 from . import keyboards as kb
 from app.models.config import Config
+from app.filters import HasTargetFilter, KarmaFilter
 
 logger = Logger(__name__)
 a_throttle = AdaptiveThrottle()
@@ -33,7 +33,7 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
-@dp.message_handler(karma_change=True, has_target=True, content_types=[
+@router.message(HasTargetFilter(), KarmaFilter(), F.content_type.in_([
     ContentType.TEXT,
 
     ContentType.STICKER,
@@ -44,10 +44,11 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     ContentType.PHOTO,
     ContentType.VIDEO,
     ContentType.VOICE,
-])
+]))
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
-@dp.throttled(rate=1)
-async def karma_change(message: types.Message, karma: dict, user: User, chat: Chat, target: User, config: Config):
+async def karma_change(
+    message: types.Message, karma: dict, user: User, chat: Chat, target: User, config: Config, bot: Bot
+):
     try:
         result_change_karma = await change_karma(
             target_user=target,
@@ -55,7 +56,7 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
             user=user,
             how_change=karma['karma_change'],
             comment=karma['comment'],
-            bot=message.bot,
+            bot=bot,
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
@@ -82,9 +83,9 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     msg = await message.reply(
         "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
         "\n\n{notify_text}".format(
-            actor_name=quote_html(user.fullname),
+            actor_name=hd.quote(user.fullname),
             how_change=get_how_change_text(karma['karma_change']),
-            target_name=quote_html(target.fullname),
+            target_name=hd.quote(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
             notify_text=notify_text,
@@ -101,15 +102,12 @@ async def karma_change(message: types.Message, karma: dict, user: User, chat: Ch
     asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
 
 
-@dp.callback_query_handler(kb.cb_karma_cancel.filter())
-async def cancel_karma(callback_query: types.CallbackQuery, callback_data: typing.Dict[str, str]):
-    user_cancel_id = int(callback_data['user_id'])
-    if user_cancel_id != callback_query.from_user.id:
+@router.callback_query(kb.KarmaCancelCb.filter())
+async def cancel_karma(callback_query: types.CallbackQuery, callback_data: kb.KarmaCancelCb, bot: Bot):
+    if callback_data.user_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
-    karma_event_id = int(callback_data['karma_event_id'])
-    rollback_karma = float(callback_data['rollback_karma'])
-    moderator_event_id = callback_data['moderator_event_id']
-    moderator_event_id = None if moderator_event_id == "null" else int(moderator_event_id)
-    await cancel_karma_change(karma_event_id, rollback_karma, moderator_event_id, callback_query.bot)
+    rollback_karma = float(callback_data.rollback_karma)
+    moderator_event_id = None if callback_data.moderator_event_id == "null" else callback_data.moderator_event_id
+    await cancel_karma_change(callback_data.karma_event_id, rollback_karma, moderator_event_id, bot)
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()

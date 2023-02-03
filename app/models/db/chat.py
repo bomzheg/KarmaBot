@@ -1,7 +1,7 @@
 import typing
 from enum import Enum
 
-from aiogram.utils.markdown import hlink, quote_html
+from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
@@ -66,7 +66,7 @@ class Chat(Model):
 
     @property
     def mention(self):
-        return hlink(self.title, f"t.me/{self.username}") if self.username else quote_html(self.title)
+        return hd.link(self.title, f"t.me/{self.username}") if self.username else hd.quote(self.title)
 
     def __str__(self):
         rez = f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"

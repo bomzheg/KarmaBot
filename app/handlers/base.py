@@ -1,8 +1,9 @@
-from aiogram import types
-from aiogram.dispatcher import FSMContext
+from aiogram import types, F
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hpre, hbold
 
-from app.misc import dp
+from app.misc import router
 from app.models.db import Chat
 from app.utils.log import Logger
 
@@ -10,8 +11,7 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-@dp.message_handler(commands=["start"], commands_prefix='!/')
-@dp.throttled(rate=3)
+@router.message(Command("start", prefix='!/'))
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
@@ -22,8 +22,7 @@ async def cmd_start(message: types.Message):
     )
 
 
-@dp.message_handler(commands=["help"], commands_prefix='!/')
-@dp.throttled(rate=3)
+@router.message(Command("help", prefix='!/'))
 async def cmd_help(message: types.Message):
     logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
     await message.reply(
@@ -44,15 +43,13 @@ async def cmd_help(message: types.Message):
     )
 
 
-@dp.message_handler(commands=["about"], commands_prefix='!')
-@dp.throttled(rate=3)
+@router.message(Command("about", prefix='!'))
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
     await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
 
 
-@dp.message_handler(commands='idchat', commands_prefix='!')
-@dp.throttled(rate=30)
+@router.message(Command('idchat', prefix='!'))
 async def get_idchat(message: types.Message):
     text = (
         f"id этого чата: {hpre(message.chat.id)}\n"
@@ -66,20 +63,19 @@ async def get_idchat(message: types.Message):
     await message.reply(text, disable_notification=True)
 
 
-@dp.message_handler(state='*', commands='cancel')
-@dp.throttled(rate=3)
+@router.message(Command('cancel'))
 async def cancel_state(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is None:
         return
     logger.info(f'Cancelling state {current_state}')
     # Cancel state and inform user about it
-    await state.finish()
+    await state.clear()
     # And remove keyboard (just in case)
     await message.reply('Диалог прекращён, данные удалены', reply_markup=types.ReplyKeyboardRemove())
 
 
-@dp.message_handler(content_types=types.ContentTypes.MIGRATE_TO_CHAT_ID)
+@router.message(F.message.content_types == types.ContentType.MIGRATE_TO_CHAT_ID)
 async def chat_migrate(message: types.Message, chat: Chat):
     old_id = message.chat.id
     new_id = message.migrate_to_chat_id
