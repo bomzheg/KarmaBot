@@ -39,7 +39,7 @@ async def cli(config: Config):
     logger.debug(f"As application dir using: {config.app_dir}")
     middlewares.setup(dp, config)
     logger.info("Configure handlers...")
-    handlers.setup(dp)
+    handlers.setup(dp, bot, config)
     await on_startup_notify(bot, config)
     try:
         if namespace.polling:
