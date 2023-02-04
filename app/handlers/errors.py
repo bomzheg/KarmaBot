@@ -26,6 +26,8 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
             else:
                 logger.info("bot can't send message (no rights) in update {update}", update=error.update)
             return
+    except Exception:
+        pass
 
     logger.exception(
         "Cause exception {e} in update {update}",
@@ -35,8 +37,8 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     await bot.send_message(
         config.log.log_chat_id,
         f"Получено исключение {hd.quote(str(error.exception))}\n"
-        f"во время обработки апдейта {hd.quote(json.dumps(error.update.dict()))}\n"
-        f"{hd.quote(error.exception.args)}"
+        f"во время обработки апдейта {hd.quote(error.update.json(exclude_none=True, ensure_ascii=False))}\n"
+        f"{hd.quote(json.dumps(error.exception.args))}"
     )
 
 

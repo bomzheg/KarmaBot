@@ -6,6 +6,7 @@ from . import errors
 from . import karma
 from . import moderator
 from . import settings
+from . import superuser
 from ..models.config import Config
 
 
@@ -16,3 +17,4 @@ def setup(dp: Dispatcher, bot: Bot, config: Config):
     dp.include_router(karma.router)
     dp.include_router(moderator.router)
     dp.include_router(settings.router)
+    dp.include_router(superuser.setup_superuser(config))
