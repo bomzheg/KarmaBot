@@ -1,9 +1,16 @@
 # partially from https://github.com/aiogram/bot
 import argparse
+import asyncio
 
-from app.utils.log import Logger
+from aiogram import Bot, Dispatcher
 
 import app
+from app.models.db import db
+from app.utils.executor import on_startup_webhook, on_startup_notify
+from app.utils.lock_factory import LockFactory
+from app.utils.log import Logger
+from app import middlewares
+from app import handlers
 from app.models.config import Config
 
 
@@ -24,20 +31,29 @@ def create_parser():
     return arg_parser
 
 
-def cli(config: Config):
-
+async def cli(config: Config):
+    bot = Bot(config.bot_token, parse_mode="HTML")
+    dp = Dispatcher(storage=config.storage.create_storage())
     parser = create_parser()
     namespace = parser.parse_args()
 
-    from app import misc
-    from app.utils.executor import runner
+    await db.db_init(config.db)
+    logger.debug(f"As application dir using: {config.app_dir}")
+    lock_factory = LockFactory()
+    middlewares.setup(dp, lock_factory, config)
+    logger.info("Configure handlers...")
+    handlers.setup(dp, bot, config)
+    await on_startup_notify(bot, config)
+    try:
+        asyncio.create_task(lock_factory.check_and_clear())
+        if namespace.polling:
+            logger.info("starting polling...")
+            await dp.start_polling(bot)
+        else:
+            logger.info("starting webhook...")
+            await on_startup_webhook(bot, config.webhook)
+            raise NotImplementedError("webhook are not implemented now")
+    finally:
+        await db.on_shutdown()
+        await bot.session.close()
 
-    misc.setup(config)
-    if namespace.polling:
-        logger.info("starting polling...")
-
-        runner.skip_updates = namespace.skip_updates
-        runner.start_polling(reset_webhook=True)
-    else:
-        logger.info("starting webhook...")
-        runner.start_webhook(**config.webhook.listener_kwargs)

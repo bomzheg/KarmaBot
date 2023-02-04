@@ -1,4 +1,4 @@
-from aiogram.utils.markdown import quote_html
+from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise import fields
 from tortoise.models import Model
 
@@ -48,7 +48,7 @@ class KarmaEvent(Model):
             f"{self.how_change_absolute:.2f} ({self.how_change:.0%} своей силы.) "
         )
         if self.comment:
-            rez += f'"{quote_html(self.comment)}"'
+            rez += f'"{hd.quote(self.comment)}"'
         return rez
 
 

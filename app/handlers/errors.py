@@ -1,39 +1,46 @@
-from aiogram import types
-from aiogram.utils.exceptions import CantParseEntities, BadRequest
-from aiogram.utils.markdown import quote_html
+import json
+from functools import partial
 
-from app.config.main import load_config
-from app.misc import dp, bot
+from aiogram import Dispatcher, Bot
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.types.error_event import ErrorEvent
+from aiogram.utils.text_decorations import html_decoration as hd
+
+from app.models.config import Config
+from app.utils.exceptions import Throttled
 from app.utils.log import Logger
 
 
 logger = Logger(__name__)
 
 
-@dp.errors_handler()
-async def errors_handler(update: types.Update, exception: Exception):
+async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     try:
-        raise exception
-    except CantParseEntities as e:
-        logger.error("Cause exception {e} in update {update}", e=e, update=update)
-        return True
-    except BadRequest as e:
-        if "rights" in e.args[0] and "send" in e.args[0]:
-            if update.message and update.message.chat:
-                logger.info("bot are muted in chat {chat}", chat=update.message.chat.id)
+        raise error.exception
+    except Throttled:
+        return
+    except TelegramBadRequest as e:
+        if "rights" in e.message and "send" in e.message:
+            if error.update.message and error.update.message.chat:
+                logger.info("bot are muted in chat {chat}", chat=error.update.message.chat.id)
             else:
-                logger.info("bot can't send message (no rights) in update {update}", update=update)
-            return True
+                logger.info("bot can't send message (no rights) in update {update}", update=error.update)
+            return
+    except Exception:
+        pass
 
     logger.exception(
         "Cause exception {e} in update {update}",
-        e=exception, update=update, exc_info=exception
+        e=error.exception, update=error.update, exc_info=error.exception
     )
 
     await bot.send_message(
-        load_config().log.log_chat_id,
-        f"Получено исключение {quote_html(exception)}\n"
-        f"во время обработки апдейта {quote_html(update)}\n"
-        f"{quote_html(exception.args)}"
+        config.log.log_chat_id,
+        f"Получено исключение {hd.quote(str(error.exception))}\n"
+        f"во время обработки апдейта {hd.quote(error.update.json(exclude_none=True, ensure_ascii=False))}\n"
+        f"{hd.quote(json.dumps(error.exception.args))}"
     )
-    return True
+
+
+def setup(dp: Dispatcher, bot: Bot, config: Config):
+    dp.errors.register(partial(errors_handler, bot=bot, config=config))

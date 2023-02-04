@@ -1,11 +1,11 @@
-aiogram
-aiohttp  #  для загрузки кармы с сайта Аксении для последующего парсинга
-loguru
-tortoise-orm
-lxml  #  для парсинга кармы из Аксении
-beautifulsoup4  #  для парсинга кармы из Аксении
-python-dotenv
-Pyrogram # для резолва username через клиент апи
-pyyml
-colorlog
-aioredis
+aiogram==3.0.0b6
+aiohttp~=3.8.3
+tortoise-orm~=0.19.3
+lxml~=4.9.2
+beautifulsoup4~=4.11.2
+python-dotenv~=0.21.1
+Pyrogram~=2.0.97
+pyyml~=0.0.2
+colorlog~=6.7.0
+redis~=4.4.2
+

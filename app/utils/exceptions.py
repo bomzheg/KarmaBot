@@ -78,3 +78,11 @@ class ModerationError(KarmaError):
 
 class CantRestrict(ModerationError):
     pass
+
+
+class Throttled(RuntimeError):
+    def __init__(self, key: str, chat_id: int, user_id: int, rate: int | float):
+        self.key = key
+        self.chat_id = chat_id
+        self.user_id = user_id
+        self.rate = rate

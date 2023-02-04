@@ -1,11 +1,13 @@
+import pytest
+
 from .common import plus_texts, minus_texts, punctuations, filter_check, SPACES, INF
 from .fixtures import generate_phrases_next_word, get_message_with_text
 
 
-def test_correct_plus():
-    for text in plus_texts:
-        for phrase in generate_phrases_next_word(text, punctuations, SPACES):
-            check_plus(phrase)
+@pytest.mark.parametrize("text", plus_texts)
+def test_correct_plus(text: str):
+    for phrase in generate_phrases_next_word(text, punctuations, SPACES):
+        check_plus(phrase)
 
 
 def check_plus(text_with_plus_trigger: str):
@@ -14,10 +16,10 @@ def check_plus(text_with_plus_trigger: str):
     assert filter_rez['karma']['karma_change'] == INF, str(msg)
 
 
-def test_correct_minus():
-    for text in minus_texts:
-        for phrase in generate_phrases_next_word(text, punctuations, SPACES):
-            check_minus_reply(phrase)
+@pytest.mark.parametrize("text", minus_texts)
+def test_correct_minus(text: str):
+    for phrase in generate_phrases_next_word(text, punctuations, SPACES):
+        check_minus_reply(phrase)
 
 
 def check_minus_reply(text_with_minus_trigger: str):

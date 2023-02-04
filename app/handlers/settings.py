@@ -1,21 +1,24 @@
-from aiogram import types
+from aiogram import types, Router
+from aiogram.filters import Command
 
-from app.misc import dp
+from app.filters import HasPermissions
 from app.models.db import Chat
 from app.services.settings import enable_karmic_restriction, disable_karmic_restriction, get_settings_card, \
     enable_karma_counting, disable_karma_counting
 
 
-@dp.message_handler(commands="settings", commands_prefix="!/")
+router = Router(name=__name__)
+
+
+@router.message(Command(commands="settings", prefix="!/"))
 async def get_settings(message: types.Message, chat: Chat):
     settings_card = await get_settings_card(chat)
     await message.answer(settings_card)
 
 
-@dp.message_handler(
-    commands="enable_karmic_ro",
-    user_can_restrict_members=True,
-    commands_prefix='!/',
+@router.message(
+    Command("enable_karmic_ro", prefix='!/'),
+    HasPermissions(can_restrict_members=True),
 )
 async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
     await enable_karmic_restriction(chat)
@@ -30,20 +33,18 @@ async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
     )
 
 
-@dp.message_handler(
-    commands="disable_karmic_ro",
-    user_can_restrict_members=True,
-    commands_prefix='!/',
+@router.message(
+    Command("disable_karmic_ro", prefix='!/'),
+    HasPermissions(can_restrict_members=True),
 )
 async def disable_karmic_ro_cmd(message: types.Message, chat: Chat):
     await disable_karmic_restriction(chat)
     await message.reply("Кармобаны отключены")
 
 
-@dp.message_handler(
-    commands="enable_karma",
-    user_can_delete_messages=True,
-    commands_prefix='!/',
+@router.message(
+    Command("enable_karma", prefix='!/'),
+    HasPermissions(can_delete_messages=True),
 )
 async def enable_karma(message: types.Message, chat: Chat):
     await enable_karma_counting(chat)
@@ -52,10 +53,9 @@ async def enable_karma(message: types.Message, chat: Chat):
     )
 
 
-@dp.message_handler(
-    commands="disable_karma",
-    user_can_delete_messages=True,
-    commands_prefix='!/',
+@router.message(
+    Command("disable_karma", prefix='!/'),
+    HasPermissions(can_delete_messages=True),
 )
 async def disable_karma(message: types.Message, chat: Chat):
     await disable_karma_counting(chat)

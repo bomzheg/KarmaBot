@@ -1,26 +1,20 @@
-import typing
 from dataclasses import dataclass
 
-from aiogram import types
-from aiogram.dispatcher.filters import BoundFilter
+from aiogram.filters import BaseFilter
+from aiogram.types import Message
 
+from app.models import dto
 from app.services.find_target_user import get_target_user
 
 
 @dataclass
-class HasTargetFilter(BoundFilter):
-    key = "has_target"
-    has_target: typing.Optional[typing.Dict[str, bool]]
+class HasTargetFilter(BaseFilter):
+    can_be_same: bool = False
+    can_be_bot: bool = False
 
-    def __post_init__(self):
-        if self.has_target is True:
-            self.has_target = {}
-
-    async def check(self, message: types.Message) -> typing.Dict[str, types.User]:
-        can_be_same = self.has_target.get("can_be_same", False)
-        can_be_bot = self.has_target.get("can_be_bot", False)
-        target_user = get_target_user(message, can_be_same, can_be_bot)
+    async def __call__(self, message: Message) -> dict[str, dto.TargetUser]:
+        target_user = get_target_user(message, self.can_be_same, self.can_be_bot)
         if target_user is None:
             return {}
-        rez = {'target': target_user}
+        rez = {"target": target_user}
         return rez
