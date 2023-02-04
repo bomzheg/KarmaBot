@@ -17,14 +17,14 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     try:
         raise error.exception
     except Throttled:
-        pass
+        return
     except TelegramBadRequest as e:
         if "rights" in e.args[0] and "send" in e.args[0]:
             if error.update.message and error.update.message.chat:
                 logger.info("bot are muted in chat {chat}", chat=error.update.message.chat.id)
             else:
                 logger.info("bot can't send message (no rights) in update {update}", update=error.update)
-            return True
+            return
 
     logger.exception(
         "Cause exception {e} in update {update}",
@@ -37,7 +37,6 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
         f"во время обработки апдейта {hd.quote(error.update)}\n"
         f"{hd.quote(error.exception.args)}"
     )
-    return True
 
 
 def setup(dp: Dispatcher, bot: Bot, config: Config):

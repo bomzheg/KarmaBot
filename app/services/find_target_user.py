@@ -1,4 +1,3 @@
-import typing
 from contextlib import suppress
 
 from aiogram import types
@@ -16,7 +15,7 @@ from app.utils.log import Logger
 logger = Logger(__name__)
 
 
-def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> typing.Optional[dto.TargetUser]:
+def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> dto.TargetUser | None:
     """
     Target user can be take from reply or by mention
     :param message:
@@ -41,7 +40,12 @@ def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False)
     return None
 
 
-def has_target_user(target_user: dto.TargetUser, author_user: dto.TargetUser, can_be_same, can_be_bot):
+def has_target_user(
+    target_user: dto.TargetUser,
+    author_user: dto.TargetUser,
+    can_be_same: bool,
+    can_be_bot: bool,
+) -> bool:
     """
     :return: True if target_user exist, not is author and not bot
     """
@@ -57,7 +61,7 @@ def has_target_user(target_user: dto.TargetUser, author_user: dto.TargetUser, ca
     return True
 
 
-def is_one_user(user_1: dto.TargetUser, user_2: dto.TargetUser):
+def is_one_user(user_1: dto.TargetUser | None, user_2: dto.TargetUser | None) -> bool:
     if all([
         user_1.id is not None,
         user_2.id is not None,
@@ -74,7 +78,7 @@ def is_one_user(user_1: dto.TargetUser, user_2: dto.TargetUser):
     return False
 
 
-def get_mentioned_user(message: types.Message) -> typing.Optional[dto.TargetUser]:
+def get_mentioned_user(message: types.Message) -> dto.TargetUser | None:
     possible_mentioned_text = message.text or message.caption
     if not possible_mentioned_text:
         return None
@@ -90,7 +94,7 @@ def get_mentioned_user(message: types.Message) -> typing.Optional[dto.TargetUser
     return None
 
 
-def get_replied_user(message: types.Message) -> typing.Optional[dto.TargetUser]:
+def get_replied_user(message: types.Message) -> dto.TargetUser | None:
     if message.reply_to_message:
         return dto.TargetUser.from_aiogram(message.reply_to_message.from_user)
     return None
@@ -106,7 +110,7 @@ def get_id_user(message: types.Message) -> dto.TargetUser | None:
     return None
 
 
-def is_bot_username(username: str):
+def is_bot_username(username: str) -> bool:
     """
     this function deprecated. user can use username like @alice_bot and it don't say that it is bot
     """

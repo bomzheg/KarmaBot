@@ -1,11 +1,13 @@
 # partially from https://github.com/aiogram/bot
 import argparse
+import asyncio
 
 from aiogram import Bot, Dispatcher
 
 import app
 from app.models.db import db
 from app.utils.executor import on_startup_webhook, on_startup_notify
+from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger
 from app import middlewares
 from app import handlers
@@ -37,11 +39,13 @@ async def cli(config: Config):
 
     await db.db_init(config.db)
     logger.debug(f"As application dir using: {config.app_dir}")
-    middlewares.setup(dp, config)
+    lock_factory = LockFactory()
+    middlewares.setup(dp, lock_factory, config)
     logger.info("Configure handlers...")
     handlers.setup(dp, bot, config)
     await on_startup_notify(bot, config)
     try:
+        asyncio.create_task(lock_factory.check_and_clear())
         if namespace.polling:
             logger.info("starting polling...")
             await dp.start_polling(bot)

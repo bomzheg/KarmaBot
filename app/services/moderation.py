@@ -1,9 +1,9 @@
-import typing
 from datetime import timedelta
 
 from aiogram import Bot
 from aiogram.types import ChatMemberRestricted
 from aiogram.exceptions import TelegramBadRequest
+from tortoise.backends.base.client import TransactionContext
 
 from app.config import moderation
 from app.config.main import load_config
@@ -18,7 +18,7 @@ logger = Logger(__name__)
 config = load_config()
 
 
-async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str):
+async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str) -> ModeratorEvent:
     return await ModeratorEvent.save_new_action(
         moderator=moderator,
         user=target_user,
@@ -28,7 +28,7 @@ async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str
     )
 
 
-async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot):
+async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot) -> str:
     await restrict(
         bot=bot,
         chat=chat,
@@ -44,7 +44,7 @@ async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, c
     return text
 
 
-async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot):
+async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot) -> str:
     await restrict(
         bot=bot,
         chat=chat,
@@ -69,7 +69,7 @@ async def restrict(
         comment: str,
         type_restriction: TypeRestriction,
         using_db=None
-):
+) -> ModeratorEvent:
     try:
         # restrict in telegram
         await moderation.action_for_restrict[type_restriction](
@@ -104,7 +104,7 @@ async def restrict(
         return moderator_event
 
 
-def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
+def get_moderator_message_args(text: str) -> tuple[str, str]:
     _, *args = text.split(maxsplit=2)  # in text: command_duration_comments like: "!ro 13d don't flood"
     if not args:
         return "", ""
@@ -114,7 +114,7 @@ def get_moderator_message_args(text: str) -> typing.Tuple[str, str]:
     return duration_text, " ".join(args[1:])
 
 
-def get_duration(text: str):
+def get_duration(text: str) -> tuple[timedelta, str]:
     duration_text, comment = get_moderator_message_args(text)
     if duration_text:
         duration = parse_timedelta_from_text(duration_text)
@@ -123,7 +123,7 @@ def get_duration(text: str):
     return duration, comment
 
 
-async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
+async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
     chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
     if chat_member.status == "restricted":
         assert isinstance(chat_member, ChatMemberRestricted)
@@ -131,7 +131,12 @@ async def user_has_now_ro(user: User, chat: Chat, bot: Bot):
     return chat_member.status in ("banned", "kicked")
 
 
-async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> typing.Tuple[int, ModeratorEvent]:
+async def auto_restrict(
+    target: User,
+    chat: Chat,
+    bot: Bot,
+    using_db: TransactionContext | None = None
+) -> tuple[int, ModeratorEvent]:
     """
     return count auto restrict
     """
@@ -161,7 +166,12 @@ async def auto_restrict(target: User, chat: Chat, bot: Bot, using_db=None) -> ty
     return count_auto_restrict + 1, moderator_event
 
 
-async def get_count_auto_restrict(target: User, chat: Chat, bot_user: User = None, bot: Bot = None):
+async def get_count_auto_restrict(
+    target: User,
+    chat: Chat,
+    bot_user: User | None = None,
+    bot: Bot | None = None,
+) -> int:
     assert bot is not None or bot_user is not None, "One of bot and bot_user must be not None"
     if bot_user is None:
         bot_user = await User.get_or_create_from_tg_user(await bot.me())

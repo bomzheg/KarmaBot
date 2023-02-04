@@ -16,12 +16,16 @@ logger = Logger(__name__)
 
 
 class DBMiddleware(BaseMiddleware):
-    def __init__(self):
+    def __init__(self, lock_factory: LockFactory):
         super(DBMiddleware, self).__init__()
-        self.lock_factory = LockFactory()
+        self.lock_factory = lock_factory
 
-    async def __call__(self, handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]], event: TelegramObject,
-                       data: Dict[str, Any]) -> Any:
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any]
+    ) -> Any:
         chat: types.Chat = data.get("event_chat", None)
         user: types.User = data.get("event_from_user", None)
         if isinstance(event, types.Message) and event.sender_chat:
@@ -31,10 +35,10 @@ class DBMiddleware(BaseMiddleware):
 
     async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
         try:
-            async with self.lock_factory.get_lock(str(user.id)):
+            async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)
             if chat and chat.type != 'private':
-                async with self.lock_factory.get_lock(str(chat.id)):
+                async with self.lock_factory.get_lock(chat.id):
                     chat = await Chat.get_or_create_from_tg_chat(chat)
                     data["chat_settings"] = await get_chat_settings(chat=chat)
 
