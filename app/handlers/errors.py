@@ -1,3 +1,4 @@
+import json
 from functools import partial
 
 from aiogram import Dispatcher, Bot
@@ -19,7 +20,7 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     except Throttled:
         return
     except TelegramBadRequest as e:
-        if "rights" in e.args[0] and "send" in e.args[0]:
+        if "rights" in e.message and "send" in e.message:
             if error.update.message and error.update.message.chat:
                 logger.info("bot are muted in chat {chat}", chat=error.update.message.chat.id)
             else:
@@ -33,8 +34,8 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
 
     await bot.send_message(
         config.log.log_chat_id,
-        f"Получено исключение {hd.quote(error.exception)}\n"
-        f"во время обработки апдейта {hd.quote(error.update)}\n"
+        f"Получено исключение {hd.quote(str(error.exception))}\n"
+        f"во время обработки апдейта {hd.quote(json.dumps(error.update.dict()))}\n"
         f"{hd.quote(error.exception.args)}"
     )
 

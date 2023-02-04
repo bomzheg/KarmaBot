@@ -1,4 +1,5 @@
 from aiogram import Bot
+from aiogram.types import ChatPermissions
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
@@ -49,7 +50,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             chat=chat,
             how_change=relative_change,
             how_change_absolute=abs_change,
-            comment=comment,
+            comment=comment[:200],
         )
         await ke.save(using_db=conn)
         logger.info(
@@ -111,10 +112,12 @@ async def cancel_karma_change(karma_event_id: int, rollback_karma: float, modera
                 await bot.restrict_chat_member(
                     chat_id=chat_id,
                     user_id=restricted_user.tg_id,
-                    can_send_messages=True,
-                    can_send_media_messages=True,
-                    can_add_web_page_previews=True,
-                    can_send_other_messages=True,
+                    permissions=ChatPermissions(
+                        can_send_messages=True,
+                        can_send_media_messages=True,
+                        can_add_web_page_previews=True,
+                        can_send_other_messages=True,
+                    )
                 )
 
             elif moderator_event.type_restriction == TypeRestriction.karmic_ban.name:

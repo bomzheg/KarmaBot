@@ -50,7 +50,7 @@ class ModeratorEvent(Model):
             chat=chat,
             type_restriction=type_restriction,
             timedelta_restriction=duration,
-            comment=comment
+            comment=comment[:200]
         )
         await moderator_event.save(using_db=using_db)
         return moderator_event

@@ -140,7 +140,7 @@ async def cmd_ro_bot_not_admin(message: types.Message):
 
 
 @router.message(
-    Command(commands=["ro", "mute", "ban", "warn"], prefix="!"),
+    Command(commands=["ro", "mute", "ban", "warn", "w"], prefix="!"),
     BotHasPermissions(can_delete_messages=True),
 )
 async def cmd_ro_bot_not_admin(message: types.Message):
