@@ -124,7 +124,13 @@ def get_duration(text: str) -> tuple[timedelta, str]:
 
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
-    chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
+    try:
+        chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
+    except TelegramBadRequest as e:
+        # TODO #102 probably we need to disable karmic ro for chats with hidden members?
+        if "user not found" in e.message:
+            return False
+        raise e
     if chat_member.status == "restricted":
         assert isinstance(chat_member, ChatMemberRestricted)
         return not chat_member.can_send_messages
