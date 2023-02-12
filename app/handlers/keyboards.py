@@ -40,7 +40,7 @@ def get_nometa_kb():
     return InlineKeyboardMarkup(
         inline_keyboard=[[
             InlineKeyboardButton(
-                text="Пожалуйста не задавайте мета-вопросов в чате",
+                text="Подробнее",
                 url="https://nometa.xyz/ru.html",
             )
         ]]
