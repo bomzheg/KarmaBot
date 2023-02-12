@@ -1,6 +1,6 @@
 from aiogram import Dispatcher, Bot
 
-from . import base
+from . import base, chat_rules
 from . import change_karma
 from . import errors
 from . import karma
@@ -18,3 +18,4 @@ def setup(dp: Dispatcher, bot: Bot, config: Config):
     dp.include_router(moderator.router)
     dp.include_router(settings.router)
     dp.include_router(superuser.setup_superuser(config))
+    dp.include_router(chat_rules.setup())
