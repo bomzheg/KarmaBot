@@ -1,4 +1,4 @@
-from aiogram import Router, Bot
+from aiogram import Router, Bot, F
 from aiogram.filters import CommandObject, Command
 from aiogram.types import Message
 
@@ -39,9 +39,14 @@ async def nometa_cmd(m: Message, bot: Bot):
     await m.delete()
 
 
+async def delete_me_cmd(m: Message):
+    await m.delete()
+
+
 def setup() -> Router:
     router = Router(name=__name__)
-    router.message.register(lmgify_cmd, Command("go", prefix="!"))
-    router.message.register(paste_cmd, Command("paste", prefix="!"))
-    router.message.register(nometa_cmd, Command("nm", prefix="!"))
+    router.message.register(lmgify_cmd, Command("go", prefix="!"), F.reply_to_message)
+    router.message.register(paste_cmd, Command("paste", prefix="!"), F.reply_to_message)
+    router.message.register(nometa_cmd, Command("nm", prefix="!"), F.reply_to_message)
+    router.message.register(delete_me_cmd, Command("go", "paste", "nm", prefix="!"))
     return router
