@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import types, F, Bot, Router
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command
@@ -6,11 +8,12 @@ from aiogram.utils.text_decorations import html_decoration as hd
 from app.filters import HasTargetFilter, HasPermissions, BotHasPermissions
 from app.models.config import Config
 from app.models.db import Chat, User
-from app.services.moderation import warn_user, ro_user, ban_user, get_duration
-from app.services.remove_message import delete_message
+from app.services.moderation import warn_user, ro_user, ban_user, get_duration, cancel_warn_user
+from app.services.remove_message import delete_message, remove_kb
 from app.services.user_info import get_user_info
 from app.utils.exceptions import TimedeltaParseError, ModerationError
 from app.utils.log import Logger
+from . import keyboards as kb
 
 
 logger = Logger(__name__)
@@ -89,11 +92,11 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     Command(commands=["w", "warn"], prefix="!"),
     HasPermissions(can_restrict_members=True),
 )
-async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User):
+async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User, config: Config):
     args = message.text.split(maxsplit=1)
     comment = args[1] if len(args) > 1 else ""
 
-    await warn_user(
+    moderator_event = await warn_user(
         moderator=user,
         target_user=target,
         chat=chat,
@@ -103,7 +106,12 @@ async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User)
     text = "Пользователь {user} получил официальное предупреждение от модератора".format(
         user=target.mention_link,
     )
-    await message.reply(text)
+    msg = await message.reply(
+        text,
+        reply_markup=kb.get_kb_warn_cancel(user=user, moderator_event=moderator_event)
+    )
+
+    asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
 
 
 @router.message(HasTargetFilter(can_be_same=True), Command("info", prefix='!'))
@@ -146,3 +154,12 @@ async def cmd_ro_bot_not_admin(message: types.Message):
 async def cmd_ro_bot_not_admin(message: types.Message):
     """юзер без прав модератора"""
     await delete_message(message)
+
+
+@router.callback_query(kb.WarnCancelCb.filter())
+async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
+    if callback_data.user_id != callback_query.from_user.id:
+        return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
+    await cancel_warn_user(callback_data.moderator_event_id)
+    await callback_query.answer("Предупреждение было отменено", show_alert=True)
+    await callback_query.message.delete()

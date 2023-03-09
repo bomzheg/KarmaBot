@@ -185,3 +185,8 @@ async def get_count_auto_restrict(
         moderator=bot_user, user=target, chat=chat,
         type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
     ).count()
+
+
+async def cancel_warn_user(moderator_event_id: int):
+    moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
+    await moderator_event.delete()
