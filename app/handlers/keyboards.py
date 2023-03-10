@@ -11,6 +11,11 @@ class KarmaCancelCb(CallbackData, prefix="karma_cancel"):
     moderator_event_id: int | str
 
 
+class WarnCancelCb(CallbackData, prefix="warn_cancel"):
+    user_id: int
+    moderator_event_id: int
+
+
 def get_kb_karma_cancel(
         user: User, karma_event: KarmaEvent, rollback_karma: float, moderator_event: ModeratorEvent
 ) -> InlineKeyboardMarkup:
@@ -21,6 +26,16 @@ def get_kb_karma_cancel(
             karma_event_id=karma_event.id_,
             rollback_karma=f"{rollback_karma:.2f}",
             moderator_event_id=moderator_event.id_ if moderator_event is not None else "null",
+        ).pack()
+    )]])
+
+
+def get_kb_warn_cancel(user: User, moderator_event: ModeratorEvent):
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+        text='Отменить',
+        callback_data=WarnCancelCb(
+            user_id=user.tg_id,
+            moderator_event_id=moderator_event.id_
         ).pack()
     )]])
 

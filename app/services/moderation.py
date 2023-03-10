@@ -185,3 +185,15 @@ async def get_count_auto_restrict(
         moderator=bot_user, user=target, chat=chat,
         type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
     ).count()
+
+
+async def delete_moderator_event(moderator_event_id: int, moderator: User | None = None):
+    moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
+
+    logger.info(
+        '{moderator_event} was deleted {by}',
+        moderator_event=repr(moderator_event),
+        by='' if not moderator else f'by {moderator.username}'
+    )
+
+    await moderator_event.delete()
