@@ -8,7 +8,7 @@ from aiogram.utils.text_decorations import html_decoration as hd
 from app.filters import HasTargetFilter, HasPermissions, BotHasPermissions
 from app.models.config import Config
 from app.models.db import Chat, User
-from app.services.moderation import warn_user, ro_user, ban_user, get_duration, cancel_warn_user
+from app.services.moderation import warn_user, ro_user, ban_user, get_duration, delete_moderator_event
 from app.services.remove_message import delete_message, remove_kb
 from app.services.user_info import get_user_info
 from app.utils.exceptions import TimedeltaParseError, ModerationError
@@ -158,8 +158,9 @@ async def cmd_ro_bot_not_admin(message: types.Message):
 
 @router.callback_query(kb.WarnCancelCb.filter())
 async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
-    if callback_data.user_id != callback_query.from_user.id:
+    from_user = callback_query.from_user
+    if callback_data.user_id != from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
-    await cancel_warn_user(callback_data.moderator_event_id)
+    await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
     await callback_query.answer("Предупреждение было отменено", show_alert=True)
     await callback_query.message.delete()
