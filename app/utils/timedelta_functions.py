@@ -7,6 +7,7 @@ from app.utils.exceptions import ToLongDuration, InvalidFormatDuration
 
 MODIFIERS = {
     "y": datetime.timedelta(days=365),  # простим один день если кому-то попадётся високосный
+    "M": datetime.timedelta(days=31),
     "w": datetime.timedelta(weeks=1),
     "d": datetime.timedelta(days=1),
     "h": datetime.timedelta(hours=1),
