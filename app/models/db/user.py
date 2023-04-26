@@ -84,12 +84,12 @@ class User(Model):
 
     @property
     def mention_link(self):
-        return hd.link(self.fullname, f"tg://user?id={self.tg_id}")
+        return hd.link(hd.quote(self.fullname), f"tg://user?id={self.tg_id}")
 
     @property
     def mention_no_link(self):
         if self.username:
-            rez = hd.link(self.fullname, f"t.me/{self.username}")
+            rez = hd.link(hd.quote(self.fullname), f"t.me/{self.username}")
         else:
             rez = hd.quote(self.fullname)
         return rez
