@@ -66,7 +66,7 @@ class Chat(Model):
 
     @property
     def mention(self):
-        return hd.link(self.title, f"t.me/{self.username}") if self.username else hd.quote(self.title)
+        return hd.link(hd.quote(self.title), f"t.me/{self.username}") if self.username else hd.quote(self.title)
 
     def __str__(self):
         rez = f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"
