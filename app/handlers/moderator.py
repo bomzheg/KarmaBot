@@ -1,20 +1,21 @@
 import asyncio
 
-from aiogram import types, F, Bot, Router
+from aiogram import Bot, F, Router, types
 from aiogram.exceptions import TelegramUnauthorizedError
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.filters import HasTargetFilter, HasPermissions, BotHasPermissions
+from app.filters import BotHasPermissions, HasPermissions, HasTargetFilter
 from app.models.config import Config
 from app.models.db import Chat, User
-from app.services.moderation import warn_user, ro_user, ban_user, get_duration, delete_moderator_event
+from app.services.moderation import (ban_user, delete_moderator_event,
+                                     get_duration, ro_user, warn_user)
 from app.services.remove_message import delete_message, remove_kb
 from app.services.user_info import get_user_info
-from app.utils.exceptions import TimedeltaParseError, ModerationError
+from app.utils.exceptions import ModerationError, TimedeltaParseError
 from app.utils.log import Logger
-from . import keyboards as kb
 
+from . import keyboards as kb
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -92,9 +93,8 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     Command(commands=["w", "warn"], prefix="!"),
     HasPermissions(can_restrict_members=True),
 )
-async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User, config: Config):
-    args = message.text.split(maxsplit=1)
-    comment = args[1] if len(args) > 1 else ""
+async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User, config: Config, command: CommandObject):
+    comment = command.args or ""
 
     moderator_event = await warn_user(
         moderator=user,
