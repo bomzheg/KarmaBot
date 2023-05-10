@@ -125,7 +125,7 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     HasPermissions(can_restrict_members=True),
     ~BotHasPermissions(can_restrict_members=True),
 )
-async def cmd_ro_no_bot_permissions(message: types.Message):
+async def cmd_ban_no_bot_permissions(message: types.Message):
     await message.reply("Мне нужны соответствующие права, чтобы блокировать пользователей в группе.")
 
 
