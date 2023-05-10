@@ -5,7 +5,8 @@ from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.filters import BotHasPermissions, HasPermissions, HasTargetFilter
+from app.filters import (BotHasPermissions, HasPermissions, HasTargetFilter,
+                         TargetHasPermissions)
 from app.models.config import Config
 from app.models.db import Chat, User
 from app.services.moderation import (ban_user, delete_moderator_event,
@@ -61,6 +62,7 @@ def need_notify_admin(admin: types.ChatMemberAdministrator | types.ChatMemberOwn
     HasTargetFilter(),
     Command(commands=["ro", "mute"], prefix="!"),
     HasPermissions(can_restrict_members=True),
+    ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
@@ -78,6 +80,16 @@ async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, b
 
 
 @router.message(
+    F.chat.type.in_(["group", "supergroup"]),
+    Command(commands=["ro", "mute"], prefix="!"),
+    HasPermissions(can_restrict_members=True),
+    ~BotHasPermissions(can_restrict_members=True),
+)
+async def cmd_ro_no_bot_permissions(message: types.Message):
+    await message.reply("Мне нужны соответствующие права, чтобы запрещать писать пользователям в группе.")
+
+
+@router.message(
     F.chat.type == "private",
     Command(commands=["ro", "mute"], prefix="!"),
 )
@@ -90,6 +102,7 @@ async def cmd_ro_private(message: types.Message):
     HasTargetFilter(),
     Command(commands=["ban"], prefix="!"),
     HasPermissions(can_restrict_members=True),
+    ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
@@ -104,6 +117,16 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
         logger.error("Failed to kick chat member: {error!r}", error=e, exc_info=e)
     else:
         await message.reply(success_text)
+
+
+@router.message(
+    F.chat.type.in_(["group", "supergroup"]),
+    Command(commands=["ban"], prefix="!"),
+    HasPermissions(can_restrict_members=True),
+    ~BotHasPermissions(can_restrict_members=True),
+)
+async def cmd_ro_no_bot_permissions(message: types.Message):
+    await message.reply("Мне нужны соответствующие права, чтобы блокировать пользователей в группе.")
 
 
 @router.message(
@@ -186,22 +209,16 @@ async def get_info_about_user_private(message: types.Message):
 
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
-    HasTargetFilter(),
-    Command(commands=["ro", "mute", "ban"], prefix="!"),
-    HasPermissions(can_restrict_members=True),
-)
-async def cmd_ro_bot_not_admin(message: types.Message):
-    """бот без прав модератора"""
-    await message.reply("Чтобы я выполнял функции модератора, дайте мне соответствующие права")
-
-
-@router.message(
-    F.chat.type.in_(["group", "supergroup"]),
     Command(commands=["ro", "mute", "ban", "warn", "w"], prefix="!"),
     BotHasPermissions(can_delete_messages=True),
 )
-async def cmd_ro_bot_not_admin(message: types.Message):
-    """юзер без прав модератора"""
+async def cmd_unhandled(message: types.Message):
+    """
+    Событие не было обработано ни одним из обработчиков.
+
+    Это может произойти, если пользователь не имеет прав на выполнение одной из команд,
+    либо если происходит попытка применить ограничения на администратора, себя или бота.
+    """
     await delete_message(message)
 
 
