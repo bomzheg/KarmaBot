@@ -1,6 +1,6 @@
 # from https://github.com/aiogram/bot/blob/master/app/filters/has_permissions.py
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from aiogram import Bot, types
 from aiogram.filters import Filter
@@ -39,7 +39,7 @@ class HasPermissions(Filter):
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
 
-    def _get_cached_value(self, _message: types.Message) -> Optional[types.ChatMember]:
+    def _get_cached_value(self, _message: types.Message) -> types.ChatMember | None:
         return None  # TODO
 
     def _set_cached_value(self, _message: types.Message, _member: types.ChatMember):
@@ -59,7 +59,7 @@ class HasPermissions(Filter):
             self._set_cached_value(message, chat_member)
         return chat_member
 
-    async def __call__(self, message: types.Message, bot: Bot) -> Union[bool, Dict[str, Any]]:
+    async def __call__(self, message: types.Message, bot: Bot) -> bool | dict[str, Any]:
         chat_member = await self._get_chat_member(message, bot)
         if not chat_member:
             return False
@@ -71,7 +71,7 @@ class HasPermissions(Filter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
         return message.from_user.id
 
 
@@ -83,7 +83,7 @@ class TargetHasPermissions(HasPermissions):
     can_be_same: bool = False
     can_be_bot: bool = False
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
         target_user = get_target_user(message, self.can_be_same, self.can_be_bot)
         if target_user is None:
             return None
@@ -107,5 +107,5 @@ class BotHasPermissions(HasPermissions):
     }
     PAYLOAD_ARGUMENT_NAME = "bot_member"
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
         return bot.id
