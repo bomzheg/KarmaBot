@@ -1,9 +1,11 @@
 # from https://github.com/aiogram/bot/blob/master/app/filters/has_permissions.py
 from dataclasses import dataclass
-from typing import Any, Union, Dict
+from typing import Any
 
-from aiogram import types, Bot
+from aiogram import Bot, types
 from aiogram.filters import Filter
+
+from app.services.find_target_user import get_target_user
 
 
 @dataclass
@@ -37,17 +39,19 @@ class HasPermissions(Filter):
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
 
-    def _get_cached_value(self, message: types.Message):
+    def _get_cached_value(self, _message: types.Message) -> types.ChatMember | None:
         return None  # TODO
 
-    def _set_cached_value(self, message: types.Message, member: types.ChatMember):
+    def _set_cached_value(self, _message: types.Message, _member: types.ChatMember):
         return None  # TODO
 
     async def _get_chat_member(self, message: types.Message, bot: Bot):
-        chat_member: types.ChatMember = self._get_cached_value(message)
+        chat_member = self._get_cached_value(message)
         if chat_member is None:
             admins = await bot.get_chat_administrators(message.chat.id)
             target_user_id = self.get_target_id(message, bot)
+            if target_user_id is None:
+                return False
             try:
                 chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
             except StopIteration:
@@ -55,20 +59,35 @@ class HasPermissions(Filter):
             self._set_cached_value(message, chat_member)
         return chat_member
 
-    async def __call__(self, message: types.Message, bot: Bot) -> Union[bool, Dict[str, Any]]:
+    async def __call__(self, message: types.Message, bot: Bot) -> bool | dict[str, Any]:
         chat_member = await self._get_chat_member(message, bot)
         if not chat_member:
             return False
         if chat_member.status == "creator":
             return chat_member
-        for permission, value in self.required_permissions.items():
+        for permission, _value in self.required_permissions.items():
             if not getattr(chat_member, permission):
                 return False
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> int:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
         return message.from_user.id
+
+
+@dataclass
+class TargetHasPermissions(HasPermissions):
+    """
+    Validate the target user has specified permissions in chat
+    """
+    can_be_same: bool = False
+    can_be_bot: bool = False
+
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
+        target_user = get_target_user(message, self.can_be_same, self.can_be_bot)
+        if target_user is None:
+            return None
+        return target_user.id
 
 
 class BotHasPermissions(HasPermissions):
@@ -88,5 +107,5 @@ class BotHasPermissions(HasPermissions):
     }
     PAYLOAD_ARGUMENT_NAME = "bot_member"
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> int:
+    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
         return bot.id
