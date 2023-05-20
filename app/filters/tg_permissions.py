@@ -71,7 +71,7 @@ class HasPermissions(Filter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, message: types.Message, _bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
         return message.from_user.id
 
 
@@ -83,7 +83,7 @@ class TargetHasPermissions(HasPermissions):
     can_be_same: bool = False
     can_be_bot: bool = False
 
-    def get_target_id(self, message: types.Message, _bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
         target_user = get_target_user(message, self.can_be_same, self.can_be_bot)
         if target_user is None:
             return None
@@ -107,5 +107,5 @@ class BotHasPermissions(HasPermissions):
     }
     PAYLOAD_ARGUMENT_NAME = "bot_member"
 
-    def get_target_id(self, _message: types.Message, bot: Bot) -> Optional[int]:
+    def get_target_id(self, message: types.Message, bot: Bot) -> Optional[int]:
         return bot.id
