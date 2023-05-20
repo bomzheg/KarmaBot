@@ -134,7 +134,7 @@ async def cmd_ban_no_bot_permissions(message: types.Message):
     Command(commands=["ban"], prefix="!"),
 )
 async def cmd_ban_private(message: types.Message):
-    await message.reply("Вы можете блоировать пользователей только в группах.")
+    await message.reply("Вы можете блокировать пользователей только в группах.")
 
 
 @router.message(
