@@ -42,18 +42,36 @@ async def report_private(message: types.Message):
     await message.reply("Вы можете жаловаться на сообщения пользователей только в группах.")
 
 
-async def get_mentions_admins(chat: types.Chat, bot: Bot):
+async def get_mentions_admins(
+    chat: types.Chat,
+    bot: Bot,
+    ignore_anonymous: bool = True,
+    ignore_bot: bool = True,
+):
     admins = await bot.get_chat_administrators(chat.id)
     admins_mention = ""
     for admin in admins:
-        if admin.user.is_bot:
-            continue
-        if need_notify_admin(admin):
+        if need_notify_admin(admin, ignore_anonymous, ignore_bot):
             admins_mention += hd.link("&#8288;", admin.user.url)
     return admins_mention
 
 
-def need_notify_admin(admin: types.ChatMemberAdministrator | types.ChatMemberOwner):
+def need_notify_admin(
+    admin: types.ChatMemberAdministrator | types.ChatMemberOwner,
+    ignore_anonymous: bool = True,
+    ignore_bot: bool = True,
+):
+    """
+    Проверяет, нужно ли уведомлять администратора о жалобе.
+
+    :param admin: Администратор, которого нужно проверить.
+    :param ignore_anonymous: Игнорировать ли анонимных администраторов.
+    :param ignore_bot: Игнорировать ли ботов.
+    """
+    if ignore_bot and admin.user.is_bot:
+        return False
+    if ignore_anonymous and admin.is_anonymous:
+        return False
     return admin.can_delete_messages or admin.can_restrict_members or admin.status == "creator"
 
 
