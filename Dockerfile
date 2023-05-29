@@ -13,7 +13,6 @@ COPY --from=builder $VIRTUAL_ENV $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 VOLUME /log
 VOLUME /db_data
-VOLUME /jsons
 VOLUME /config
 WORKDIR "."
 EXPOSE 3000

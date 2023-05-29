@@ -11,14 +11,11 @@ services:
         source: "${HOME}/KarmaBot/log/karmabot/"
         target: "/log"
       - type: "bind"
-        source: "${HOME}/KarmaBot/db_data"
-        target: "/db_data"
+        source: "${HOME}/KarmaBot/db_data/"
+        target: "/db_data/"
       - type: "bind"
         source: "./config"
         target: "/config"
-      - type: "bind"
-        source: problems
-        target: "/jsons"
     env_file: config/.env
     entrypoint: [ "python3", "-m", "app", "-p" ]
     networks:

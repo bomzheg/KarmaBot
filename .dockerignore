@@ -5,11 +5,10 @@ README.md
 *.pyс
 __pycache__
 .env*
-docker-compose*.yml
+docker-compose.yaml
 Dockerfile
 *.service
 *.db
 *.db*
 docs/
-jsons/
 log/
