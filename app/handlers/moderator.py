@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 from aiogram import Bot, F, Router, types
 from aiogram.exceptions import TelegramUnauthorizedError
@@ -48,6 +49,7 @@ async def get_mentions_admins(
     ignore_anonymous: bool = True,
 ):
     admins = await bot.get_chat_administrators(chat.id)
+    random.shuffle(admins)  # чтобы попадались разные админы
     admins_mention = ""
     for admin in admins:
         if need_notify_admin(admin, ignore_anonymous):
