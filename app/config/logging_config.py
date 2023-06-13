@@ -1,4 +1,5 @@
 import logging.config
+from contextlib import suppress
 from pathlib import Path
 
 import yaml
@@ -15,6 +16,7 @@ def logging_setup(config_path: Path, log_config: LogConfig):
     log_dir.mkdir(exist_ok=True)
     with (config_path / "logging.yaml").open("r") as f:
         logging_config = yaml.safe_load(f)
-        logging_config['handlers']['file']['filename'] = log_dir / "app.log"
+        with suppress(KeyError):
+            logging_config['handlers']['file']['filename'] = log_dir / "app.log"
         logging.config.dictConfig(logging_config)
     logger.info("Logging configured successfully")
