@@ -17,6 +17,7 @@ PLUS_WORDS = frozenset({
     "сенкс",
     "сяпки",
     "сябки",
+    "сенью",
     "благодарствую",
 })
 PLUS_TRIGGERS = frozenset({PLUS, *PLUS_WORDS})
