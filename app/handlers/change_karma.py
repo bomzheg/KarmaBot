@@ -33,18 +33,23 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     return await message.reply("Вы слишком часто меняете карму")
 
 
-@router.message(HasTargetFilter(), KarmaFilter(), F.content_type.in_([
-    ContentType.TEXT,
+@router.message(
+    F.chat.type.in_(["group", "supergroup"]),
+    HasTargetFilter(),
+    KarmaFilter(),
+    F.content_type.in_([
+        ContentType.TEXT,
 
-    ContentType.STICKER,
+        ContentType.STICKER,
 
-    ContentType.ANIMATION,
-    ContentType.AUDIO,
-    ContentType.DOCUMENT,
-    ContentType.PHOTO,
-    ContentType.VIDEO,
-    ContentType.VOICE,
-]))
+        ContentType.ANIMATION,
+        ContentType.AUDIO,
+        ContentType.DOCUMENT,
+        ContentType.PHOTO,
+        ContentType.VIDEO,
+        ContentType.VOICE,
+    ])
+)
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
 async def karma_change(
     message: types.Message, karma: dict, user: User, chat: Chat, target: User, config: Config, bot: Bot

@@ -188,8 +188,17 @@ async def cmd_warn_private(message: types.Message):
 
 
 @router.message(
+    F.chat.type == "private",
+    Command("info", prefix='!'),
+)
+async def get_info_about_user_private(message: types.Message):
+    await message.reply("Вы можете запрашивать информацию о пользователях только в группах.")
+
+
+@router.message(
     F.chat.type.in_(["group", "supergroup"]),
-    HasTargetFilter(can_be_same=True), Command("info", prefix='!'),
+    Command("info", prefix='!'),
+    HasTargetFilter(can_be_same=True),
 )
 async def get_info_about_user(message: types.Message, chat: Chat, target: User, config: Config, bot: Bot):
     info = await get_user_info(target, chat, config.date_format)
@@ -211,14 +220,6 @@ async def get_info_about_user(message: types.Message, chat: Chat, target: User, 
         )
     finally:
         await delete_message(message)
-
-
-@router.message(
-    F.chat.type == "private",
-    Command("info", prefix='!'),
-)
-async def get_info_about_user_private(message: types.Message):
-    await message.reply("Вы можете запрашивать информацию о пользователях только в группах.")
 
 
 @router.message(
