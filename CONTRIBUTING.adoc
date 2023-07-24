@@ -1,0 +1,15 @@
+= Contributing
+
+First off, thank you for taking the time to contribute! 👍 🎉
+
+== How to contribute
+
+1. Ask a question
+You can ask your questions here on the GitHub in Discussions, Issues or in telegram: https://t.me/bomzheg
+2. Create an Issue
+Reporting an issue or making a feature request is a great way to contribute. Your feedback and the conversations that result from it provide a continuous flow of ideas.
+3. Submit a Pull Request
+if some issue does not have fix for many times, or it has label 'Help wanted' you can fix it in Pull Request.
+If you want to add some new feature please contact https://t.me/bomzheg or create issue for fast approval.
+4. Review some Pull Requests
+You can make some Code Review for any PR on this project, even for maintainer's PR
