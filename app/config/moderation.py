@@ -10,7 +10,7 @@ from app.models.common import TypeRestriction
 DEFAULT_RESTRICT_DURATION = timedelta(hours=1)
 FOREVER_RESTRICT_DURATION = timedelta(days=666)
 RO_ACTION = partial(Bot.restrict_chat_member, permissions=ChatPermissions(can_send_messages=False))
-BAN_ACTION = Bot.kick_chat_member
+BAN_ACTION = Bot.ban_chat_member
 action_for_restrict = {
     TypeRestriction.ban: BAN_ACTION,
     TypeRestriction.ro: RO_ACTION,

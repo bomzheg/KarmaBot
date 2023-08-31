@@ -1,4 +1,4 @@
-aiogram==3.0.0b6
+aiogram==3.0.0rc2
 aiohttp~=3.8.3
 tortoise-orm~=0.19.3
 lxml~=4.9.2
