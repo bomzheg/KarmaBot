@@ -62,6 +62,17 @@ def get_nometa_kb():
     )
 
 
+def get_xy_problem_kb():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[
+            InlineKeyboardButton(
+                text="Подробнее",
+                url="https://xyproblem.ru/",
+            )
+        ]]
+    )
+
+
 def get_paste_kb():
     return InlineKeyboardMarkup(
         inline_keyboard=[[

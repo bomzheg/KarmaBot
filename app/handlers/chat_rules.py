@@ -39,6 +39,15 @@ async def nometa_cmd(m: Message, bot: Bot):
     await m.delete()
 
 
+async def xy_problem_cmd(m: Message, bot: Bot):
+    await bot.send_message(
+        chat_id=m.chat.id,
+        text="🎙 Похоже мы столкнулись с XY problem!",
+        reply_markup=kb.get_xy_problem_kb(),
+        reply_to_message_id=m.reply_to_message.message_id,
+    )
+    await m.delete()
+
 async def delete_me_cmd(m: Message):
     await m.delete()
 
@@ -48,5 +57,6 @@ def setup() -> Router:
     router.message.register(lmgify_cmd, Command("go", prefix="!"), F.reply_to_message)
     router.message.register(paste_cmd, Command("paste", prefix="!"), F.reply_to_message)
     router.message.register(nometa_cmd, Command("nm", prefix="!"), F.reply_to_message)
+    router.message.register(xy_problem_cmd, Command("xy", prefix="!"), F.reply_to_message)
     router.message.register(delete_me_cmd, Command("go", "paste", "nm", prefix="!"))
     return router
