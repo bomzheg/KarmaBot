@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from aiogram import Bot, types
+from aiogram.enums import ChatMemberStatus
 from aiogram.filters import Filter
 
 from app.services.find_target_user import get_target_user
@@ -63,7 +64,7 @@ class HasPermissions(Filter):
         chat_member = await self._get_chat_member(message, bot)
         if not chat_member:
             return False
-        if chat_member.status == "creator":
+        if chat_member.status == ChatMemberStatus.CREATOR:
             return chat_member
         for permission, _value in self.required_permissions.items():
             if not getattr(chat_member, permission):
