@@ -2,16 +2,26 @@ import asyncio
 import random
 
 from aiogram import Bot, F, Router, types
+from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.filters import (BotHasPermissions, HasPermissions, HasTargetFilter,
-                         TargetHasPermissions)
+from app.filters import (
+    BotHasPermissions,
+    HasPermissions,
+    HasTargetFilter,
+    TargetHasPermissions,
+)
 from app.models.config import Config
 from app.models.db import Chat, User
-from app.services.moderation import (ban_user, delete_moderator_event,
-                                     get_duration, ro_user, warn_user)
+from app.services.moderation import (
+    ban_user,
+    delete_moderator_event,
+    get_duration,
+    ro_user,
+    warn_user,
+)
 from app.services.remove_message import delete_message, remove_kb
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
@@ -69,7 +79,7 @@ def need_notify_admin(
     """
     if admin.user.is_bot or (ignore_anonymous and admin.is_anonymous):
         return False
-    return admin.can_delete_messages or admin.can_restrict_members or admin.status == "creator"
+    return admin.status == ChatMemberStatus.CREATOR or admin.can_delete_messages or admin.can_restrict_members
 
 
 @router.message(

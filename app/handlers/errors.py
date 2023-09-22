@@ -37,7 +37,7 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     await bot.send_message(
         config.log.log_chat_id,
         f"Получено исключение {hd.quote(str(error.exception))}\n"
-        f"во время обработки апдейта {hd.quote(error.update.json(exclude_none=True, ensure_ascii=False))}\n"
+        f"во время обработки апдейта {hd.quote(error.update.model_dump_json(exclude_none=True))}\n"
         f"{hd.quote(json.dumps(error.exception.args))}"
     )
 
