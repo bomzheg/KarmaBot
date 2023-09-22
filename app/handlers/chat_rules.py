@@ -48,6 +48,7 @@ async def xy_problem_cmd(m: Message, bot: Bot):
     )
     await m.delete()
 
+
 async def delete_me_cmd(m: Message):
     await m.delete()
 
