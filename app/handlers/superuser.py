@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from aiogram import Bot, Router
+from aiogram import Bot, Router, enums
 from aiogram.filters import Command
 from aiogram.types import Message, BufferedInputFile
 from functools import partial
@@ -25,6 +25,16 @@ async def get_dump(_: Message, config: Config, bot: Bot):
         await bot.send_document(config.dump_chat_id, BufferedInputFile(f.read(), "karma.db"))
 
 
+async def show_tagged_users(message: Message):
+    result = ""
+    for e in message.reply_to_message.entities:
+        if e.type == "text_mention":
+            result += f"\n{e.type} - {e.user.full_name}"
+        if e.type == "mention":
+            result += f"\n{e.type} - {e.extract_from(message.text or message.caption)}"
+    await message.reply(result)
+
+
 def setup_superuser(bot_config: Config) -> Router:
     router = Router(name=__name__)
     is_superuser_ = partial(is_superuser, superusers=bot_config.superusers)
@@ -33,5 +43,6 @@ def setup_superuser(bot_config: Config) -> Router:
     router.message.register(exception, Command(commands="exception"))
     router.message.register(leave_chat, Command(commands="get_out"))
     router.message.register(get_dump, Command(commands="dump"))
+    router.message.register(show_tagged_users, Command(commands="entities", prefix="!/"))
 
     return router
