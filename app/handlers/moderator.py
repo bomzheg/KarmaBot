@@ -64,7 +64,7 @@ async def get_mentions_admins(
     for admin in admins:
         if need_notify_admin(admin, ignore_anonymous):
             admins_mention += hd.link("&#8288;", admin.user.url)
-    return admins_mention
+    return admins_mention[:5]
 
 
 def need_notify_admin(
