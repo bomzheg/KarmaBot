@@ -61,10 +61,11 @@ async def get_mentions_admins(
     admins = await bot.get_chat_administrators(chat.id)
     random.shuffle(admins)  # чтобы попадались разные админы
     admins_mention = ""
-    for admin in admins:
-        if need_notify_admin(admin, ignore_anonymous):
-            admins_mention += hd.link("&#8288;", admin.user.url)
-    return admins_mention[:5]
+    notifiable_admins = [admin for admin in admins if need_notify_admin(admin, ignore_anonymous)]
+    random_five_admins = notifiable_admins[:5]
+    for admin in random_five_admins:
+        admins_mention += hd.link("&#8288;", admin.user.url)
+    return admins_mention
 
 
 def need_notify_admin(
