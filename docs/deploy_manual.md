@@ -1,29 +1,36 @@
 # KarmaBot run without docker
 
-* install python 3.9+
+* Install python 3.9+
 
-* create [virtual environment](https://docs.python.org/3/tutorial/venv.html)
+* Create [virtual environment](https://docs.python.org/3/tutorial/venv.html) and activate it
 
-* ```python -m pip install -r requirements.txt```
+* Install requirements: ```python -m pip install -r requirements.txt```
 
-* create .env file with Environment variables or export that variables:
+* Check out config samples in `config_dist` directory. 
+  You may want to copy that dir and rename it to `config`, this will make the steps below easier.
+
+* Create `config/.env` file with environment variables or export these variables:
   * `KARMA_BOT_TOKEN` - api token for tg bot
   * fill `WEBHOOK_HOST`, `WEBHOOK_PORT`, `WEBHOOK_PATH`, `LISTEN_IP`, `LISTEN_PORT` if you need to run with webhook
-  * DB_TYPE one of "sqlite", "postgres", "mysql"
+  * `DB_TYPE` one of "sqlite", "postgres" or "mysql"
   * if you are using sqlite you have to specify `DB_PATH`
   * in other case you need to specify `LOGIN_DB`, `PASSWORD_DB`, `DB_NAME`, `DB_HOST` (can skip, default is localhost), 
     `DB_PORT` (can skip, default is default port for a current db (example: 5432 for postgres))
 
-* ```python -m app```
+* Create `config/bot-config.yaml` and fill it with variables:
+  * `dump_chat_id` and `log_chat_id` - these will be used to send database dumps and bot logs respectively.
+  * `superusers` - list of telegram user ids to become bots superusers.
+  * `storage` section - storage to be used. Check out example in `config_dist`.
+
+* Start bot with polling: ```python -m app -p```
 
   * possible command line arguments:
     * -p - using polling instead webhook
     * -s - skip updates that accumulated on tg servers
-    * -a - autoreload bot when source code changed. Use it only in development mode
 
-* to create tables in database run:
+* To create tables in database run script:
 
-```python initialize.py```
+```PYTHONPATH=. python migrations/01_initialize.py```
 
 # Karmabot deploy manual with a docker:
 
@@ -46,11 +53,6 @@
 
 
 # The secondary setup:
-in `app.config.__init__.py`:
-* create chat in telegram and place it chat_id in 
-[LOG_CHAT_ID](https://github.com/bomzheg/KarmaBot/blob/d5dcf3f6faead1b1b277143857ea9cdc6a872257/app/config.py#L48)
-* on next line you can place same or another chat_id in `DUMP_CHAT_ID`
-* to generate invite links, the bot must have administrator rights
-* fill `SUPERUSERS` and `GLOBAL_ADMIN_ID` with yours
-* you can change `PLUS_WORDS`, `PLUS_TRIGGERS`, `PLUS_EMOJI`, `MINUS`, `MINUS_EMOJI`. 
-it must be iterable, better is set or frozenset
+* To generate invite links, the bot must have administrator rights
+* you can change `PLUS_WORDS`, `PLUS_TRIGGERS`, `PLUS_EMOJI`, `MINUS_EMOJI` in `app/config/karmic_triggers.py`. 
+They must be iterable, better is set or frozenset.
