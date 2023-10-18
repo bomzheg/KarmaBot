@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum
 
 from tortoise import fields
 from tortoise.models import Model
@@ -9,7 +9,7 @@ from .user import User
 TG_MESSAGE_MAX_LEN = 4096
 
 
-class ReportStatus(StrEnum):
+class ReportStatus(Enum):
     approved = "Approved"
     declined = "Declined"
     pending = "Pending"
