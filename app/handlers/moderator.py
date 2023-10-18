@@ -58,7 +58,7 @@ async def report_message(message: types.Message, chat: Chat, user: User, target:
         )
 
     reaction_keyboard = get_report_reaction_kb(report=report, user=user)
-    await message.reply(f"{answer_message} {admins_mention}.", reply_markup=reaction_keyboard)
+    await message.reply(f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard)
 
 
 @router.message(
@@ -315,6 +315,7 @@ async def approve_report_handler(
 @router.callback_query(
     kb.DeclineReportCb.filter(),
     HasPermissions(can_restrict_members=True)
+    # TODO: allow reporter decline report himself
 )
 async def decline_report_handler(
     callback_query: types.CallbackQuery,
