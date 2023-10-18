@@ -46,22 +46,26 @@ class HasPermissions(Filter):
     def _set_cached_value(self, _message: types.Message, _member: types.ChatMember):
         return None  # TODO
 
-    async def _get_chat_member(self, message: types.Message, bot: Bot):
-        chat_member = self._get_cached_value(message)
+    async def _get_chat_member(self, update: types.Message | types.CallbackQuery, bot: Bot):
+        chat_member = self._get_cached_value(update)
+        if isinstance(update, types.CallbackQuery):
+            chat_id = update.message.chat.id
+        else:
+            chat_id = update.chat.id
         if chat_member is None:
-            admins = await bot.get_chat_administrators(message.chat.id)
-            target_user_id = self.get_target_id(message, bot)
+            admins = await bot.get_chat_administrators(chat_id)
+            target_user_id = self.get_target_id(update, bot)
             if target_user_id is None:
                 return False
             try:
                 chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
             except StopIteration:
                 return False
-            self._set_cached_value(message, chat_member)
+            self._set_cached_value(update, chat_member)
         return chat_member
 
-    async def __call__(self, message: types.Message, bot: Bot) -> bool | dict[str, Any]:
-        chat_member = await self._get_chat_member(message, bot)
+    async def __call__(self, update: types.Message | types.CallbackQuery, bot: Bot) -> bool | dict[str, Any]:
+        chat_member = await self._get_chat_member(update, bot)
         if not chat_member:
             return False
         if chat_member.status == ChatMemberStatus.CREATOR:
@@ -72,8 +76,10 @@ class HasPermissions(Filter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, message: types.Message, bot: Bot) -> int | None:
-        return message.from_user.id
+    def get_target_id(self, update: types.Message | types.CallbackQuery, bot: Bot) -> int | None:
+        if isinstance(update, types.CallbackQuery):
+            return update.from_user.id
+        return update.from_user.id
 
 
 @dataclass

@@ -1,11 +1,13 @@
 import asyncio
 import random
+from contextlib import suppress
 
 from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatMemberStatus
-from aiogram.exceptions import TelegramUnauthorizedError
+from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
 from aiogram.filters import Command, CommandObject
 from aiogram.utils.text_decorations import html_decoration as hd
+from tortoise.transactions import in_transaction
 
 from app.filters import (
     BotHasPermissions,
@@ -28,6 +30,9 @@ from app.utils.exceptions import ModerationError, TimedeltaParseError
 from app.utils.log import Logger
 
 from . import keyboards as kb
+from .keyboards import get_report_reaction_kb
+from ..models.db.report import ReportStatus
+from ..services.report import register_report, resolve_report, reward_reporter
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -35,14 +40,25 @@ router = Router(name=__name__)
 
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
-    F.reply_to_message,
+    HasTargetFilter(),
     Command('report', 'admin', 'spam', prefix="/!@"),
 )
-async def report(message: types.Message, bot: Bot):
+async def report_message(message: types.Message, chat: Chat, user: User, target: User, bot: Bot):
     logger.info("user {user} report for message {message}", user=message.from_user.id, message=message.message_id)
-    answer_template = "Спасибо за сообщение. Мы обязательно разберёмся. "
+    answer_message = "Спасибо за сообщение. Мы обязательно разберёмся"
     admins_mention = await get_mentions_admins(message.chat, bot)
-    await message.reply(answer_template + admins_mention + " ")
+
+    async with in_transaction() as db_session:
+        report = await register_report(
+            reporter=user,
+            reported_user=target,
+            chat=chat,
+            reported_message=message.reply_to_message,
+            db_session=db_session
+        )
+
+    reaction_keyboard = get_report_reaction_kb(report=report, user=user)
+    await message.reply(f"{answer_message} {admins_mention}.", reply_markup=reaction_keyboard)
 
 
 @router.message(
@@ -256,3 +272,73 @@ async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.War
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
     await callback_query.answer("Предупреждение было отменено", show_alert=True)
     await callback_query.message.delete()
+
+
+@router.callback_query(
+    kb.ApproveReportCb.filter(),
+    HasPermissions(can_restrict_members=True),
+)
+async def approve_report_handler(
+    callback_query: types.CallbackQuery,
+    callback_data: kb.ApproveReportCb,
+    user: User,
+    chat: Chat,
+    bot: Bot,
+    config: Config
+):
+    async with in_transaction() as db_session:
+        await resolve_report(
+            report_id=callback_data.report_id,
+            moderator=user,
+            resolution=ReportStatus.approved,
+            db_session=db_session
+        )
+    if config.report_karma_award:
+        karma_change_result = await reward_reporter(
+            reporter_id=callback_data.reporter_id,
+            chat=chat,
+            reward_amount=config.report_karma_award,
+            bot=bot
+        )
+        await callback_query.message.edit_text(
+            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!".format(
+                reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
+                reward_amount=config.report_karma_award
+            )
+        )
+    await callback_query.answer()
+    with suppress(TelegramBadRequest):
+        await callback_query.message.reply_to_message.delete()
+        await callback_query.message.edit_reply_markup()
+
+
+@router.callback_query(
+    kb.DeclineReportCb.filter(),
+    HasPermissions(can_restrict_members=True)
+)
+async def decline_report_handler(
+    callback_query: types.CallbackQuery,
+    callback_data: kb.ApproveReportCb,
+    user: User
+):
+    async with in_transaction() as db_session:
+        await resolve_report(
+            report_id=callback_data.report_id,
+            moderator=user,
+            resolution=ReportStatus.declined,
+            db_session=db_session
+        )
+    await callback_query.answer()
+    with suppress(TelegramBadRequest):
+        await callback_query.message.reply_to_message.delete()
+        await callback_query.message.delete()
+
+
+@router.callback_query(kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True))
+async def unauthorized_report_action(callback_query: types.CallbackQuery):
+    await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
+
+
+@router.callback_query(kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True))
+async def unauthorized_report_action(callback_query: types.CallbackQuery):
+    await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)

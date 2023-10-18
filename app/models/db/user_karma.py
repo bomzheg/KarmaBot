@@ -8,7 +8,7 @@ from app.utils.log import Logger
 from .chat import Chat
 from .db import karma_filters
 from .user import User
-
+from ...filters.karma_change import INF
 
 logger = Logger(__name__)
 DEFAULT_KARMA = 50
@@ -35,7 +35,7 @@ class UserKarma(Model):
     def __repr__(self):
         return str(self)
 
-    async def change(self, user_changed: User, how_change: float, using_db=None):
+    async def change(self, user_changed: User, how_change: float, skip_power_check: bool, using_db=None):
         """
         change karma to (self.user) from (user_changed)
         (how_change) must be from -inf to +inf
@@ -43,11 +43,16 @@ class UserKarma(Model):
         if how_change == 0:
             raise ValueError(f"how_change must be float and not 0 but it is {how_change}")
         await self.fetch_related('chat', using_db=using_db)
-        power = await self.get_power(user_changed, self.chat)
+
+        if skip_power_check:
+            power = INF
+        else:
+            power = await self.get_power(user_changed, self.chat)
+
         if power < 0.01:
             logger.info("user {user} try to change karma but have negative karma", user=user_changed.tg_id)
             raise SubZeroKarma(
-                "User have to small karma",
+                "User have too small karma",
                 user_id=user_changed.id,
                 chat_id=self.chat.chat_id
             )
@@ -65,6 +70,7 @@ class UserKarma(Model):
             chat: Chat,
             user_changed: User,
             how_change: float,
+            skip_power_check: bool,
             using_db=None,
     ):
         """
@@ -80,6 +86,7 @@ class UserKarma(Model):
             user_changed=user_changed,
             how_change=how_change,
             using_db=using_db,
+            skip_power_check=skip_power_check,
         )
         return uk, abs_change, relative_change
 

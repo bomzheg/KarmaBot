@@ -102,9 +102,9 @@ def has_minus_karma(possible_trigger: str) -> typing.Optional[float]:
         return None
     if possible_trigger in MINUS_TRIGGERS:
         return -INF
-    # i think next function run:
-    # has_spaces(possible_trigger)
-    # newer will be true. may be we can remove it from condition
+    # TODO: I think next function run:
+    #  has_spaces(possible_trigger)
+    #  will never be true. Maybe we can remove it from condition
     if not has_spaces(possible_trigger) and possible_trigger[0] in MINUS_EMOJI:
         return -INF
     if possible_trigger[0:len(MINUS)] == MINUS:
