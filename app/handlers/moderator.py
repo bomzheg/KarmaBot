@@ -264,11 +264,12 @@ async def cmd_unhandled(message: types.Message):
     await delete_message(message)
 
 
-@router.callback_query(kb.WarnCancelCb.filter())
+@router.callback_query(
+    kb.WarnCancelCb.filter(),
+    MagicData(F.callback_data.user_id == F.callback_query.from_user.id)
+)
 async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
     from_user = callback_query.from_user
-    if callback_data.user_id != from_user.id:
-        return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
     await callback_query.message.delete()
