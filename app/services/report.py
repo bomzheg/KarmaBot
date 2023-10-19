@@ -32,12 +32,12 @@ async def register_report(
 
 async def resolve_report(
         report_id: int,
-        moderator: User,
+        resolved_by: User,
         resolution: ReportStatus,
         db_session: BaseDBAsyncClient
 ):
     report = await Report.get(id=report_id, using_db=db_session)
-    report.reacted_moderator = moderator
+    report.resolved_by = resolved_by
     report.status = resolution
     report.resolution_time = datetime.utcnow()
     await report.save(using_db=db_session)

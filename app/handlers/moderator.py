@@ -5,7 +5,7 @@ from contextlib import suppress
 from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command, CommandObject, MagicData
 from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise.transactions import in_transaction
 
@@ -270,7 +270,7 @@ async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.War
     if callback_data.user_id != from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
-    await callback_query.answer("Предупреждение было отменено", show_alert=True)
+    await callback_query.answer("Вы отменили предупреждение", show_alert=True)
     await callback_query.message.delete()
 
 
@@ -289,7 +289,7 @@ async def approve_report_handler(
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
-            moderator=user,
+            resolved_by=user,
             resolution=ReportStatus.approved,
             db_session=db_session
         )
@@ -306,7 +306,7 @@ async def approve_report_handler(
                 reward_amount=config.report_karma_award
             )
         )
-    await callback_query.answer()
+    await callback_query.answer("Вы подтвердили репорт")
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
         await callback_query.message.edit_reply_markup()
@@ -315,31 +315,59 @@ async def approve_report_handler(
 @router.callback_query(
     kb.DeclineReportCb.filter(),
     HasPermissions(can_restrict_members=True)
-    # TODO: allow reporter decline report himself
 )
 async def decline_report_handler(
     callback_query: types.CallbackQuery,
-    callback_data: kb.ApproveReportCb,
+    callback_data: kb.DeclineReportCb,
     user: User
 ):
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
-            moderator=user,
+            resolved_by=user,
             resolution=ReportStatus.declined,
             db_session=db_session
         )
-    await callback_query.answer()
+    await callback_query.answer("Вы отклонили репорт")
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
         await callback_query.message.delete()
 
 
+@router.callback_query(
+    kb.CancelReportCb.filter(),
+    MagicData(F.user.id == F.callback_data.reporter_id)
+)
+async def cancel_report_handler(
+    callback_query: types.CallbackQuery,
+    callback_data: kb.CancelReportCb,
+    user: User
+):
+    async with in_transaction() as db_session:
+        await resolve_report(
+            report_id=callback_data.report_id,
+            resolved_by=user,
+            resolution=ReportStatus.cancelled,
+            db_session=db_session
+        )
+    await callback_query.answer("Вы отменили репорт")
+    with suppress(TelegramBadRequest):
+        await callback_query.message.reply_to_message.delete()
+        await callback_query.message.delete()
+
+
+@router.callback_query(
+    kb.WarnCancelCb.filter(),
+    MagicData(F.callback_data.user_id != F.callback_query.from_user.id)
+)
+@router.callback_query(
+    kb.CancelReportCb.filter(),
+    MagicData(F.user.id != F.callback_data.reporter_id)
+)
 @router.callback_query(kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True))
-async def unauthorized_report_action(callback_query: types.CallbackQuery):
-    await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
-
-
 @router.callback_query(kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True))
-async def unauthorized_report_action(callback_query: types.CallbackQuery):
-    await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
+async def unauthorized_button_action(callback_query: types.CallbackQuery, config: Config):
+    await callback_query.answer(
+        "Эта кнопка не для Вас",
+        cache_time=config.callback_query_answer_cache_time
+    )

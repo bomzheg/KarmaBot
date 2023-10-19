@@ -13,6 +13,7 @@ class ReportStatus(Enum):
     approved = "Approved"
     declined = "Declined"
     pending = "Pending"
+    cancelled = "Cancelled"
 
 
 class Report(Model):
@@ -33,9 +34,9 @@ class Report(Model):
     resolution_time = fields.DatetimeField(null=True)
     reported_message_id = fields.BigIntField(generated=False, null=False)
     reported_message_content = fields.CharField(null=False, max_length=TG_MESSAGE_MAX_LEN)
-    reacted_moderator: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    resolved_by: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
         'models.User',
-        related_name='reacted_reports',
+        related_name='resolved_reports',
         null=True
     )
     status = fields.CharEnumField(ReportStatus, null=False)

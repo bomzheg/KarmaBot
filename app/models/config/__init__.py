@@ -26,6 +26,7 @@ class Config:
     time_to_cancel_actions: int = 60
     time_to_remove_temp_messages: int = 30
     report_karma_award: int = 0
+    callback_query_answer_cache_time: int = 3600
 
 
 __all__ = [AutoRestrictionConfig, DBConfig, LogConfig, WebhookConfig, TgClientConfig]

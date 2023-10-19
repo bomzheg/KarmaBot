@@ -27,6 +27,11 @@ class DeclineReportCb(CallbackData, prefix="decline_report"):
     reporter_id: int
 
 
+class CancelReportCb(CallbackData, prefix="cancel_report"):
+    report_id: int
+    reporter_id: int
+
+
 def get_kb_karma_cancel(
         user: User, karma_event: KarmaEvent, rollback_karma: float, moderator_event: ModeratorEvent
 ) -> InlineKeyboardMarkup:
@@ -100,13 +105,19 @@ def get_paste_kb():
 
 
 def get_report_reaction_kb(user: User, report: Report) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text='Подтвердить',
-            callback_data=ApproveReportCb(report_id=report.id, reporter_id=user.id).pack()
-        ),
-        InlineKeyboardButton(
-            text='Отклонить',
-            callback_data=DeclineReportCb(report_id=report.id, reporter_id=user.id).pack()
-        ),
-    ]])
+    approve = InlineKeyboardButton(
+        text='Подтвердить',
+        callback_data=ApproveReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    decline = InlineKeyboardButton(
+        text='Отклонить',
+        callback_data=DeclineReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    cancel = InlineKeyboardButton(
+        text='Отменить',
+        callback_data=CancelReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [approve, decline],
+        [cancel]
+    ])
