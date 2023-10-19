@@ -23,7 +23,7 @@ async def register_report(
         chat=chat,
         reported_message_id=reported_message.message_id,
         reported_message_content=reported_message.html_text,
-        status=ReportStatus.pending,
+        status=ReportStatus.PENDING,
 
         using_db=db_session
     )

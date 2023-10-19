@@ -10,10 +10,10 @@ TG_MESSAGE_MAX_LEN = 4096
 
 
 class ReportStatus(Enum):
-    approved = "Approved"
-    declined = "Declined"
-    pending = "Pending"
-    cancelled = "Cancelled"
+    APPROVED = "approved"
+    DECLINED = "declined"
+    PENDING = "pending"
+    CANCELLED = "cancelled"
 
 
 class Report(Model):

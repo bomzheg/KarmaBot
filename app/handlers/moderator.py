@@ -290,7 +290,7 @@ async def approve_report_handler(
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
-            resolution=ReportStatus.approved,
+            resolution=ReportStatus.APPROVED,
             db_session=db_session
         )
     if config.report_karma_award:
@@ -325,7 +325,7 @@ async def decline_report_handler(
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
-            resolution=ReportStatus.declined,
+            resolution=ReportStatus.DECLINED,
             db_session=db_session
         )
     await callback_query.answer("Вы отклонили репорт")
@@ -347,7 +347,7 @@ async def cancel_report_handler(
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
-            resolution=ReportStatus.cancelled,
+            resolution=ReportStatus.CANCELLED,
             db_session=db_session
         )
     await callback_query.answer("Вы отменили репорт")
