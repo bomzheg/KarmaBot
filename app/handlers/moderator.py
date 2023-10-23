@@ -306,8 +306,10 @@ async def approve_report_handler(
             )
         )
     await callback_query.answer("Вы подтвердили репорт")
+
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
+    with suppress(TelegramBadRequest):
         await callback_query.message.edit_reply_markup()
 
 
@@ -328,8 +330,10 @@ async def decline_report_handler(
             db_session=db_session
         )
     await callback_query.answer("Вы отклонили репорт")
+
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
+    with suppress(TelegramBadRequest):
         await callback_query.message.delete()
 
 
@@ -350,8 +354,10 @@ async def cancel_report_handler(
             db_session=db_session
         )
     await callback_query.answer("Вы отменили репорт")
+
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
+    with suppress(TelegramBadRequest):
         await callback_query.message.delete()
 
 
