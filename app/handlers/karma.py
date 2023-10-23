@@ -4,11 +4,9 @@ from aiogram import types, F, Router
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 
+from app.infrastructure.database.models import User, Chat
+from app.infrastructure.database.repo.chat import ChatRepo
 from app.models.config import Config
-from app.models.db import (
-    Chat,
-    User
-)
 from app.services.karma import (
     get_top as get_karma_top,
     get_me_info,
@@ -23,7 +21,7 @@ router = Router(name=__name__)
 
 
 @router.message(Command("top", prefix='!'), F.chat.type == "private")
-async def get_top_from_private(message: types.Message, user: User):
+async def get_top_from_private(message: types.Message, user: User, chat_repo: ChatRepo):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
         chat = await Chat.get(chat_id=int(parts[1]))
@@ -34,15 +32,15 @@ async def get_top_from_private(message: types.Message, user: User):
             "\n" + hd.code("!top -1001399056118")
         )
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
-    text = await get_karma_top(chat, user)
+    text = await get_karma_top(chat_repo, chat, user)
 
     await message.reply(text, disable_web_page_preview=True)
 
 
 @router.message(Command("top", prefix='!'))
-async def get_top(message: types.Message, chat: Chat, user: User):
+async def get_top(message: types.Message, chat: Chat, user: User, chat_repo: ChatRepo):
     logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
-    text = await get_karma_top(chat, user)
+    text = await get_karma_top(chat_repo, chat, user)
 
     await message.reply(text, disable_web_page_preview=True)
 

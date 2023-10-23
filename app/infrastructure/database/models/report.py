@@ -3,8 +3,8 @@ from enum import Enum
 from tortoise import fields
 from tortoise.models import Model
 
-from .chat import Chat
-from .user import User
+from app.infrastructure.database.models.chat import Chat
+from app.infrastructure.database.models.user import User
 
 TG_MESSAGE_MAX_LEN = 4096
 

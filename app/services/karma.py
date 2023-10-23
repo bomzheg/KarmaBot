@@ -2,16 +2,17 @@ import typing
 
 from aiogram.utils.markdown import hbold
 
-from app.models.db import Chat, User, UserKarma
+from app.infrastructure.database.models import Chat, User, UserKarma
+from app.infrastructure.database.repo.chat import ChatRepo
 from app.utils.exceptions import NotHaveNeighbours
 
 
-async def get_top(chat: Chat, user: User, limit: int = 15):
-    top_karmas = await chat.get_top_karma_list(limit)
+async def get_top(chat_repo: ChatRepo, chat: Chat, user: User, limit: int = 15):
+    top_karmas = await chat_repo.get_top_karma_list(chat, limit)
     text_list = format_output([(i, user, karma) for i, (user, karma) in enumerate(top_karmas, 1)])
     text = add_caption(text_list)
     try:
-        prev_uk, user_uk, next_uk = await chat.get_neighbours(user)
+        prev_uk, user_uk, next_uk = await chat_repo.get_neighbours(user, chat)
     except NotHaveNeighbours:
         return text
 

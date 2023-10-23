@@ -4,8 +4,8 @@ import aiogram
 from aiogram import Bot
 from tortoise.backends.base.client import BaseDBAsyncClient
 
-from app.models.db import User, Chat
-from app.models.db.report import Report, ReportStatus
+from app.infrastructure.database.models import User, Chat
+from app.infrastructure.database.models.report import Report, ReportStatus
 from app.services.change_karma import change_karma
 from app.utils.types import ResultChangeKarma
 

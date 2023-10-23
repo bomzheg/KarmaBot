@@ -2,8 +2,13 @@ import pytest
 from aiogram import types
 
 from .common import filter_check, CONF_CAN_BE_SAME, CONF_CANT_BE_SAME
-from .fixtures import (get_from_user, get_message_with_reply,
-                       get_message_with_text_mention, get_message_with_mention, get_parts)
+from .fixtures import (
+    get_from_user,
+    get_message_with_reply,
+    get_message_with_text_mention,
+    get_message_with_mention,
+    get_parts
+)
 
 
 @pytest.mark.parametrize("phrase", get_parts())

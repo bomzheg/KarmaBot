@@ -7,8 +7,8 @@ from tortoise.backends.base.client import TransactionContext
 
 from app.config import moderation
 from app.config.main import load_config
+from app.infrastructure.database.models import ModeratorEvent, User, Chat
 from app.models.common import TypeRestriction
-from app.models.db import ModeratorEvent, User, Chat
 from app.utils.exceptions import CantRestrict
 from app.utils.log import Logger
 from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta

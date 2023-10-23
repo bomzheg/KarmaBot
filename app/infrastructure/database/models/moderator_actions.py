@@ -5,9 +5,9 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.utils.timedelta_functions import format_timedelta
-from .chat import Chat
-from .user import User
-from ..common import TypeRestriction
+from app.infrastructure.database.models.chat import Chat
+from app.infrastructure.database.models.user import User
+from app.models.common import TypeRestriction
 
 
 class ModeratorEvent(Model):

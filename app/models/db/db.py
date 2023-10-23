@@ -1,6 +1,6 @@
 from tortoise import Tortoise, run_async
 
-from app.models.config import DBConfig
+from app.models.config.db import DBConfig
 from app.utils.log import Logger
 
 

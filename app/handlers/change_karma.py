@@ -4,7 +4,6 @@ from aiogram import types, F, Bot, Router
 from aiogram.types import ContentType
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.models.db import Chat, User
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import change_karma, cancel_karma_change
 from app.services.remove_message import remove_kb
@@ -14,6 +13,7 @@ from app.utils.log import Logger
 from . import keyboards as kb
 from app.models.config import Config
 from app.filters import HasTargetFilter, KarmaFilter
+from ..infrastructure.database.models import User, Chat
 
 logger = Logger(__name__)
 router = Router(name=__name__)

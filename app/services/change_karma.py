@@ -3,14 +3,8 @@ from aiogram.types import ChatPermissions
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
+from app.infrastructure.database.models import User, Chat, ModeratorEvent, UserKarma, KarmaEvent
 from app.models.common import TypeRestriction
-from app.models.db import (
-    User,
-    Chat,
-    UserKarma,
-    KarmaEvent,
-    ModeratorEvent
-)
 from app.services.moderation import auto_restrict, user_has_now_ro, get_count_auto_restrict
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted

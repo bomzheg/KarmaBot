@@ -8,8 +8,8 @@ from tortoise.models import Model
 
 from app.models.common import TypeRestriction
 from app.utils.exceptions import UserWithoutUserIdError
-from .chat import Chat
-from .. import dto
+from app.infrastructure.database.models.chat import Chat
+from app.models import dto
 
 
 class User(Model):

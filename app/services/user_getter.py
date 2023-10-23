@@ -6,7 +6,7 @@ from aiogram.types import User
 from pyrogram import Client
 from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
 
-from app.models.config import TgClientConfig
+from app.models.config.tg_client import TgClientConfig
 from app.services.restrict_call import RestrictCall
 from app.utils.log import Logger
 

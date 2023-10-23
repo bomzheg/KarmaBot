@@ -16,7 +16,6 @@ from app.filters import (
     TargetHasPermissions,
 )
 from app.models.config import Config
-from app.models.db import Chat, User
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
@@ -31,7 +30,8 @@ from app.utils.log import Logger
 
 from . import keyboards as kb
 from .keyboards import get_report_reaction_kb
-from ..models.db.report import ReportStatus
+from app.infrastructure.database.models.report import ReportStatus
+from ..infrastructure.database.models import User, Chat
 from ..services.report import register_report, resolve_report, reward_reporter
 
 logger = Logger(__name__)

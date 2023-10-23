@@ -5,10 +5,10 @@ from tortoise.models import Model
 
 from app.utils.exceptions import SubZeroKarma
 from app.utils.log import Logger
-from .chat import Chat
-from .db import karma_filters
-from .user import User
-from ...filters.karma_change import INF
+from app.infrastructure.database.models.chat import Chat
+from app.models.db.db import karma_filters
+from app.infrastructure.database.models.user import User
+from app.filters.karma_change import INF
 
 logger = Logger(__name__)
 DEFAULT_KARMA = 50
