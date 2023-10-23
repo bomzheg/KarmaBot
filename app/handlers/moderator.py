@@ -15,8 +15,10 @@ from app.filters import (
     HasTargetFilter,
     TargetHasPermissions,
 )
+from app.handlers import keyboards as kb
 from app.models.config import Config
 from app.models.db import Chat, User
+from app.models.db.report import ReportStatus
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
@@ -25,14 +27,10 @@ from app.services.moderation import (
     warn_user,
 )
 from app.services.remove_message import delete_message, remove_kb
+from app.services.report import register_report, resolve_report, reward_reporter
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
 from app.utils.log import Logger
-
-from . import keyboards as kb
-from .keyboards import get_report_reaction_kb
-from ..models.db.report import ReportStatus
-from ..services.report import register_report, resolve_report, reward_reporter
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -57,7 +55,7 @@ async def report_message(message: types.Message, chat: Chat, user: User, target:
             db_session=db_session
         )
 
-    reaction_keyboard = get_report_reaction_kb(report=report, user=user)
+    reaction_keyboard = kb.get_report_reaction_kb(report=report, user=user)
     await message.reply(f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard)
 
 

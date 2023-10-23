@@ -3,12 +3,11 @@ from math import sqrt
 from tortoise import fields
 from tortoise.models import Model
 
+from app.filters.karma_change import INF
+from app.models.db import User, Chat
+from app.models.db.db import karma_filters
 from app.utils.exceptions import SubZeroKarma
 from app.utils.log import Logger
-from .chat import Chat
-from .db import karma_filters
-from .user import User
-from ...filters.karma_change import INF
 
 logger = Logger(__name__)
 DEFAULT_KARMA = 50
