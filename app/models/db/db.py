@@ -5,7 +5,7 @@ from app.utils.log import Logger
 
 
 logger = Logger(__name__)
-__models__ = ['app.models.db']
+__models__ = ['app.infrastructure.database.models']
 karma_filters = ("-karma", "uc_id")
 
 

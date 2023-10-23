@@ -58,7 +58,7 @@ class ChatRepo:
     async def get_neighbours_id(self, chat_id, user_id) -> Neighbours:
         # noinspection SqlDialectInspection
         neighbours = await self.session.execute_query(
-            query="""
+            """
             SELECT prev_user_id, next_user_id
             FROM (
                 SELECT
@@ -69,7 +69,7 @@ class ChatRepo:
                 WHERE chat_id = ?
             )
             WHERE user_id = ?""",
-            values=[chat_id, user_id]
+            [chat_id, user_id]
         )
         try:
             rez = dict(neighbours[1][0])
