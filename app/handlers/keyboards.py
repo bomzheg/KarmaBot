@@ -1,8 +1,12 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from app.models.db import User, KarmaEvent, ModeratorEvent
-from app.models.db.report import Report
+from app.infrastructure.database.models import (
+    User,
+    KarmaEvent,
+    ModeratorEvent,
+    Report
+)
 
 
 class KarmaCancelCb(CallbackData, prefix="karma_cancel"):

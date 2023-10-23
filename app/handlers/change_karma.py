@@ -4,7 +4,7 @@ from aiogram import types, F, Bot, Router
 from aiogram.types import ContentType
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.models.db import Chat, User
+from app.infrastructure.database.models import Chat, User
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import change_karma, cancel_karma_change
 from app.services.remove_message import remove_kb

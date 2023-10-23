@@ -7,7 +7,7 @@ from aiogram import Bot, types
 from aiogram.enums import ChatMemberStatus
 from aiogram.filters import BaseFilter
 
-from app.models.db import Chat, User
+from app.infrastructure.database.models import Chat
 from app.services.find_target_user import get_target_user
 
 logger = logging.getLogger(__name__)

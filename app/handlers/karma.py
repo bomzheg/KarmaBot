@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.models.config import Config
-from app.models.db import (
+from app.infrastructure.database.models import (
     Chat,
     User
 )

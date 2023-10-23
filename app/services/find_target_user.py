@@ -6,7 +6,7 @@ from tortoise.exceptions import MultipleObjectsReturned
 
 from app.models import dto
 from app.models.config import TgClientConfig
-from app.models.db import User
+from app.infrastructure.database.models import User
 from app.services.user_getter import UserGetter
 from app.utils.exceptions import UserWithoutUserIdError
 from app.utils.log import Logger

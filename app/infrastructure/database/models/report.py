@@ -1,10 +1,11 @@
+import typing
 from enum import Enum
 
 from tortoise import fields
 from tortoise.models import Model
 
-from .chat import Chat
-from .user import User
+if typing.TYPE_CHECKING:
+    from app.infrastructure.database.models import Chat, User
 
 TG_MESSAGE_MAX_LEN = 4096
 
@@ -18,15 +19,15 @@ class ReportStatus(Enum):
 
 class Report(Model):
     id = fields.IntField(pk=True)
-    reporter: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    reporter: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
         'models.User',
         related_name='made_reports'
     )
-    reported_user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    reported_user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
         'models.User',
         related_name='got_reports'
     )
-    chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
+    chat: fields.ForeignKeyRelation["Chat"] = fields.ForeignKeyField(
         'models.Chat',
         related_name='reports'
     )
@@ -34,7 +35,7 @@ class Report(Model):
     resolution_time = fields.DatetimeField(null=True)
     reported_message_id = fields.BigIntField(generated=False, null=False)
     reported_message_content = fields.CharField(null=False, max_length=TG_MESSAGE_MAX_LEN)
-    resolved_by: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    resolved_by: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
         'models.User',
         related_name='resolved_reports',
         null=True

@@ -1,7 +1,7 @@
 from tortoise import fields
 from tortoise.models import Model
 
-from .chat import Chat
+from app.infrastructure.database.models import Chat
 
 
 class ChatSettings(Model):

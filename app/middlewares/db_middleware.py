@@ -6,7 +6,7 @@ from aiogram import types, BaseMiddleware
 from aiogram.dispatcher.event.bases import CancelHandler
 from aiogram.types import TelegramObject
 
-from app.models.db import Chat, User
+from app.infrastructure.database.models import Chat, User
 from app.services.settings import get_chat_settings
 from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger

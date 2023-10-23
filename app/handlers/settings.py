@@ -2,7 +2,7 @@ from aiogram import types, Router
 from aiogram.filters import Command
 
 from app.filters import HasPermissions
-from app.models.db import Chat
+from app.infrastructure.database.models import Chat
 from app.services.settings import enable_karmic_restriction, disable_karmic_restriction, get_settings_card, \
     enable_karma_counting, disable_karma_counting
 

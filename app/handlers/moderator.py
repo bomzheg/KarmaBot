@@ -17,7 +17,7 @@ from app.filters import (
 )
 from app.handlers import keyboards as kb
 from app.models.config import Config
-from app.models.db import Chat, User, ChatSettings, ReportStatus
+from app.infrastructure.database.models import Chat, User, ReportStatus, ChatSettings
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,

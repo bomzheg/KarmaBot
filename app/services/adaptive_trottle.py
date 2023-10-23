@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from aiogram import types
 
-from app.models.db import User, Chat
+from app.infrastructure.database.models import User, Chat
 from app.utils.exceptions import Throttled
 from app.utils.log import Logger
 

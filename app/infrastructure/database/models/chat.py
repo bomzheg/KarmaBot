@@ -8,7 +8,7 @@ from tortoise.models import Model
 from tortoise.transactions import in_transaction
 
 from app.utils.exceptions import NotHaveNeighbours
-from .db import karma_filters
+from app.models.db.db import karma_filters
 
 
 SQL_PREV_NEXT = """

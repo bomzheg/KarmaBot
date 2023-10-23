@@ -1,3 +1,4 @@
+import typing
 from datetime import timedelta
 
 from aiogram.utils.text_decorations import html_decoration as hd
@@ -5,18 +6,19 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.utils.timedelta_functions import format_timedelta
-from .chat import Chat
-from .user import User
-from ..common import TypeRestriction
+from app.models.common import TypeRestriction
+
+if typing.TYPE_CHECKING:
+    from app.infrastructure.database.models import Chat, User
 
 
 class ModeratorEvent(Model):
     id_ = fields.IntField(pk=True, source_field="id")
-    moderator: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    moderator: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
         'models.User', related_name='my_moderator_events')
-    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+    user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
         'models.User', related_name='my_restriction_events')
-    chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
+    chat: fields.ForeignKeyRelation["Chat"] = fields.ForeignKeyField(
         'models.Chat', related_name='moderator_events')
     date = fields.DatetimeField(auto_now=True, null=False)
     type_restriction = fields.CharField(max_length=20)
@@ -36,9 +38,9 @@ class ModeratorEvent(Model):
     @classmethod
     async def save_new_action(
             cls,
-            moderator: User,
-            user: User,
-            chat: Chat,
+            moderator: "User",
+            user: "User",
+            chat: "Chat",
             type_restriction: str,
             duration: timedelta = None,
             comment: str = "",
@@ -56,7 +58,7 @@ class ModeratorEvent(Model):
         return moderator_event
 
     @classmethod
-    async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
+    async def get_last_by_user(cls, user: "User", chat: "Chat", limit: int = 10):
         return await cls.filter(
             user=user,
             chat=chat

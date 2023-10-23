@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from app.config.restriction_plan import RestrictionPlan, RestrictionPlanElem
 
 if typing.TYPE_CHECKING:
-    from app.models.db import User
+    from app.infrastructure.database.models import User
 
 
 @dataclass

@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from aiogram import Bot, Router, enums
+from aiogram import Bot, Router
 from aiogram.filters import Command
 from aiogram.types import Message, BufferedInputFile
 from functools import partial

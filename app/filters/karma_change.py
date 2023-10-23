@@ -12,7 +12,7 @@ from app.config.karmic_triggers import (
     MINUS_EMOJI,
     MINUS_TRIGGERS,
 )
-from app.models.db import ChatSettings
+from app.infrastructure.database.models import ChatSettings
 
 PUNCTUATIONS = ",.!)"
 INF = float('inf')

@@ -4,7 +4,7 @@ from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
 from app.models.common import TypeRestriction
-from app.models.db import (
+from app.infrastructure.database.models import (
     User,
     Chat,
     UserKarma,

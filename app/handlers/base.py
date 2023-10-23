@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hpre, hbold
 
-from app.models.db import Chat
+from app.infrastructure.database.models import Chat
 from app.utils.log import Logger
 
 
