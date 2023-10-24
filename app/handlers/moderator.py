@@ -264,7 +264,7 @@ async def cmd_unhandled(message: types.Message):
 
 @router.callback_query(
     kb.WarnCancelCb.filter(),
-    MagicData(F.user.tg_id == F.callback_data.from_user.id)
+    MagicData(F.user.tg_id == F.callback_data.user_id)
 )
 async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
     from_user = callback_query.from_user
