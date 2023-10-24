@@ -30,24 +30,14 @@ jobs:
         files: |
           **/*.py
 
-    - name: List changed files
-      run: |
-        echo files_changed: ${{ steps.changed-python-files.outputs.files_changed }}
-        echo any_changed: ${{ steps.changed-python-files.outputs.any_changed }}
-        echo only_changed: ${{ steps.changed-python-files.outputs.only_changed }}
-        for file in ${{ steps.changed-python-files.outputs.all_changed_files }}; do
-          echo "changed: $file"
-        done
-
-
     - name: Ruff
-      if: steps.changed-python-files.outputs.files_changed == 'true'
+      if: steps.changed-python-files.outputs.any_changed == 'true'
       run: ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }}
 
     - name: Black
-      if: steps.changed-python-files.outputs.files_changed == 'true'
+      if: steps.changed-python-files.outputs.any_changed == 'true'
       run: black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
 
     - name: Isort
-      if: steps.changed-python-files.outputs.files_changed == 'true'
+      if: steps.changed-python-files.outputs.any_changed == 'true'
       run: isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
