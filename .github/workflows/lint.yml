@@ -31,16 +31,23 @@ jobs:
           **/*.py
 
     - name: Ruff
+      id: ruff
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }}
       continue-on-error: true
 
     - name: Black
+      id: black
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
       continue-on-error: true
 
     - name: Isort
+      id: isort
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
       continue-on-error: true
+
+    - name: Fail job if linters failed
+      if: steps.ruff.outcome == 'failure' || steps.black.outcome == 'failure' || steps.isort.outcome == 'failure'
+      run: core.setFailed('Some linter steps failed')
