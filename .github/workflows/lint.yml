@@ -23,4 +23,4 @@ jobs:
       uses: tj-actions/changed-files@v39
 
     - name: Ruff
-      run: ruff check --config=pyproject.toml --diff --statistics --output-format=github ${{ steps.changed-files.outputs.all_changed_files }}
+      run: ruff check --config=pyproject.toml --diff --output-format=github ${{ steps.changed-files.outputs.all_changed_files }}
