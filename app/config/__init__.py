@@ -3,8 +3,8 @@ constants, settings
 """
 
 from .karmic_triggers import (
-    PLUS_TRIGGERS,
     PLUS,
+    PLUS_TRIGGERS,
     PLUS_EMOJI,
     PLUS_WORDS,
     MINUS,

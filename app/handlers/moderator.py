@@ -365,4 +365,7 @@ async def cancel_report_handler(
 @router.callback_query(kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True))
 @router.callback_query(kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True))
 async def unauthorized_button_action(callback_query: types.CallbackQuery, config: Config):
-    await callback_query.answer("Эта кнопка не для Вас", cache_time=config.callback_query_answer_cache_time)
+    await callback_query.answer(
+        "Эта кнопка не для Вас",
+        cache_time=config.callback_query_answer_cache_time
+    )
