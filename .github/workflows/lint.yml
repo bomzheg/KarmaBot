@@ -31,4 +31,4 @@ jobs:
     - name: Black
       id: black
       if: steps.verify-changed-files.outputs.black_any_changed == 'true'
-      run: black --config=pyproject.toml --check --verbose ${{ steps.changed-files.outputs.black_all_changed_files }}
+      run: black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-files.outputs.black_all_changed_files }}
