@@ -333,7 +333,7 @@ async def decline_report_handler(
             resolution=ReportStatus.DECLINED,
             db_session=db_session
         )
-    await callback_query.answer("Вы отклонили репорт")
+    await callback_query.answer("Вы отклонили репорт", show_alert=True)
 
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
@@ -357,7 +357,7 @@ async def cancel_report_handler(
             resolution=ReportStatus.CANCELLED,
             db_session=db_session
         )
-    await callback_query.answer("Вы отменили репорт")
+    await callback_query.answer("Вы отменили репорт", show_alert=True)
 
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
