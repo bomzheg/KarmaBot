@@ -54,6 +54,7 @@ jobs:
     - name: Check linters status
       if: steps.ruff.outcome == 'failure' || steps.black.outcome == 'failure' || steps.isort.outcome == 'failure'
       run: |
-        echo "::error ::${{ steps.ruff.outputs.result }}"
-        echo "::error ::${{ steps.black.outputs.result }}"
-        echo "::error ::${{ steps.isort.outputs.result }}"
+        printf "${{ steps.ruff.outputs.result }}" >&2
+        printf "${{ steps.black.outputs.result }}" >&2
+        printf "${{ steps.isort.outputs.result }}" >&2
+        exit 1
