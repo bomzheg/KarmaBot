@@ -21,21 +21,19 @@ jobs:
         pip install ruff black isort
 
     - name: Get changed files
-      id: changed-files
+      id: files_to_lint
       uses: tj-actions/changed-files@v39
       with:
-        files: |
-          **/*.py
-          **/*.pyi
+        files: "*.pyi?"
 
     - name: Ruff
-      if: steps.verify-changed-files.outputs.files_changed == 'true'
-      run: ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-files.outputs.all_changed_files }}
+      if: steps.files_to_lint.outputs.files_changed == 'true'
+      run: ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.files_to_lint.outputs.all_changed_files }}
 
     - name: Black
-      if: steps.verify-changed-files.outputs.files_changed == 'true'
-      run: black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-files.outputs.all_changed_files }}
+      if: steps.files_to_lint.outputs.files_changed == 'true'
+      run: black --config=pyproject.toml --check --diff --verbose ${{ steps.files_to_lint.outputs.all_changed_files }}
 
     - name: Isort
-      if: steps.verify-changed-files.outputs.files_changed == 'true'
-      run: isort --check --diff --profile=black ${{ steps.changed-files.outputs.all_changed_files }}
+      if: steps.files_to_lint.outputs.files_changed == 'true'
+      run: isort --check --diff --profile=black ${{ steps.files_to_lint.outputs.all_changed_files }}
