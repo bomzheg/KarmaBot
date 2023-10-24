@@ -10,7 +10,7 @@ Just add him to the chat and thank each other for helpful answers.
 - [Deployment](./docs/deploy_manual.md)
 - [Development](./docs/development.md)
 
-Most bot command use throttle mechanism, it means the bot wouldn't answer if you send many identical requests in a row
+Most bot commands use throttle mechanism, it means the bot wouldn't answer if you send many identical requests in a row
 
 Commands list:
 * /start, !start - simple bot information

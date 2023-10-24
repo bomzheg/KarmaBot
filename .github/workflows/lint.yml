@@ -26,6 +26,7 @@ jobs:
       id: changed-python-files
       uses: tj-actions/changed-files@v39
       with:
+        separator: ' '
         files: |
           **/*.py
 
