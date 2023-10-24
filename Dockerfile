@@ -18,4 +18,5 @@ WORKDIR "."
 EXPOSE 3000
 VOLUME /config
 COPY app app
+COPY migrations migrations
 ENTRYPOINT ["python3", "-m", "app", "-p"]
