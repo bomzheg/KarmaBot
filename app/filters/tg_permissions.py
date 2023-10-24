@@ -1,16 +1,20 @@
 # from https://github.com/aiogram/bot/blob/master/app/filters/has_permissions.py
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 from aiogram import Bot, types
 from aiogram.enums import ChatMemberStatus
-from aiogram.filters import Filter
+from aiogram.filters import BaseFilter
 
+from app.models.db import Chat, User
 from app.services.find_target_user import get_target_user
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
-class HasPermissions(Filter):
+class HasPermissions(BaseFilter):
     """
     Validate the user has specified permissions in chat
     """
@@ -40,32 +44,29 @@ class HasPermissions(Filter):
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
 
-    def _get_cached_value(self, _message: types.Message) -> types.ChatMember | None:
+    def _get_cached_value(self, user: User, chat: Chat) -> types.ChatMember | None:
         return None  # TODO
 
-    def _set_cached_value(self, _message: types.Message, _member: types.ChatMember):
+    def _set_cached_value(self, user: User, chat: Chat, _member: types.ChatMember):
         return None  # TODO
 
-    async def _get_chat_member(self, update: types.Message | types.CallbackQuery, bot: Bot):
-        chat_member = self._get_cached_value(update)
-        if isinstance(update, types.CallbackQuery):
-            chat_id = update.message.chat.id
-        else:
-            chat_id = update.chat.id
+    async def _get_chat_member(self, user: User, chat: Chat, bot: Bot):
+        chat_member = self._get_cached_value(user, chat)
+
         if chat_member is None:
-            admins = await bot.get_chat_administrators(chat_id)
-            target_user_id = self.get_target_id(update, bot)
+            admins = await bot.get_chat_administrators(chat.chat_id)
+            target_user_id = self.get_target_id(user)
             if target_user_id is None:
                 return False
             try:
                 chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
             except StopIteration:
                 return False
-            self._set_cached_value(update, chat_member)
+            self._set_cached_value(user, chat, chat_member)
         return chat_member
 
-    async def __call__(self, update: types.Message | types.CallbackQuery, bot: Bot) -> bool | dict[str, Any]:
-        chat_member = await self._get_chat_member(update, bot)
+    async def __call__(self, update: types.TelegramObject, user: User, chat: Chat, bot: Bot) -> bool | dict[str, Any]:
+        chat_member = await self._get_chat_member(user, chat, bot)
         if not chat_member:
             return False
         if chat_member.status == ChatMemberStatus.CREATOR:
@@ -76,10 +77,8 @@ class HasPermissions(Filter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, update: types.Message | types.CallbackQuery, bot: Bot) -> int | None:
-        if isinstance(update, types.CallbackQuery):
-            return update.from_user.id
-        return update.from_user.id
+    def get_target_id(self, user: User) -> int | None:
+        return user.tg_id
 
 
 @dataclass
