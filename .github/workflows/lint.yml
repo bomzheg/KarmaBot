@@ -28,7 +28,7 @@ jobs:
             - *.pyi
             - **/pyproject.toml
           black:
-            - *
+            - **/*
 
     - name: Ruff
       if: steps.verify-changed-files.outputs.ruff_any_changed == 'true'
