@@ -21,6 +21,13 @@ jobs:
     - name: Get changed files
       id: changed-files
       uses: tj-actions/changed-files@v39
+      with:
+        # file list is taken from https://docs.astral.sh/ruff/settings/#include
+        files: |
+          *.py
+          *.pyi
+          **/pyproject.toml
 
     - name: Ruff
+      if: steps.verify-changed-files.outputs.files_changed == 'true'
       run: ruff check --config=pyproject.toml --diff --output-format=github ${{ steps.changed-files.outputs.all_changed_files }}
