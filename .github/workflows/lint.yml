@@ -48,6 +48,10 @@ jobs:
       run: isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
       continue-on-error: true
 
-    - name: Fail job if linters failed
+    - name: Check linters status
       if: steps.ruff.outcome == 'failure' || steps.black.outcome == 'failure' || steps.isort.outcome == 'failure'
-      run: core.setFailed('Some linter steps failed')
+      run: |
+        echo "::error ${{join(steps.ruff.outputs.*, '\n')}}"
+        echo "::error ${{join(steps.black.outputs.*, '\n')}}"
+        echo "::error ${{join(steps.isort.outputs.*, '\n')}}"
+        exit 1
