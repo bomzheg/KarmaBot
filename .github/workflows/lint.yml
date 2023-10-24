@@ -41,15 +41,15 @@ jobs:
       id: black
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
-      continue-on-error: true
+        black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }} || true
+#      continue-on-error: true
 
     - name: Isort
       id: isort
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
-      continue-on-error: true
+        isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }} || true
+#      continue-on-error: true
 
 #    - name: Check linters status
 #      if: steps.ruff.outcome == 'failure' || steps.black.outcome == 'failure' || steps.isort.outcome == 'failure'
