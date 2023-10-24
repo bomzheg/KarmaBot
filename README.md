@@ -7,13 +7,12 @@ Just add him to the chat and thank each other for helpful answers.
 
 [![wakatime](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/42faabfe-94b1-41c8-ad2f-6bb491731777.svg)](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/42faabfe-94b1-41c8-ad2f-6bb491731777)
 
-For deploy info look at [docs/deploy_manual.md](./docs/deploy_manual.md)
 - [Deployment](./docs/deploy_manual.md)
 - [Development](./docs/development.md)
 
-most bot command use throttle mechanism, it means the bot wouldn't answer if you send many identical requests in a row
+Most bot command use throttle mechanism, it means the bot wouldn't answer if you send many identical requests in a row
 
-commands list:
+Commands list:
 * /start, !start - simple bot information
 * !help - information about karma triggers
 * !about - information about the bot author and link to the source code
@@ -23,7 +22,7 @@ commands list:
 to the group administrators
 * !idchat - get id of chat, your id, and id of replayed user
 
-moderator commands list:
+Moderator commands list:
 * !ro !mute [DURATION] [@mention] - restrict replied or mentioned user for DURATION.
 * !ban [DURATION] [@mention] - kick replied user for DURATION
   * DURATION in format [AAAy][BBBw][CCCd][DDDh][EEEm][FFFs] where:
@@ -38,13 +37,13 @@ moderator commands list:
 * !info [@mention] - information about user (karma changes, restrictions, warns)
 
 
-chat settings commands list:
+Chat settings commands list:
 * !enable_karmic_ro - enable restrictions on low karma reason
   (need to have right for ban users for bot and user asked for that command)
 * !disable_karmic_ro - disable restrictions on low karma reason
   (need to have right for ban users for bot and user asked for that command)
 
-superuser commands list:
+Superuser commands list:
 * /generate_invite_logchat - if bot is admin in the chat of LOG_CHAT_ID from `config.py` bot generates invite link to that
 * /logchat - get logchat invite link if it's generated earlier
 * /update_log - send logs from /logs path to LOG_CHAT_ID and remove logs from files
