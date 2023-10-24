@@ -48,7 +48,7 @@ jobs:
       id: isort
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        result=$(isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
+        isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
       continue-on-error: true
 
     - name: Check linters status
