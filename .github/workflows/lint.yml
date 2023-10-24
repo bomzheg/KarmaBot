@@ -25,10 +25,8 @@ jobs:
     - name: Get changed files
       id: files_to_lint
       uses: tj-actions/changed-files@v39
-#      with:
-#        files: |
-#          **/*.py
-#          **/*.pyi
+      with:
+        files: "**/*.py"
 
     - name: Ruff
       if: steps.files_to_lint.outputs.files_changed == 'true'
