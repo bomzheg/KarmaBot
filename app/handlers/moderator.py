@@ -17,8 +17,7 @@ from app.filters import (
 )
 from app.handlers import keyboards as kb
 from app.models.config import Config
-from app.models.db import Chat, User
-from app.models.db.report import ReportStatus
+from app.models.db import Chat, User, ChatSettings, ReportStatus
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
@@ -26,7 +25,7 @@ from app.services.moderation import (
     ro_user,
     warn_user,
 )
-from app.services.remove_message import delete_message, remove_kb
+from app.services.remove_message import delete_message, remove_kb, cleanup_command_dialog
 from app.services.report import register_report, resolve_report, reward_reporter
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
@@ -269,12 +268,9 @@ async def cmd_unhandled(message: types.Message):
 async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
     from_user = callback_query.from_user
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
-    await callback_query.answer("Вы отменили предупреждение", show_alert=True)
 
-    with suppress(TelegramBadRequest):
-        await callback_query.message.reply_to_message.delete()
-    with suppress(TelegramBadRequest):
-        await callback_query.message.delete()
+    await callback_query.answer("Вы отменили предупреждение", show_alert=True)
+    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
@@ -287,7 +283,8 @@ async def approve_report_handler(
     user: User,
     chat: Chat,
     bot: Bot,
-    config: Config
+    config: Config,
+    chat_settings: ChatSettings
 ):
     async with in_transaction() as db_session:
         await resolve_report(
@@ -296,7 +293,7 @@ async def approve_report_handler(
             resolution=ReportStatus.APPROVED,
             db_session=db_session
         )
-    if config.report_karma_award:
+    if chat_settings.karma_counting and config.report_karma_award:
         karma_change_result = await reward_reporter(
             reporter_id=callback_data.reporter_id,
             chat=chat,
@@ -309,12 +306,12 @@ async def approve_report_handler(
                 reward_amount=config.report_karma_award
             )
         )
-    await callback_query.answer("Вы подтвердили репорт")
+        delete_bot_reply = False
+    else:
+        delete_bot_reply = True
 
-    with suppress(TelegramBadRequest):
-        await callback_query.message.reply_to_message.delete()
-    with suppress(TelegramBadRequest):
-        await callback_query.message.edit_reply_markup()
+    await callback_query.answer("Вы подтвердили репорт", show_alert=delete_bot_reply)
+    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=delete_bot_reply)
 
 
 @router.callback_query(
@@ -334,11 +331,7 @@ async def decline_report_handler(
             db_session=db_session
         )
     await callback_query.answer("Вы отклонили репорт", show_alert=True)
-
-    with suppress(TelegramBadRequest):
-        await callback_query.message.reply_to_message.delete()
-    with suppress(TelegramBadRequest):
-        await callback_query.message.delete()
+    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
@@ -358,11 +351,7 @@ async def cancel_report_handler(
             db_session=db_session
         )
     await callback_query.answer("Вы отменили репорт", show_alert=True)
-
-    with suppress(TelegramBadRequest):
-        await callback_query.message.reply_to_message.delete()
-    with suppress(TelegramBadRequest):
-        await callback_query.message.delete()
+    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
