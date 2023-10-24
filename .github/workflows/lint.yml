@@ -36,4 +36,4 @@ jobs:
 
     - name: Isort
       if: steps.verify-changed-files.outputs.files_changed == 'true'
-      run: isort --check --profile=black ${{ steps.changed-files.outputs.all_changed_files }}
+      run: isort --check --diff --profile=black ${{ steps.changed-files.outputs.all_changed_files }}
