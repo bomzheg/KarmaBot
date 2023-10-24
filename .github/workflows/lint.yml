@@ -34,27 +34,26 @@ jobs:
       id: ruff
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        echo "ruff=$(ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
+        echo "result=$(ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Black
       id: black
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        echo "black=$(black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
+        echo "result=$(black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Isort
       id: isort
       if: steps.changed-python-files.outputs.any_changed == 'true'
       run: |
-        echo "isort=$(isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
+        echo "result=$(isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }})" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Check linters status
       if: steps.ruff.outcome == 'failure' || steps.black.outcome == 'failure' || steps.isort.outcome == 'failure'
       run: |
-        echo "::error ::${{join(steps.ruff.outputs.ruff, '\n')}}"
-        echo "::error ::${{join(steps.black.outputs.black, '\n')}}"
-        echo "::error ::${{join(steps.isort.outputs.isort, '\n')}}"
-        exit 1
+        echo "::error ::${{ steps.ruff.outputs.result }}"
+        echo "::error ::${{ steps.black.outputs.result }}"
+        echo "::error ::${{ steps.isort.outputs.result }}"
