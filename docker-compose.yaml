@@ -25,7 +25,7 @@ services:
 networks:
   reverse-proxy:
     external:
-      name: nginx-revers-proxy
+      name: nginx-reverse-proxy
 
 volumes:
   problems:
