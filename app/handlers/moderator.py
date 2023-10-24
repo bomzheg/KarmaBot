@@ -270,7 +270,11 @@ async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.War
     from_user = callback_query.from_user
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
-    await callback_query.message.delete()
+
+    with suppress(TelegramBadRequest):
+        await callback_query.message.reply_to_message.delete()
+    with suppress(TelegramBadRequest):
+        await callback_query.message.delete()
 
 
 @router.callback_query(
