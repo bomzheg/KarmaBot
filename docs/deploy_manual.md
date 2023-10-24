@@ -28,9 +28,10 @@
     * -p - using polling instead webhook
     * -s - skip updates that accumulated on tg servers
 
-* To create tables in database run script:
-
+* To create tables in database run script:\
 ```PYTHONPATH=. python migrations/01_initialize.py```
+* for run concrete sql migration:\
+```PYTHONPATH=. python migrations/migrate.py 05_add_report_table.sql```
 
 # Karmabot deploy manual with a docker:
 
@@ -43,14 +44,14 @@
   * add karmabot.conf to nginx-le bots path (etc/bots)
   
 * create .env file with environment variables like in #KarmaBot run without docker
-  
 
 ```docker-compose up --build -d```
 
-* to  create tables in database run :
+* to  create tables in database run :\
+```docker-compose exec karmabot  bash -c "PYTHONPATH=. /opt/venv/bin/python /migrations/01_initialize.py"```
 
-```docker-compose exec KarmaBot python initialize.py```
-
+* for run sql migration: \
+```docker-compose exec karmabot  bash -c "PYTHONPATH=. /opt/venv/bin/python /migrations/migrate.py 05_add_report_table.sql"```
 
 # The secondary setup:
 * To generate invite links, the bot must have administrator rights
