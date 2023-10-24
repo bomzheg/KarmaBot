@@ -32,18 +32,18 @@ jobs:
 
     - name: Ruff
       id: ruff
-      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ always() }}
+      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ !cancelled() }}
       run: |
         ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }}
 
     - name: Black
       id: black
-      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ always() }}
+      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ !cancelled() }}
       run: |
         black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
 
     - name: Isort
       id: isort
-      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ always() }}
+      if: steps.changed-python-files.outputs.any_changed == 'true' && ${{ !cancelled() }}
       run: |
         isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
