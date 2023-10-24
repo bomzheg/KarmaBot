@@ -1,5 +1,6 @@
 import asyncio
 import random
+from contextlib import suppress
 
 from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatMemberStatus
