@@ -55,7 +55,7 @@ class HasPermissions(BaseFilter):
 
         if chat_member is None:
             admins = await bot.get_chat_administrators(chat.chat_id)
-            target_user_id = self.get_target_id(user)
+            target_user_id = self.get_target_id(user, bot)
             if target_user_id is None:
                 return False
             try:
@@ -77,7 +77,7 @@ class HasPermissions(BaseFilter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(self, user: User) -> int | None:
+    def get_target_id(self, user: User, bot: Bot) -> int | None:
         return user.tg_id
 
 
