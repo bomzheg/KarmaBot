@@ -270,7 +270,11 @@ async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.War
     from_user = callback_query.from_user
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
-    await callback_query.message.delete()
+
+    with suppress(TelegramBadRequest):
+        await callback_query.message.reply_to_message.delete()
+    with suppress(TelegramBadRequest):
+        await callback_query.message.delete()
 
 
 @router.callback_query(
@@ -329,7 +333,7 @@ async def decline_report_handler(
             resolution=ReportStatus.DECLINED,
             db_session=db_session
         )
-    await callback_query.answer("Вы отклонили репорт")
+    await callback_query.answer("Вы отклонили репорт", show_alert=True)
 
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
@@ -353,7 +357,7 @@ async def cancel_report_handler(
             resolution=ReportStatus.CANCELLED,
             db_session=db_session
         )
-    await callback_query.answer("Вы отменили репорт")
+    await callback_query.answer("Вы отменили репорт", show_alert=True)
 
     with suppress(TelegramBadRequest):
         await callback_query.message.reply_to_message.delete()
