@@ -25,8 +25,8 @@ jobs:
       uses: tj-actions/changed-files@v39
       with:
         files: |
-          *.py
-          *.pyi
+          **/*.py
+          **/*.pyi
 
     - name: Ruff
       if: steps.verify-changed-files.outputs.files_changed == 'true'
