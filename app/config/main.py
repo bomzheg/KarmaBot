@@ -18,13 +18,15 @@ from .logging_config import logging_setup
 def load_config(config_dir: Path = None) -> Config:
     app_dir: Path = Path(__file__).parent.parent.parent
     config_dir = config_dir or app_dir / 'config'
-    load_dotenv(str(config_dir / '.env'))
-    log_config = load_log_config(app_dir=app_dir)
+
+    with (config_dir / "bot-config.yaml").open('r', encoding="utf-8") as f:
+        config_file_data = yaml.load(f, Loader=yaml.FullLoader)
+
+    log_config = load_log_config(app_dir=app_dir, log_chat_id=config_file_data['log_chat_id'])
     logging_setup(config_dir, log_config)
 
+    load_dotenv(str(config_dir / '.env'))
     _bot_token = os.getenv("KARMA_BOT_TOKEN")
-    with (config_dir / "bot-config.yml").open('r', encoding="utf-8") as f:
-        config_file_data = yaml.load(f, Loader=yaml.FullLoader)
 
     return Config(
         auto_restriction=load_karmic_restriction_config(),
@@ -34,7 +36,9 @@ def load_config(config_dir: Path = None) -> Config:
         bot_token=_bot_token,
         superusers=frozenset(config_file_data['superusers']),
         log=log_config,
-        dump_chat_id=-1001459777201,  # ⚙️Testing Area >>> Python Scripts,
+        dump_chat_id=config_file_data['dump_chat_id'],
         tg_client=TgClientConfig(bot_token=_bot_token),
         storage=load_storage(config_file_data["storage"]),
+        report_karma_award=config_file_data.get("report_karma_award", 0),
+        callback_query_answer_cache_time=config_file_data.get("callback_query_answer_cache_time", 3600)
     )

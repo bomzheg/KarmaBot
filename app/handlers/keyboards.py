@@ -2,6 +2,7 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from app.models.db import User, KarmaEvent, ModeratorEvent
+from app.models.db.report import Report
 
 
 class KarmaCancelCb(CallbackData, prefix="karma_cancel"):
@@ -14,6 +15,21 @@ class KarmaCancelCb(CallbackData, prefix="karma_cancel"):
 class WarnCancelCb(CallbackData, prefix="warn_cancel"):
     user_id: int
     moderator_event_id: int
+
+
+class ApproveReportCb(CallbackData, prefix="approve_report"):
+    report_id: int
+    reporter_id: int
+
+
+class DeclineReportCb(CallbackData, prefix="decline_report"):
+    report_id: int
+    reporter_id: int
+
+
+class CancelReportCb(CallbackData, prefix="cancel_report"):
+    report_id: int
+    reporter_id: int
 
 
 def get_kb_karma_cancel(
@@ -86,3 +102,22 @@ def get_paste_kb():
             ),
         ]]
     )
+
+
+def get_report_reaction_kb(user: User, report: Report) -> InlineKeyboardMarkup:
+    approve = InlineKeyboardButton(
+        text='Подтвердить',
+        callback_data=ApproveReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    decline = InlineKeyboardButton(
+        text='Отклонить',
+        callback_data=DeclineReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    cancel = InlineKeyboardButton(
+        text='Отменить',
+        callback_data=CancelReportCb(report_id=report.id, reporter_id=user.id).pack()
+    )
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [approve, decline],
+        [cancel]
+    ])

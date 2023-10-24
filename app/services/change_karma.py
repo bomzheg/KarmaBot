@@ -26,7 +26,15 @@ def can_change_karma(target_user: User, user: User):
     return user.id != target_user.id and not target_user.is_bot
 
 
-async def change_karma(user: User, target_user: User, chat: Chat, how_change: float, bot: Bot, comment: str = ""):
+async def change_karma(
+        user: User,
+        target_user: User,
+        chat: Chat,
+        how_change: float,
+        bot: Bot,
+        comment: str = "",
+        is_reward: bool = False
+) -> ResultChangeKarma:
     if not can_change_karma(target_user, user):
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
@@ -43,6 +51,7 @@ async def change_karma(user: User, target_user: User, chat: Chat, how_change: fl
             user_changed=user,
             how_change=how_change,
             using_db=conn,
+            skip_power_check=is_reward
         )
         ke = KarmaEvent(
             user_from=user,

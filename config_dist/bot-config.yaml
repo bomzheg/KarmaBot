@@ -8,3 +8,7 @@ storage:
   #   url: http://localhost
   #   port: 6379
   #   db: 1
+
+dump_chat_id: -123456
+log_chat_id: -123456
+report_karma_award: 0

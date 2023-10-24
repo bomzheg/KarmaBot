@@ -27,7 +27,7 @@ def create_parser():
     arg_parser.add_argument('-p', '--polling', action='store_const', const=True,
                             help="Run tg bot with polling. Default use WebHook")
     arg_parser.add_argument('-s', '--skip-updates', action='store_const', const=True,
-                            help="Skip pending updates")
+                            help="Skip PENDING updates")
     return arg_parser
 
 

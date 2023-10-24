@@ -33,4 +33,6 @@ loggers:
     level: INFO
   asyncio:
     level: INFO
+  pyrogram:
+    level: INFO
 disable_existing_loggers: false
