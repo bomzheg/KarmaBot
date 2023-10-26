@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from aiogram import types
 from aiogram.utils.text_decorations import html_decoration as hd
@@ -8,8 +9,12 @@ from tortoise.models import Model
 
 from app.models.common import TypeRestriction
 from app.utils.exceptions import UserWithoutUserIdError
-from app.infrastructure.database.models import Chat
+from app.infrastructure.database.models.chat import Chat
 from app.models import dto
+
+if TYPE_CHECKING:
+    from app.infrastructure.database.models.user_karma import UserKarma
+    from app.infrastructure.database.models.moderator_actions import ModeratorEvent
 
 
 class User(Model):
@@ -19,10 +24,8 @@ class User(Model):
     last_name = fields.CharField(max_length=255, null=True)
     username = fields.CharField(max_length=32, null=True)
     is_bot: bool = fields.BooleanField(null=True)
-    # noinspection PyUnresolvedReferences
-    karma: fields.ReverseRelation['UserKarma']  # noqa: F821
-    # noinspection PyUnresolvedReferences
-    my_restriction_events: fields.ReverseRelation['ModeratorEvent']  # noqa: F821
+    karma: fields.ReverseRelation["UserKarma"]
+    my_restriction_events: fields.ReverseRelation["ModeratorEvent"]
 
     class Meta:
         table = "users"
@@ -100,14 +103,12 @@ class User(Model):
             return ' '.join((self.first_name, self.last_name))
         return self.first_name or self.username or str(self.tg_id) or str(self.id)
 
-    # noinspection PyUnresolvedReferences
-    async def get_uk(self, chat: Chat) -> "UserKarma":  # noqa: F821
+    async def get_uk(self, chat: Chat) -> "UserKarma":
         return await self.karma.filter(chat=chat).first()
 
     async def get_karma(self, chat: Chat):
         user_karma = await self.get_uk(chat)
         if user_karma:
-            # noinspection PyUnresolvedReferences
             return user_karma.karma_round
         return None
 
@@ -117,8 +118,7 @@ class User(Model):
         await user_karma.save()
 
     async def get_number_in_top_karma(self, chat: Chat) -> int:
-        # noinspection PyUnresolvedReferences
-        uk: "UserKarma" = await self.get_uk(chat)  # noqa: F821
+        uk = await self.get_uk(chat)
         return await uk.number_in_top()
 
     async def has_now_ro_db(self, chat: Chat):

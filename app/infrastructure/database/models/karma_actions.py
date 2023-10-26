@@ -1,20 +1,18 @@
-import typing
-
 from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise import fields
 from tortoise.models import Model
 
-if typing.TYPE_CHECKING:
-    from app.infrastructure.database.models import Chat, User
+from app.infrastructure.database.models.chat import Chat
+from app.infrastructure.database.models.user import User
 
 
 class KarmaEvent(Model):
     id_ = fields.IntField(pk=True, source_field="id")
-    user_from: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
+    user_from: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
         'models.User', related_name='i_change_karma_events')
-    user_to: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
+    user_to: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
         'models.User', related_name='my_karma_events')
-    chat: fields.ForeignKeyRelation["Chat"] = fields.ForeignKeyField(
+    chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
         'models.Chat', related_name='karma_events')
     date = fields.DatetimeField(auto_now=True, null=False)
     how_change = fields.FloatField(
@@ -36,7 +34,7 @@ class KarmaEvent(Model):
         )
 
     @classmethod
-    async def get_last_by_user(cls, user: "User", chat: "Chat", limit: int = 10):
+    async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
         return await cls.filter(
             user_to=user,
             chat=chat
