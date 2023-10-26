@@ -369,3 +369,4 @@ async def unauthorized_button_action(callback_query: types.CallbackQuery, config
         "Эта кнопка не для Вас",
         cache_time=config.callback_query_answer_cache_time
     )
+
