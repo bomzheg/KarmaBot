@@ -30,14 +30,6 @@ jobs:
         files: |
           **/*.py
 
-    - name: List changes
-      run: |
-        echo All changed files: ${{ steps.changed-python-files.outputs.all_changed_files }}
-        echo all_changed_files != '': ${{ steps.changed-python-files.outputs.all_changed_files != '' }}
-        echo All changed files count: ${{ steps.changed-python-files.outputs.all_changed_files_count }}
-        echo Any changed: ${{ steps.changed-python-files.outputs.any_changed }}
-        echo Only changed: ${{ steps.changed-python-files.outputs.only_changed }}
-
     - name: Ruff
       id: ruff
       if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
