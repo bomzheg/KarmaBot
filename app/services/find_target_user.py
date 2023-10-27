@@ -4,18 +4,19 @@ from aiogram import types
 from pyrogram.errors import UsernameNotOccupied
 from tortoise.exceptions import MultipleObjectsReturned
 
+from app.infrastructure.database.models import User
 from app.models import dto
 from app.models.config import TgClientConfig
-from app.infrastructure.database.models import User
 from app.services.user_getter import UserGetter
 from app.utils.exceptions import UserWithoutUserIdError
 from app.utils.log import Logger
 
-
 logger = Logger(__name__)
 
 
-def get_target_user(message: types.Message, can_be_same=False, can_be_bot=False) -> dto.TargetUser | None:
+def get_target_user(
+    message: types.Message, can_be_same=False, can_be_bot=False
+) -> dto.TargetUser | None:
     """
     Target user can be take from reply or by mention
     :param message:
@@ -62,17 +63,21 @@ def has_target_user(
 
 
 def is_one_user(user_1: dto.TargetUser | None, user_2: dto.TargetUser | None) -> bool:
-    if all([
-        user_1.id is not None,
-        user_2.id is not None,
-        user_1.id == user_2.id,
-    ]):
+    if all(
+        [
+            user_1.id is not None,
+            user_2.id is not None,
+            user_1.id == user_2.id,
+        ]
+    ):
         return True
-    if all([
-        user_1.username is not None,
-        user_2.username is not None,
-        user_1.username == user_2.username,
-    ]):
+    if all(
+        [
+            user_1.username is not None,
+            user_2.username is not None,
+            user_1.username == user_2.username,
+        ]
+    ):
         return True
 
     return False
@@ -117,13 +122,18 @@ def is_bot_username(username: str) -> bool:
     return username is not None and username[-3:] == "bot"
 
 
-async def get_db_user_by_tg_user(target: dto.TargetUser, tg_client_config: TgClientConfig) -> User:
+async def get_db_user_by_tg_user(
+    target: dto.TargetUser, tg_client_config: TgClientConfig
+) -> User:
     exception: Exception
     try:
         target_user = await User.get_or_create_from_tg_user(target)
     except MultipleObjectsReturned as e:
-        logger.warning("Strange, multiple username? check id={id}, username={username}",
-                       id=target.id, username=target.username)
+        logger.warning(
+            "Strange, multiple username? check id={id}, username={username}",
+            id=target.id,
+            username=target.username,
+        )
         exception = e
     # In target can be user with only username
     except UserWithoutUserIdError as e:

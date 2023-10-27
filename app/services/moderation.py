@@ -1,24 +1,25 @@
 from datetime import timedelta
 
 from aiogram import Bot
-from aiogram.types import ChatMemberRestricted
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.types import ChatMemberRestricted
 from tortoise.backends.base.client import TransactionContext
 
 from app.config import moderation
 from app.config.main import load_config
+from app.infrastructure.database.models import Chat, ModeratorEvent, User
 from app.models.common import TypeRestriction
-from app.infrastructure.database.models import ModeratorEvent, User, Chat
 from app.utils.exceptions import CantRestrict
 from app.utils.log import Logger
-from app.utils.timedelta_functions import parse_timedelta_from_text, format_timedelta
-
+from app.utils.timedelta_functions import format_timedelta, parse_timedelta_from_text
 
 logger = Logger(__name__)
 config = load_config()
 
 
-async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str) -> ModeratorEvent:
+async def warn_user(
+    moderator: User, target_user: User, chat: Chat, comment: str
+) -> ModeratorEvent:
     return await ModeratorEvent.save_new_action(
         moderator=moderator,
         user=target_user,
@@ -28,7 +29,9 @@ async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str
     )
 
 
-async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot) -> str:
+async def ban_user(
+    chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot
+) -> str:
     await restrict(
         bot=bot,
         chat=chat,
@@ -36,15 +39,21 @@ async def ban_user(chat: Chat, target: User, admin: User, duration: timedelta, c
         admin=admin,
         duration=duration,
         comment=comment,
-        type_restriction=TypeRestriction.ban
+        type_restriction=TypeRestriction.ban,
     )
-    text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
+    text = "Пользователь {user} попал в бан этого чата.".format(
+        user=target.mention_link
+    )
     if duration < moderation.FOREVER_RESTRICT_DURATION:
-        text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
+        text += " Он сможет вернуться через {duration}".format(
+            duration=format_timedelta(duration)
+        )
     return text
 
 
-async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot) -> str:
+async def ro_user(
+    chat: Chat, target: User, admin: User, duration: timedelta, comment: str, bot: Bot
+) -> str:
     await restrict(
         bot=bot,
         chat=chat,
@@ -54,21 +63,24 @@ async def ro_user(chat: Chat, target: User, admin: User, duration: timedelta, co
         comment=comment,
         type_restriction=TypeRestriction.ro,
     )
-    return "Пользователь {user} сможет <b>только читать</b> сообщения на протяжении {duration}".format(
+    return (
+        "Пользователь {user} сможет <b>только читать</b> "
+        "сообщения на протяжении {duration}"
+    ).format(
         user=target.mention_link,
         duration=format_timedelta(duration),
     )
 
 
 async def restrict(
-        bot: Bot,
-        chat: Chat,
-        target: User,
-        admin: User,
-        duration: timedelta,
-        comment: str,
-        type_restriction: TypeRestriction,
-        using_db=None
+    bot: Bot,
+    chat: Chat,
+    target: User,
+    admin: User,
+    duration: timedelta,
+    comment: str,
+    type_restriction: TypeRestriction,
+    using_db=None,
 ) -> ModeratorEvent:
     try:
         # restrict in telegram
@@ -80,8 +92,11 @@ async def restrict(
         )
     except TelegramBadRequest as e:
         raise CantRestrict(
-            text=e.message, user_id=target.tg_id, chat_id=chat.chat_id,
-            reason=comment, type_event=type_restriction.name
+            text=e.message,
+            user_id=target.tg_id,
+            chat_id=chat.chat_id,
+            reason=comment,
+            type_event=type_restriction.name,
         )
     else:
         moderator_event = await ModeratorEvent.save_new_action(
@@ -105,7 +120,9 @@ async def restrict(
 
 
 def get_moderator_message_args(text: str) -> tuple[str, str]:
-    _, *args = text.split(maxsplit=2)  # in text: command_duration_comments like: "!ro 13d don't flood"
+    _, *args = text.split(
+        maxsplit=2
+    )  # in text: command_duration_comments like: "!ro 13d don't flood"
     if not args:
         return "", ""
     duration_text = args[0]
@@ -125,7 +142,9 @@ def get_duration(text: str) -> tuple[timedelta, str]:
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
     try:
-        chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
+        chat_member = await bot.get_chat_member(
+            chat_id=chat.chat_id, user_id=user.tg_id
+        )
     except TelegramBadRequest as e:
         # TODO #102 probably we need to disable karmic ro for chats with hidden members?
         if "user not found" in e.message:
@@ -138,10 +157,7 @@ async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
 
 
 async def auto_restrict(
-    target: User,
-    chat: Chat,
-    bot: Bot,
-    using_db: TransactionContext | None = None
+    target: User, chat: Chat, bot: Bot, using_db: TransactionContext | None = None
 ) -> tuple[int, ModeratorEvent]:
     """
     return count auto restrict
@@ -157,7 +173,9 @@ async def auto_restrict(
         count=count_auto_restrict,
     )
 
-    current_restriction = config.auto_restriction.get_next_restriction(count_auto_restrict)
+    current_restriction = config.auto_restriction.get_next_restriction(
+        count_auto_restrict
+    )
 
     moderator_event = await restrict(
         bot=bot,
@@ -178,22 +196,31 @@ async def get_count_auto_restrict(
     bot_user: User | None = None,
     bot: Bot | None = None,
 ) -> int:
-    assert bot is not None or bot_user is not None, "One of bot and bot_user must be not None"
+    assert (
+        bot is not None or bot_user is not None
+    ), "One of bot and bot_user must be not None"
     if bot_user is None:
         bot_user = await User.get_or_create_from_tg_user(await bot.me())
     return await ModeratorEvent.filter(
-        moderator=bot_user, user=target, chat=chat,
-        type_restriction__in=(TypeRestriction.karmic_ro.name, TypeRestriction.karmic_ban.name),
+        moderator=bot_user,
+        user=target,
+        chat=chat,
+        type_restriction__in=(
+            TypeRestriction.karmic_ro.name,
+            TypeRestriction.karmic_ban.name,
+        ),
     ).count()
 
 
-async def delete_moderator_event(moderator_event_id: int, moderator: User | None = None):
+async def delete_moderator_event(
+    moderator_event_id: int, moderator: User | None = None
+):
     moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
 
     logger.info(
-        '{moderator_event} was deleted {by}',
+        "{moderator_event} was deleted {by}",
         moderator_event=repr(moderator_event),
-        by='' if not moderator else f'by {moderator.username}'
+        by="" if not moderator else f"by {moderator.username}",
     )
 
     await moderator_event.delete()

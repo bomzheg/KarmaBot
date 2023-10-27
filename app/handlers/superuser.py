@@ -1,9 +1,9 @@
+from functools import partial
 from typing import Iterable
 
 from aiogram import Bot, Router
 from aiogram.filters import Command
-from aiogram.types import Message, BufferedInputFile
-from functools import partial
+from aiogram.types import BufferedInputFile, Message
 
 from app.models.config import Config
 
@@ -21,8 +21,10 @@ async def leave_chat(message: Message, bot: Bot):
 
 
 async def get_dump(_: Message, config: Config, bot: Bot):
-    with open(config.db.db_path, 'rb') as f:
-        await bot.send_document(config.dump_chat_id, BufferedInputFile(f.read(), "karma.db"))
+    with open(config.db.db_path, "rb") as f:
+        await bot.send_document(
+            config.dump_chat_id, BufferedInputFile(f.read(), "karma.db")
+        )
 
 
 async def show_tagged_users(message: Message):
@@ -43,6 +45,8 @@ def setup_superuser(bot_config: Config) -> Router:
     router.message.register(exception, Command(commands="exception"))
     router.message.register(leave_chat, Command(commands="get_out"))
     router.message.register(get_dump, Command(commands="dump"))
-    router.message.register(show_tagged_users, Command(commands="entities", prefix="!/"))
+    router.message.register(
+        show_tagged_users, Command(commands="entities", prefix="!/")
+    )
 
     return router

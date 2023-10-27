@@ -9,23 +9,26 @@ from app.infrastructure.database.models.user import User
 class KarmaEvent(Model):
     id_ = fields.IntField(pk=True, source_field="id")
     user_from: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
-        'models.User', related_name='i_change_karma_events')
+        "models.User", related_name="i_change_karma_events"
+    )
     user_to: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
-        'models.User', related_name='my_karma_events')
+        "models.User", related_name="my_karma_events"
+    )
     chat: fields.ForeignKeyRelation[Chat] = fields.ForeignKeyField(
-        'models.Chat', related_name='karma_events')
+        "models.Chat", related_name="karma_events"
+    )
     date = fields.DatetimeField(auto_now=True, null=False)
     how_change = fields.FloatField(
         description="how match change karma in percent of possible power"
     )
     how_change_absolute = fields.FloatField(
         description="how match user_from change karma user_to in absolute",
-        source_field="how_match_change"
+        source_field="how_match_change",
     )
     comment = fields.TextField(null=True)
 
     class Meta:
-        table = 'karma_events'
+        table = "karma_events"
 
     def __repr__(self):
         return (
@@ -35,10 +38,13 @@ class KarmaEvent(Model):
 
     @classmethod
     async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
-        return await cls.filter(
-            user_to=user,
-            chat=chat
-        ).order_by('-date').limit(limit).prefetch_related("user_from").all()
+        return (
+            await cls.filter(user_to=user, chat=chat)
+            .order_by("-date")
+            .limit(limit)
+            .prefetch_related("user_from")
+            .all()
+        )
 
     def format_event(self, date_format: str):
         rez = (

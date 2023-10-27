@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from app.infrastructure.database.models import UserKarma, KarmaEvent, ModeratorEvent
+from app.infrastructure.database.models import KarmaEvent, ModeratorEvent, UserKarma
 
 
 class ResultChangeKarma(NamedTuple):

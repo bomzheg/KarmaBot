@@ -1,17 +1,16 @@
-from aiogram import types, F, Router
+from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.markdown import hpre, hbold
+from aiogram.utils.markdown import hbold, hpre
 
 from app.infrastructure.database.models import Chat
 from app.utils.log import Logger
-
 
 logger = Logger(__name__)
 router = Router(name=__name__)
 
 
-@router.message(Command("start", prefix='!/'))
+@router.message(Command("start", prefix="!/"))
 async def cmd_start(message: types.Message):
     logger.info("User {user} start conversation with bot", user=message.from_user.id)
     await message.answer(
@@ -22,34 +21,40 @@ async def cmd_start(message: types.Message):
     )
 
 
-@router.message(Command("help", prefix='!/'))
+@router.message(Command("help", prefix="!/"))
 async def cmd_help(message: types.Message):
-    logger.info("User {user} read help in {chat}", user=message.from_user.id, chat=message.chat.id)
+    logger.info(
+        "User {user} read help in {chat}",
+        user=message.from_user.id,
+        chat=message.chat.id,
+    )
     await message.reply(
-        '➕Плюсануть в карму можно начав сообщение со спасибо или плюса.\n'
-        '➖Минусануть - с минуса.\n'
-        '📩Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя '
-        'или упомянуть его через @ (работает даже если у пользователя нет username).\n'
-        '🦾Сила, с которой пользователь меняет другим карму, зависит от собственной кармы, '
-        'чем она больше, тем больше будет изменение кармы у цели '
-        '(вычисляется как корень из кармы)\n'
-        '🤖Основные команды:\n'
-        '<code>!top</code> [chat_id] - топ юзеров по карме для текущего чата или для чата с chat_id \n'
-        '<code>!about</code> - информация о боте и его исходники\n'
-        '<code>!me</code> - посмотреть свою карму (желательно это делать в личных сообщениях с ботом)\n'
-        '<code>!report</code> {{реплаем}} - пожаловаться на сообщение модераторам\n'
-        '<code>!idchat</code> - показать Ваш id, id чата и, '
-        'если имеется, - id пользователя, которому Вы ответили командой'
+        "➕Плюсануть в карму можно начав сообщение со спасибо или плюса.\n"
+        "➖Минусануть - с минуса.\n"
+        "📩Чтобы выбрать пользователя - нужно ответить реплаем на сообщение пользователя "
+        "или упомянуть его через @ (работает даже если у пользователя нет username).\n"
+        "🦾Сила, с которой пользователь меняет другим карму, зависит от собственной кармы, "
+        "чем она больше, тем больше будет изменение кармы у цели "
+        "(вычисляется как корень из кармы)\n"
+        "🤖Основные команды:\n"
+        "<code>!top</code> [chat_id] - топ юзеров по карме для текущего чата или "
+        "для чата с chat_id \n"
+        "<code>!about</code> - информация о боте и его исходники\n"
+        "<code>!me</code> - посмотреть свою карму (желательно это делать в личных "
+        "сообщениях с ботом)\n"
+        "<code>!report</code> {{реплаем}} - пожаловаться на сообщение модераторам\n"
+        "<code>!idchat</code> - показать Ваш id, id чата и, "
+        "если имеется, - id пользователя, которому Вы ответили командой"
     )
 
 
-@router.message(Command("about", prefix='!'))
+@router.message(Command("about", prefix="!"))
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
-    await message.reply('Исходники по ссылке https://github.com/bomzheg/KarmaBot')
+    await message.reply("Исходники по ссылке https://github.com/bomzheg/KarmaBot")
 
 
-@router.message(Command('idchat', prefix='!'))
+@router.message(Command("idchat", prefix="!"))
 async def get_idchat(message: types.Message):
     text = (
         f"id этого чата: {hpre(message.chat.id)}\n"
@@ -63,16 +68,18 @@ async def get_idchat(message: types.Message):
     await message.reply(text, disable_notification=True)
 
 
-@router.message(Command('cancel'))
+@router.message(Command("cancel"))
 async def cancel_state(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is None:
         return
-    logger.info(f'Cancelling state {current_state}')
+    logger.info(f"Cancelling state {current_state}")
     # Cancel state and inform user about it
     await state.clear()
     # And remove keyboard (just in case)
-    await message.reply('Диалог прекращён, данные удалены', reply_markup=types.ReplyKeyboardRemove())
+    await message.reply(
+        "Диалог прекращён, данные удалены", reply_markup=types.ReplyKeyboardRemove()
+    )
 
 
 @router.message(F.message.content_types == types.ContentType.MIGRATE_TO_CHAT_ID)
