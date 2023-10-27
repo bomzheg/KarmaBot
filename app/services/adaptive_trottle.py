@@ -105,7 +105,7 @@ async def process_on_throttled(
     key: str,
     rate: typing.Union[float, int],
     *args,
-    **kwargs
+    **kwargs,
 ):
     if on_throttled:
         if asyncio.iscoroutinefunction(on_throttled):

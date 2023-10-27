@@ -79,7 +79,6 @@ async def change_karma(
         if config.auto_restriction.need_restrict(
             uk.karma
         ) and await is_enable_karmic_restriction(chat):
-
             count_auto_restrict, moderator_event = await auto_restrict(
                 bot=bot,
                 chat=chat,
