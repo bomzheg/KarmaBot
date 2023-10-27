@@ -1,0 +1,49 @@
+name: Lint
+
+on: [workflow_call, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+#      with:
+#        fetch-depth: 0
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: 'requirements*.txt'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff black isort
+
+    - name: Get changed files
+      id: changed-python-files
+      uses: tj-actions/changed-files@v39
+      with:
+        separator: ' '
+        files: |
+          **/*.py
+
+    - name: Ruff
+      id: ruff
+      if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
+      run: |
+        ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }}
+
+    - name: Black
+      id: black
+      if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
+      run: |
+        black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
+
+    - name: Isort
+      id: isort
+      if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
+      run: |
+        isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
