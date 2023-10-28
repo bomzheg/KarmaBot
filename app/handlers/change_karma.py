@@ -1,19 +1,20 @@
 import asyncio
 
-from aiogram import types, F, Bot, Router
+from aiogram import Bot, F, Router, types
 from aiogram.types import ContentType
 from aiogram.utils.text_decorations import html_decoration as hd
 
-from app.models.db import Chat, User
+from app.filters import HasTargetFilter, KarmaFilter
+from app.infrastructure.database.models import Chat, User
+from app.models.config import Config
 from app.services.adaptive_trottle import AdaptiveThrottle
-from app.services.change_karma import change_karma, cancel_karma_change
+from app.services.change_karma import cancel_karma_change, change_karma
 from app.services.remove_message import remove_kb
 from app.services.settings import is_enable_karmic_restriction
-from app.utils.exceptions import SubZeroKarma, CantChangeKarma, DontOffendRestricted
+from app.utils.exceptions import CantChangeKarma, DontOffendRestricted, SubZeroKarma
 from app.utils.log import Logger
+
 from . import keyboards as kb
-from app.models.config import Config
-from app.filters import HasTargetFilter, KarmaFilter
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -37,30 +38,36 @@ async def too_fast_change_karma(message: types.Message, *_, **__):
     F.chat.type.in_(["group", "supergroup"]),
     HasTargetFilter(),
     KarmaFilter(),
-    F.content_type.in_([
-        ContentType.TEXT,
-
-        ContentType.STICKER,
-
-        ContentType.ANIMATION,
-        ContentType.AUDIO,
-        ContentType.DOCUMENT,
-        ContentType.PHOTO,
-        ContentType.VIDEO,
-        ContentType.VOICE,
-    ])
+    F.content_type.in_(
+        [
+            ContentType.TEXT,
+            ContentType.STICKER,
+            ContentType.ANIMATION,
+            ContentType.AUDIO,
+            ContentType.DOCUMENT,
+            ContentType.PHOTO,
+            ContentType.VIDEO,
+            ContentType.VOICE,
+        ]
+    ),
 )
 @a_throttle.throttled(rate=30, on_throttled=too_fast_change_karma)
 async def karma_change(
-    message: types.Message, karma: dict, user: User, chat: Chat, target: User, config: Config, bot: Bot
+    message: types.Message,
+    karma: dict,
+    user: User,
+    chat: Chat,
+    target: User,
+    config: Config,
+    bot: Bot,
 ):
     try:
         result_change_karma = await change_karma(
             target_user=target,
             chat=chat,
             user=user,
-            how_change=karma['karma_change'],
-            comment=karma['comment'],
+            how_change=karma["karma_change"],
+            comment=karma["comment"],
             bot=bot,
         )
     except SubZeroKarma:
@@ -73,23 +80,29 @@ async def karma_change(
 
     if result_change_karma.was_auto_restricted:
         notify_text = config.auto_restriction.render_auto_restriction(
-            target, result_change_karma.count_auto_restrict)
-    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(chat):
+            target, result_change_karma.count_auto_restrict
+        )
+    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(
+        chat
+    ):
         notify_text = config.auto_restriction.render_negative_karma_notification(
-            target, result_change_karma.count_auto_restrict)
+            target, result_change_karma.count_auto_restrict
+        )
     else:
         notify_text = ""
 
     # How much karma was changed. Sign show changed difference, not difference for cancel
-    how_changed_karma = result_change_karma.user_karma.karma \
-        - result_change_karma.karma_after \
+    how_changed_karma = (
+        result_change_karma.user_karma.karma
+        - result_change_karma.karma_after
         + result_change_karma.abs_change
+    )
 
     msg = await message.reply(
-        "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> до <b>{karma_new:.2f}</b> ({power:+.2f})"
-        "\n\n{notify_text}".format(
+        "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> "
+        "до <b>{karma_new:.2f}</b> ({power:+.2f})\n\n{notify_text}".format(
             actor_name=hd.quote(user.fullname),
-            how_change=get_how_change_text(karma['karma_change']),
+            how_change=get_how_change_text(karma["karma_change"]),
             target_name=hd.quote(target.fullname),
             karma_new=result_change_karma.karma_after,
             power=result_change_karma.abs_change,
@@ -102,17 +115,25 @@ async def karma_change(
             karma_event=result_change_karma.karma_event,
             rollback_karma=-how_changed_karma,
             moderator_event=result_change_karma.moderator_event,
-        )
+        ),
     )
     asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
 
 
 @router.callback_query(kb.KarmaCancelCb.filter())
-async def cancel_karma(callback_query: types.CallbackQuery, callback_data: kb.KarmaCancelCb, bot: Bot):
+async def cancel_karma(
+    callback_query: types.CallbackQuery, callback_data: kb.KarmaCancelCb, bot: Bot
+):
     if callback_data.user_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     rollback_karma = float(callback_data.rollback_karma)
-    moderator_event_id = None if callback_data.moderator_event_id == "null" else callback_data.moderator_event_id
-    await cancel_karma_change(callback_data.karma_event_id, rollback_karma, moderator_event_id, bot)
+    moderator_event_id = (
+        None
+        if callback_data.moderator_event_id == "null"
+        else callback_data.moderator_event_id
+    )
+    await cancel_karma_change(
+        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot
+    )
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()

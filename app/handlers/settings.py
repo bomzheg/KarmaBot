@@ -1,11 +1,15 @@
-from aiogram import types, Router
+from aiogram import Router, types
 from aiogram.filters import Command
 
 from app.filters import HasPermissions
-from app.models.db import Chat
-from app.services.settings import enable_karmic_restriction, disable_karmic_restriction, get_settings_card, \
-    enable_karma_counting, disable_karma_counting
-
+from app.infrastructure.database.models import Chat
+from app.services.settings import (
+    disable_karma_counting,
+    disable_karmic_restriction,
+    enable_karma_counting,
+    enable_karmic_restriction,
+    get_settings_card,
+)
 
 router = Router(name=__name__)
 
@@ -17,7 +21,7 @@ async def get_settings(message: types.Message, chat: Chat):
 
 
 @router.message(
-    Command("enable_karmic_ro", prefix='!/'),
+    Command("enable_karmic_ro", prefix="!/"),
     HasPermissions(can_restrict_members=True),
 )
 async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
@@ -34,7 +38,7 @@ async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
 
 
 @router.message(
-    Command("disable_karmic_ro", prefix='!/'),
+    Command("disable_karmic_ro", prefix="!/"),
     HasPermissions(can_restrict_members=True),
 )
 async def disable_karmic_ro_cmd(message: types.Message, chat: Chat):
@@ -43,22 +47,18 @@ async def disable_karmic_ro_cmd(message: types.Message, chat: Chat):
 
 
 @router.message(
-    Command("enable_karma", prefix='!/'),
+    Command("enable_karma", prefix="!/"),
     HasPermissions(can_delete_messages=True),
 )
 async def enable_karma(message: types.Message, chat: Chat):
     await enable_karma_counting(chat)
-    await message.reply(
-        "Включён подсчёт кармы"
-    )
+    await message.reply("Включён подсчёт кармы")
 
 
 @router.message(
-    Command("disable_karma", prefix='!/'),
+    Command("disable_karma", prefix="!/"),
     HasPermissions(can_delete_messages=True),
 )
 async def disable_karma(message: types.Message, chat: Chat):
     await disable_karma_counting(chat)
-    await message.reply(
-        "Выключен подсчёт кармы"
-    )
+    await message.reply("Выключен подсчёт кармы")

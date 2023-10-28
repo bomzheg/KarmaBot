@@ -1,10 +1,9 @@
 import asyncio
 import random
-from contextlib import suppress
 
 from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatMemberStatus
-from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
+from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject, MagicData
 from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise.transactions import in_transaction
@@ -16,8 +15,8 @@ from app.filters import (
     TargetHasPermissions,
 )
 from app.handlers import keyboards as kb
+from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
 from app.models.config import Config
-from app.models.db import Chat, User, ChatSettings, ReportStatus
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
@@ -25,7 +24,11 @@ from app.services.moderation import (
     ro_user,
     warn_user,
 )
-from app.services.remove_message import delete_message, remove_kb, cleanup_command_dialog
+from app.services.remove_message import (
+    cleanup_command_dialog,
+    delete_message,
+    remove_kb,
+)
 from app.services.report import register_report, resolve_report, reward_reporter
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
@@ -38,10 +41,16 @@ router = Router(name=__name__)
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
     HasTargetFilter(),
-    Command('report', 'admin', 'spam', prefix="/!@"),
+    Command("report", "admin", "spam", prefix="/!@"),
 )
-async def report_message(message: types.Message, chat: Chat, user: User, target: User, bot: Bot):
-    logger.info("user {user} report for message {message}", user=message.from_user.id, message=message.message_id)
+async def report_message(
+    message: types.Message, chat: Chat, user: User, target: User, bot: Bot
+):
+    logger.info(
+        "user {user} report for message {message}",
+        user=message.from_user.id,
+        message=message.message_id,
+    )
     answer_message = "Спасибо за сообщение. Мы обязательно разберёмся"
     admins_mention = await get_mentions_admins(message.chat, bot)
 
@@ -51,19 +60,23 @@ async def report_message(message: types.Message, chat: Chat, user: User, target:
             reported_user=target,
             chat=chat,
             reported_message=message.reply_to_message,
-            db_session=db_session
+            db_session=db_session,
         )
 
     reaction_keyboard = kb.get_report_reaction_kb(report=report, user=user)
-    await message.reply(f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard)
+    await message.reply(
+        f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard
+    )
 
 
 @router.message(
     F.chat.type == "private",
-    Command('report', 'admin', 'spam', prefix="/!@"),
+    Command("report", "admin", "spam", prefix="/!@"),
 )
 async def report_private(message: types.Message):
-    await message.reply("Вы можете жаловаться на сообщения пользователей только в группах.")
+    await message.reply(
+        "Вы можете жаловаться на сообщения пользователей только в группах."
+    )
 
 
 async def get_mentions_admins(
@@ -74,7 +87,9 @@ async def get_mentions_admins(
     admins = await bot.get_chat_administrators(chat.id)
     random.shuffle(admins)  # чтобы попадались разные админы
     admins_mention = ""
-    notifiable_admins = [admin for admin in admins if need_notify_admin(admin, ignore_anonymous)]
+    notifiable_admins = [
+        admin for admin in admins if need_notify_admin(admin, ignore_anonymous)
+    ]
     random_five_admins = notifiable_admins[:5]
     for admin in random_five_admins:
         admins_mention += hd.link("&#8288;", admin.user.url)
@@ -93,7 +108,11 @@ def need_notify_admin(
     """
     if admin.user.is_bot or (ignore_anonymous and admin.is_anonymous):
         return False
-    return admin.status == ChatMemberStatus.CREATOR or admin.can_delete_messages or admin.can_restrict_members
+    return (
+        admin.status == ChatMemberStatus.CREATOR
+        or admin.can_delete_messages
+        or admin.can_restrict_members
+    )
 
 
 @router.message(
@@ -104,7 +123,9 @@ def need_notify_admin(
     ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
-async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
+async def cmd_ro(
+    message: types.Message, user: User, target: User, chat: Chat, bot: Bot
+):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
@@ -125,7 +146,9 @@ async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, b
     ~BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ro_no_bot_permissions(message: types.Message):
-    await message.reply("Мне нужны соответствующие права, чтобы запрещать писать пользователям в группе.")
+    await message.reply(
+        "Мне нужны соответствующие права, чтобы запрещать писать пользователям в группе."
+    )
 
 
 @router.message(
@@ -144,7 +167,9 @@ async def cmd_ro_private(message: types.Message):
     ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
-async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
+async def cmd_ban(
+    message: types.Message, user: User, target: User, chat: Chat, bot: Bot
+):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
@@ -165,7 +190,9 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     ~BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ban_no_bot_permissions(message: types.Message):
-    await message.reply("Мне нужны соответствующие права, чтобы блокировать пользователей в группе.")
+    await message.reply(
+        "Мне нужны соответствующие права, чтобы блокировать пользователей в группе."
+    )
 
 
 @router.message(
@@ -182,22 +209,28 @@ async def cmd_ban_private(message: types.Message):
     Command(commands=["w", "warn"], prefix="!"),
     HasPermissions(can_restrict_members=True),
 )
-async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User, config: Config, command: CommandObject):
+async def cmd_warn(
+    message: types.Message,
+    chat: Chat,
+    target: User,
+    user: User,
+    config: Config,
+    command: CommandObject,
+):
     comment = command.args or ""
 
     moderator_event = await warn_user(
-        moderator=user,
-        target_user=target,
-        chat=chat,
-        comment=comment
+        moderator=user, target_user=target, chat=chat, comment=comment
     )
 
-    text = "Пользователь {user} получил официальное предупреждение от модератора".format(
-        user=target.mention_link,
+    text = (
+        "Пользователь {user} получил официальное предупреждение от модератора".format(
+            user=target.mention_link,
+        )
     )
     msg = await message.reply(
         text,
-        reply_markup=kb.get_kb_warn_cancel(user=user, moderator_event=moderator_event)
+        reply_markup=kb.get_kb_warn_cancel(user=user, moderator_event=moderator_event),
     )
 
     asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
@@ -208,38 +241,44 @@ async def cmd_warn(message: types.Message, chat: Chat, target: User, user: User,
     Command(commands=["w", "warn"], prefix="!"),
 )
 async def cmd_warn_private(message: types.Message):
-    await message.reply("Вы можете выдавать предупреждения пользователям только в группах.")
+    await message.reply(
+        "Вы можете выдавать предупреждения пользователям только в группах."
+    )
 
 
 @router.message(
     F.chat.type == "private",
-    Command("info", prefix='!'),
+    Command("info", prefix="!"),
 )
 async def get_info_about_user_private(message: types.Message):
-    await message.reply("Вы можете запрашивать информацию о пользователях только в группах.")
+    await message.reply(
+        "Вы можете запрашивать информацию о пользователях только в группах."
+    )
 
 
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
-    Command("info", prefix='!'),
+    Command("info", prefix="!"),
     HasTargetFilter(can_be_same=True),
 )
-async def get_info_about_user(message: types.Message, chat: Chat, target: User, config: Config, bot: Bot):
+async def get_info_about_user(
+    message: types.Message, chat: Chat, target: User, config: Config, bot: Bot
+):
     info = await get_user_info(target, chat, config.date_format)
     target_karma = await target.get_karma(chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"
-    information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(info)
+    information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(
+        info
+    )
     try:
         await bot.send_message(
-            message.from_user.id,
-            information,
-            disable_web_page_preview=True
+            message.from_user.id, information, disable_web_page_preview=True
         )
     except TelegramUnauthorizedError:
         me = await bot.me()
         await message.reply(
-            f'{message.from_user.mention_html()}, напишите мне в личку '
+            f"{message.from_user.mention_html()}, напишите мне в личку "
             f'<a href="https://t.me/{me.username}?start">/start</a> и повторите команду.'
         )
     finally:
@@ -262,10 +301,11 @@ async def cmd_unhandled(message: types.Message):
 
 
 @router.callback_query(
-    kb.WarnCancelCb.filter(),
-    MagicData(F.user.tg_id == F.callback_data.user_id)
+    kb.WarnCancelCb.filter(), MagicData(F.user.tg_id == F.callback_data.user_id)
 )
-async def cancel_warn(callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb):
+async def cancel_warn(
+    callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb
+):
     from_user = callback_query.from_user
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
 
@@ -284,26 +324,26 @@ async def approve_report_handler(
     chat: Chat,
     bot: Bot,
     config: Config,
-    chat_settings: ChatSettings
+    chat_settings: ChatSettings,
 ):
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
             resolution=ReportStatus.APPROVED,
-            db_session=db_session
+            db_session=db_session,
         )
     if chat_settings.karma_counting and config.report_karma_award:
         karma_change_result = await reward_reporter(
             reporter_id=callback_data.reporter_id,
             chat=chat,
             reward_amount=config.report_karma_award,
-            bot=bot
+            bot=bot,
         )
         await callback_query.message.edit_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
-                reward_amount=config.report_karma_award
+                reward_amount=config.report_karma_award,
             )
         )
         delete_bot_reply = False
@@ -311,44 +351,40 @@ async def approve_report_handler(
         delete_bot_reply = True
 
     await callback_query.answer("Вы подтвердили репорт", show_alert=delete_bot_reply)
-    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=delete_bot_reply)
+    await cleanup_command_dialog(
+        message=callback_query.message, delete_bot_reply=delete_bot_reply
+    )
 
 
 @router.callback_query(
-    kb.DeclineReportCb.filter(),
-    HasPermissions(can_restrict_members=True)
+    kb.DeclineReportCb.filter(), HasPermissions(can_restrict_members=True)
 )
 async def decline_report_handler(
-    callback_query: types.CallbackQuery,
-    callback_data: kb.DeclineReportCb,
-    user: User
+    callback_query: types.CallbackQuery, callback_data: kb.DeclineReportCb, user: User
 ):
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
             resolution=ReportStatus.DECLINED,
-            db_session=db_session
+            db_session=db_session,
         )
     await callback_query.answer("Вы отклонили репорт", show_alert=True)
     await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
-    kb.CancelReportCb.filter(),
-    MagicData(F.user.id == F.callback_data.reporter_id)
+    kb.CancelReportCb.filter(), MagicData(F.user.id == F.callback_data.reporter_id)
 )
 async def cancel_report_handler(
-    callback_query: types.CallbackQuery,
-    callback_data: kb.CancelReportCb,
-    user: User
+    callback_query: types.CallbackQuery, callback_data: kb.CancelReportCb, user: User
 ):
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
             resolved_by=user,
             resolution=ReportStatus.CANCELLED,
-            db_session=db_session
+            db_session=db_session,
         )
     await callback_query.answer("Вы отменили репорт", show_alert=True)
     await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
@@ -356,16 +392,20 @@ async def cancel_report_handler(
 
 @router.callback_query(
     kb.WarnCancelCb.filter(),
-    MagicData(F.callback_data.user_id != F.callback_query.from_user.id)
+    MagicData(F.callback_data.user_id != F.callback_query.from_user.id),
 )
 @router.callback_query(
-    kb.CancelReportCb.filter(),
-    MagicData(F.user.id != F.callback_data.reporter_id)
+    kb.CancelReportCb.filter(), MagicData(F.user.id != F.callback_data.reporter_id)
 )
-@router.callback_query(kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True))
-@router.callback_query(kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True))
-async def unauthorized_button_action(callback_query: types.CallbackQuery, config: Config):
+@router.callback_query(
+    kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True)
+)
+@router.callback_query(
+    kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True)
+)
+async def unauthorized_button_action(
+    callback_query: types.CallbackQuery, config: Config
+):
     await callback_query.answer(
-        "Эта кнопка не для Вас",
-        cache_time=config.callback_query_answer_cache_time
+        "Эта кнопка не для Вас", cache_time=config.callback_query_answer_cache_time
     )

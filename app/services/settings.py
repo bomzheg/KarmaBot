@@ -1,4 +1,4 @@
-from app.models.db import Chat, ChatSettings
+from app.infrastructure.database.models import Chat, ChatSettings
 
 
 async def get_chat_settings(chat: Chat) -> ChatSettings:

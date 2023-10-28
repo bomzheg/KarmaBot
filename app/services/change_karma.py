@@ -3,20 +3,23 @@ from aiogram.types import ChatPermissions
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
-from app.models.common import TypeRestriction
-from app.models.db import (
-    User,
+from app.infrastructure.database.models import (
     Chat,
-    UserKarma,
     KarmaEvent,
-    ModeratorEvent
+    ModeratorEvent,
+    User,
+    UserKarma,
 )
-from app.services.moderation import auto_restrict, user_has_now_ro, get_count_auto_restrict
+from app.models.common import TypeRestriction
+from app.services.moderation import (
+    auto_restrict,
+    get_count_auto_restrict,
+    user_has_now_ro,
+)
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted
 from app.utils.log import Logger
 from app.utils.types import ResultChangeKarma
-
 
 logger = Logger(__name__)
 config = load_config()
@@ -27,21 +30,24 @@ def can_change_karma(target_user: User, user: User):
 
 
 async def change_karma(
-        user: User,
-        target_user: User,
-        chat: Chat,
-        how_change: float,
-        bot: Bot,
-        comment: str = "",
-        is_reward: bool = False
+    user: User,
+    target_user: User,
+    chat: Chat,
+    how_change: float,
+    bot: Bot,
+    comment: str = "",
+    is_reward: bool = False,
 ) -> ResultChangeKarma:
     if not can_change_karma(target_user, user):
         logger.info("user {user} try to change self or bot karma ", user=user.tg_id)
         raise AutoLike(user_id=user.tg_id, chat_id=chat.chat_id)
 
     if how_change < 0 and await user_has_now_ro(target_user, chat, bot):
-        logger.info("user {user} try to change karma of another user {target} with RO ",
-                    user=user.tg_id, target=target_user.tg_id)
+        logger.info(
+            "user {user} try to change karma of another user {target} with RO ",
+            user=user.tg_id,
+            target=target_user.tg_id,
+        )
         raise DontOffendRestricted(user_id=user.tg_id, chat_id=chat.chat_id)
 
     async with in_transaction() as conn:
@@ -51,7 +57,7 @@ async def change_karma(
             user_changed=user,
             how_change=how_change,
             using_db=conn,
-            skip_power_check=is_reward
+            skip_power_check=is_reward,
         )
         ke = KarmaEvent(
             user_from=user,
@@ -66,13 +72,13 @@ async def change_karma(
             "user {user} change karma of {target_user} in chat {chat}",
             user=user.tg_id,
             target_user=target_user.tg_id,
-            chat=chat.chat_id
+            chat=chat.chat_id,
         )
         karma_after = uk.karma
 
-        if config.auto_restriction.need_restrict(uk.karma) \
-                and await is_enable_karmic_restriction(chat):
-
+        if config.auto_restriction.need_restrict(
+            uk.karma
+        ) and await is_enable_karmic_restriction(chat):
             count_auto_restrict, moderator_event = await auto_restrict(
                 bot=bot,
                 chat=chat,
@@ -83,7 +89,9 @@ async def change_karma(
             await uk.save(using_db=conn)
             was_restricted = True
         else:
-            count_auto_restrict = await get_count_auto_restrict(target_user, chat, bot=bot)
+            count_auto_restrict = await get_count_auto_restrict(
+                target_user, chat, bot=bot
+            )
             moderator_event = None
             was_restricted = False
 
@@ -98,7 +106,9 @@ async def change_karma(
     )
 
 
-async def cancel_karma_change(karma_event_id: int, rollback_karma: float, moderator_event_id: int, bot: Bot):
+async def cancel_karma_change(
+    karma_event_id: int, rollback_karma: float, moderator_event_id: int, bot: Bot
+):
     async with in_transaction() as conn:
         karma_event = await KarmaEvent.get(id_=karma_event_id)
 
@@ -111,7 +121,7 @@ async def cancel_karma_change(karma_event_id: int, rollback_karma: float, modera
 
         user_karma = await UserKarma.get(chat_id=chat_id, user_id=user_to_id)
         user_karma.karma = user_karma.karma + rollback_karma
-        await user_karma.save(update_fields=['karma'], using_db=conn)
+        await user_karma.save(update_fields=["karma"], using_db=conn)
         await karma_event.delete(using_db=conn)
         if moderator_event_id is not None:
             moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
@@ -126,14 +136,19 @@ async def cancel_karma_change(karma_event_id: int, rollback_karma: float, modera
                         can_send_media_messages=True,
                         can_add_web_page_previews=True,
                         can_send_other_messages=True,
-                    )
+                    ),
                 )
 
             elif moderator_event.type_restriction == TypeRestriction.karmic_ban.name:
-                await bot.unban_chat_member(chat_id=chat_id, user_id=restricted_user.tg_id, only_if_banned=True)
+                await bot.unban_chat_member(
+                    chat_id=chat_id, user_id=restricted_user.tg_id, only_if_banned=True
+                )
 
             await moderator_event.delete(using_db=conn)
 
         logger.info(
             "user {user} cancel change karma to user {target} in chat {chat}",
-            user=user_from_id, target=user_to_id, chat=chat_id)
+            user=user_from_id,
+            target=user_to_id,
+            chat=chat_id,
+        )
