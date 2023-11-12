@@ -2,8 +2,7 @@ import datetime
 import re
 import typing
 
-from app.utils.exceptions import ToLongDuration, InvalidFormatDuration
-
+from app.utils.exceptions import InvalidFormatDuration, ToLongDuration
 
 MODIFIERS = {
     "y": datetime.timedelta(days=365),  # простим один день если кому-то попадётся високосный

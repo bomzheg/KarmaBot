@@ -1,5 +1,5 @@
-from aiogram import Router, Bot, F
-from aiogram.filters import CommandObject, Command
+from aiogram import Bot, F, Router
+from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
 from app.handlers import keyboards as kb

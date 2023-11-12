@@ -8,7 +8,6 @@ from app.models.config import Config
 from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger
 
-
 logger = Logger(__name__)
 
 

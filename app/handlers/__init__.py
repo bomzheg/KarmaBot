@@ -1,13 +1,7 @@
-from aiogram import Dispatcher, Bot
+from aiogram import Bot, Dispatcher
 
-from . import base, chat_rules
-from . import change_karma
-from . import errors
-from . import karma
-from . import moderator
-from . import settings
-from . import superuser
 from ..models.config import Config
+from . import base, change_karma, chat_rules, errors, karma, moderator, settings, superuser
 
 
 def setup(dp: Dispatcher, bot: Bot, config: Config):

@@ -8,9 +8,7 @@ from app.utils.exceptions import NotHaveNeighbours
 
 async def get_top(chat: Chat, user: User, limit: int = 15):
     top_karmas = await chat.get_top_karma_list(limit)
-    text_list = format_output(
-        [(i, user, karma) for i, (user, karma) in enumerate(top_karmas, 1)]
-    )
+    text_list = format_output([(i, user, karma) for i, (user, karma) in enumerate(top_karmas, 1)])
     text = add_caption(text_list)
     try:
         prev_uk, user_uk, next_uk = await chat.get_neighbours(user)
@@ -22,17 +20,11 @@ async def get_top(chat: Chat, user: User, limit: int = 15):
     neighbours_karmas = []
     if prev_uk.user.id not in user_ids:
         text = add_separator(text)
-        neighbours_karmas.append(
-            (number_user_in_top - 1, prev_uk.user, prev_uk.karma_round)
-        )
+        neighbours_karmas.append((number_user_in_top - 1, prev_uk.user, prev_uk.karma_round))
     if user_uk.user.id not in user_ids:
-        neighbours_karmas.append(
-            (number_user_in_top, user_uk.user, user_uk.karma_round)
-        )
+        neighbours_karmas.append((number_user_in_top, user_uk.user, user_uk.karma_round))
     if next_uk.user.id not in user_ids:
-        neighbours_karmas.append(
-            (number_user_in_top + 1, next_uk.user, next_uk.karma_round)
-        )
+        neighbours_karmas.append((number_user_in_top + 1, next_uk.user, next_uk.karma_round))
     additional_users = format_output(neighbours_karmas)
     return text + "\n" + additional_users
 

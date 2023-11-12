@@ -59,9 +59,7 @@ class AutoRestrictionConfig:
             )
         return text
 
-    def render_negative_karma_notification(
-        self, user: "User", count_auto_restrict: int
-    ):
+    def render_negative_karma_notification(self, user: "User", count_auto_restrict: int):
         if self.next_will_be_last_restriction(count_auto_restrict):
             template = (
                 "Внимание {username}!\nУ Вас отрицательная карма. "
@@ -80,7 +78,5 @@ class AutoRestrictionConfig:
         return template.format(
             username=user.mention_link,
             threshold=self.threshold,
-            duration=self.plan.get_next_restriction_printable_duration(
-                count_auto_restrict
-            ),
+            duration=self.plan.get_next_restriction_printable_duration(count_auto_restrict),
         )

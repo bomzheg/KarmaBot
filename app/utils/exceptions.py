@@ -1,11 +1,5 @@
 class KarmaError(Exception):
-    def __init__(
-            self,
-            text: str = None,
-            user_id: int = None,
-            chat_id: int = None,
-            *args
-    ):
+    def __init__(self, text: str = None, user_id: int = None, chat_id: int = None, *args):
         super(KarmaError, self).__init__(text, args)
         self.text = text
         self.user_id = user_id

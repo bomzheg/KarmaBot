@@ -69,9 +69,7 @@ class Chat(Model):
         )
 
     def __str__(self):
-        rez = (
-            f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"
-        )
+        rez = f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"
         if self.username:
             rez += f" Username @{self.username}"
         if self.description:
@@ -110,9 +108,7 @@ class Chat(Model):
             .all()
         )
 
-        user_uk = (
-            await self.user_karma.filter(user=user).prefetch_related("user").first()
-        )
+        user_uk = await self.user_karma.filter(user=user).prefetch_related("user").first()
         return uk[0], user_uk, uk[1]
 
 

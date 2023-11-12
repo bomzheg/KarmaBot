@@ -45,9 +45,7 @@ class AdaptiveThrottle:
                 ):
                     return await func(*args, **kwargs)
                 else:
-                    await process_on_throttled(
-                        on_throttled, current_key, rate, *args, **kwargs
-                    )
+                    await process_on_throttled(on_throttled, current_key, rate, *args, **kwargs)
 
             return wrapped
 
@@ -95,9 +93,7 @@ class AdaptiveThrottle:
         )
 
     def set_bucket(self, chat_id: int, user_id: int, target_user_id: int, bucket: dict):
-        self.last_calls.setdefault(chat_id, {}).setdefault(user_id, {})[
-            target_user_id
-        ] = bucket
+        self.last_calls.setdefault(chat_id, {}).setdefault(user_id, {})[target_user_id] = bucket
 
 
 async def process_on_throttled(

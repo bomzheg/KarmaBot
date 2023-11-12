@@ -26,7 +26,9 @@ class Config:
     time_to_cancel_actions: int = 60
     time_to_remove_temp_messages: int = 30
     report_karma_award: int = 0
-    time_to_remove_report_karma_award_messages: int = 300  # 5 minutes. If time in seconds less than 1, then message will not be removed
+    time_to_remove_report_karma_award_messages: int = (
+        300  # 5 minutes. If time in seconds less than 1, then message will not be removed
+    )
     callback_query_answer_cache_time: int = 3600
 
 

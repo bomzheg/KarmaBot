@@ -3,19 +3,9 @@ from aiogram.types import ChatPermissions
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
-from app.infrastructure.database.models import (
-    Chat,
-    KarmaEvent,
-    ModeratorEvent,
-    User,
-    UserKarma,
-)
+from app.infrastructure.database.models import Chat, KarmaEvent, ModeratorEvent, User, UserKarma
 from app.models.common import TypeRestriction
-from app.services.moderation import (
-    auto_restrict,
-    get_count_auto_restrict,
-    user_has_now_ro,
-)
+from app.services.moderation import auto_restrict, get_count_auto_restrict, user_has_now_ro
 from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted
 from app.utils.log import Logger
@@ -76,9 +66,9 @@ async def change_karma(
         )
         karma_after = uk.karma
 
-        if config.auto_restriction.need_restrict(
-            uk.karma
-        ) and await is_enable_karmic_restriction(chat):
+        if config.auto_restriction.need_restrict(uk.karma) and await is_enable_karmic_restriction(
+            chat
+        ):
             count_auto_restrict, moderator_event = await auto_restrict(
                 bot=bot,
                 chat=chat,
@@ -89,9 +79,7 @@ async def change_karma(
             await uk.save(using_db=conn)
             was_restricted = True
         else:
-            count_auto_restrict = await get_count_auto_restrict(
-                target_user, chat, bot=bot
-            )
+            count_auto_restrict = await get_count_auto_restrict(target_user, chat, bot=bot)
             moderator_event = None
             was_restricted = False
 

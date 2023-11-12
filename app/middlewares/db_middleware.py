@@ -32,9 +32,7 @@ class DBMiddleware(BaseMiddleware):
         await self.setup_chat(data, user, chat)
         return await handler(event, data)
 
-    async def setup_chat(
-        self, data: dict, user: types.User, chat: Optional[types.Chat] = None
-    ):
+    async def setup_chat(self, data: dict, user: types.User, chat: Optional[types.Chat] = None):
         try:
             async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)

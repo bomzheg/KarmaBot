@@ -82,9 +82,7 @@ async def karma_change(
         notify_text = config.auto_restriction.render_auto_restriction(
             target, result_change_karma.count_auto_restrict
         )
-    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(
-        chat
-    ):
+    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(chat):
         notify_text = config.auto_restriction.render_negative_karma_notification(
             target, result_change_karma.count_auto_restrict
         )
@@ -128,12 +126,8 @@ async def cancel_karma(
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     rollback_karma = float(callback_data.rollback_karma)
     moderator_event_id = (
-        None
-        if callback_data.moderator_event_id == "null"
-        else callback_data.moderator_event_id
+        None if callback_data.moderator_event_id == "null" else callback_data.moderator_event_id
     )
-    await cancel_karma_change(
-        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot
-    )
+    await cancel_karma_change(callback_data.karma_event_id, rollback_karma, moderator_event_id, bot)
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()

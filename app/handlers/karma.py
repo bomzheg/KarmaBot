@@ -26,9 +26,7 @@ async def get_top_from_private(message: types.Message, user: User):
             "или с указанием id нужного чата, например:"
             "\n" + hd.code("!top -1001399056118")
         )
-    logger.info(
-        "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user)
 
     await message.reply(text, disable_web_page_preview=True)
@@ -36,9 +34,7 @@ async def get_top_from_private(message: types.Message, user: User):
 
 @router.message(Command("top", prefix="!"))
 async def get_top(message: types.Message, chat: Chat, user: User):
-    logger.info(
-        "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user)
 
     await message.reply(text, disable_web_page_preview=True)
@@ -46,9 +42,7 @@ async def get_top(message: types.Message, chat: Chat, user: User):
 
 @router.message(F.chat.type.in_(["group", "supergroup"]), Command("me", prefix="!"))
 async def get_me(message: types.Message, chat: Chat, user: User, config: Config):
-    logger.info(
-        "user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+    logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
     msg = await message.reply(
         f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",
@@ -69,6 +63,4 @@ async def get_me_private(message: types.Message, user: User):
         return await message.reply(
             f"У Вас есть карма в следующих чатах:{text}", disable_web_page_preview=True
         )
-    await message.reply(
-        "У Вас нет никакой кармы ни в каких чатах", disable_web_page_preview=True
-    )
+    await message.reply("У Вас нет никакой кармы ни в каких чатах", disable_web_page_preview=True)

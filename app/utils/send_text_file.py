@@ -6,7 +6,6 @@ from aiogram.utils.markdown import hbold, hpre
 from app.models.config import LogConfig
 from app.utils.log import Logger
 
-
 logger = Logger(__name__)
 MAX_MESSAGE_SYMBOLS = 4000
 PAUSE_SEC = 3
@@ -15,10 +14,8 @@ PAUSE_SEC = 3
 async def split_text_file(file_name):
     buffer_lines = f"{hbold(file_name)}:\n"
     rez = list()
-    with open(file_name, 'r+') as in_file:
-
+    with open(file_name, "r+") as in_file:
         for line in in_file:
-
             if len(line) > MAX_MESSAGE_SYMBOLS:
                 rez.append(buffer_lines)
                 buffer_lines = ""
@@ -38,12 +35,7 @@ async def split_text_file(file_name):
 
 async def send_list_messages(bot, list_msg, chat_id):
     for msg in list_msg:
-        await bot.send_message(
-            chat_id,
-            msg,
-            disable_notification=True,
-            parse_mode="HTML"
-        )
+        await bot.send_message(chat_id, msg, disable_notification=True, parse_mode="HTML")
         await sleep(PAUSE_SEC)
 
 
@@ -55,6 +47,6 @@ async def send_text_file(bot, file_name, chat_id):
 
 
 async def send_log_files(bot, log_config: LogConfig):
-    logger.debug('send logs file')
-    for file_name in log_config.log_path.glob('*.log'):
+    logger.debug("send logs file")
+    for file_name in log_config.log_path.glob("*.log"):
         await send_text_file(bot, file_name, log_config.log_chat_id)

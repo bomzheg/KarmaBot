@@ -1,4 +1,4 @@
-from typing import Callable, Any, Awaitable
+from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
@@ -20,5 +20,5 @@ class FixTargetMiddleware(BaseMiddleware):
     ) -> Any:
         if target := data.get("target", None):
             target = await get_db_user_by_tg_user(target, self.tg_client_config)
-            data['target'] = target
+            data["target"] = target
         return await handler(event, data)

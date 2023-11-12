@@ -122,9 +122,7 @@ def is_bot_username(username: str) -> bool:
     return username is not None and username[-3:] == "bot"
 
 
-async def get_db_user_by_tg_user(
-    target: dto.TargetUser, tg_client_config: TgClientConfig
-) -> User:
+async def get_db_user_by_tg_user(target: dto.TargetUser, tg_client_config: TgClientConfig) -> User:
     exception: Exception
     try:
         target_user = await User.get_or_create_from_tg_user(target)

@@ -23,9 +23,7 @@ def load_config(config_dir: Path = None) -> Config:
     with (config_dir / "bot-config.yaml").open("r", encoding="utf-8") as f:
         config_file_data = yaml.load(f, Loader=yaml.FullLoader)
 
-    log_config = load_log_config(
-        app_dir=app_dir, log_chat_id=config_file_data["log_chat_id"]
-    )
+    log_config = load_log_config(app_dir=app_dir, log_chat_id=config_file_data["log_chat_id"])
     logging_setup(config_dir, log_config)
 
     load_dotenv(str(config_dir / ".env"))

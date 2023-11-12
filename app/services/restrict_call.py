@@ -3,7 +3,6 @@ import asyncio
 
 
 class RestrictCall:
-
     def __init__(self, delay):
         self.delay = delay
         self.queue = asyncio.Queue()

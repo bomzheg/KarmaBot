@@ -129,8 +129,7 @@ class User(Model):
         for my_restriction in my_restrictions:
             if (
                 my_restriction.timedelta_restriction
-                and my_restriction.date + my_restriction.timedelta_restriction
-                > datetime.now()
+                and my_restriction.date + my_restriction.timedelta_restriction > datetime.now()
             ):
                 return True
         return False

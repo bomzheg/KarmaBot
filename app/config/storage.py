@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.models.config.storage import StorageConfig, StorageType, RedisConfig
+from app.models.config.storage import RedisConfig, StorageConfig, StorageType
 
 
 def load_storage(dct: dict[str, Any]) -> StorageConfig:
