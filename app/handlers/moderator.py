@@ -326,6 +326,8 @@ async def approve_report_handler(
     config: Config,
     chat_settings: ChatSettings,
 ):
+    message = callback_query.message
+
     async with in_transaction() as db_session:
         await resolve_report(
             report_id=callback_data.report_id,
@@ -340,19 +342,29 @@ async def approve_report_handler(
             reward_amount=config.report_karma_award,
             bot=bot,
         )
-        await callback_query.message.edit_text(
+
+        await message.edit_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
                 reward_amount=config.report_karma_award,
             )
         )
+        if config.time_to_remove_report_karma_award_messages > 0:
+            asyncio.create_task(
+                delete_message(
+                    message=message,
+                    sleep_time=config.time_to_remove_report_karma_award_messages,
+                )
+            )
+
         delete_bot_reply = False
     else:
         delete_bot_reply = True
 
     await callback_query.answer("Вы подтвердили репорт", show_alert=delete_bot_reply)
     await cleanup_command_dialog(
-        message=callback_query.message, delete_bot_reply=delete_bot_reply
+        message=message,
+        delete_bot_reply=delete_bot_reply,
     )
 
 
