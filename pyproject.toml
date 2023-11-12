@@ -6,6 +6,39 @@ requires-python = ">=3.11"
 target-version = "py311"
 line-length = 100
 pydocstyle = { convention = "google" }
+exclude = [
+  ".git",
+  ".github",
+  "venv",
+  ".venv",
+  "docs",
+  "log",
+  "db_data",
+  "config_dist",
+  "config"
+]
+
+[tool.black]
+target-version = "py311"
+line-length = 100
+include_trailing_comma = true
+exclude = '''
+(
+  | \.git
+  | .github
+  | venv
+  | .venv
+  | docs
+  | log
+  | db_data
+  | config_dist
+  | config
+)
+'''
 
 [tool.isort]
 profile = "black"
+multi_line_output = 3
+line_length = 100
+include_trailing_comma = true
+remove_redundant_aliases = true
