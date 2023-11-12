@@ -19,7 +19,7 @@ exclude = [
 ]
 
 [tool.black]
-target-version = "py311"
+target-version = ["py311"]
 line-length = 100
 include_trailing_comma = true
 exclude = '''
