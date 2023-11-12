@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+ignore-init-module-imports = true
 pydocstyle = { convention = "google" }
 exclude = [
   ".git",
@@ -12,10 +13,8 @@ exclude = [
   "venv",
   ".venv",
   "docs",
-  "log",
   "db_data",
   "config_dist",
-  "config"
 ]
 
 [tool.black]
@@ -29,10 +28,8 @@ exclude = '''
   | venv
   | .venv
   | docs
-  | log
   | db_data
   | config_dist
-  | config
 )
 '''
 
