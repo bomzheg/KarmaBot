@@ -6,7 +6,8 @@ from aiogram import BaseMiddleware, types
 from aiogram.dispatcher.event.bases import CancelHandler
 from aiogram.types import TelegramObject
 
-from app.infrastructure.database.models import Chat, User
+from app.infrastructure.database.models import User
+from app.infrastructure.database.repo.chat import ChatRepo
 from app.services.settings import get_chat_settings
 from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger
@@ -36,11 +37,14 @@ class DBMiddleware(BaseMiddleware):
         self, data: dict, user: types.User, chat: Optional[types.Chat] = None
     ):
         try:
+            chat_repo = ChatRepo()
+
             async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)
+
             if chat and chat.type != "private":
                 async with self.lock_factory.get_lock(chat.id):
-                    chat = await Chat.get_or_create_from_tg_chat(chat)
+                    chat = await chat_repo.get_or_create_from_tg_chat(chat)
                     data["chat_settings"] = await get_chat_settings(chat=chat)
 
         except Exception as e:
@@ -48,3 +52,4 @@ class DBMiddleware(BaseMiddleware):
             raise e
         data["user"] = user
         data["chat"] = chat
+        data["chat_repo"] = chat_repo
