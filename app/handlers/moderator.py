@@ -342,10 +342,11 @@ async def approve_report_handler(
             bot=bot,
         )
         await callback_query.message.edit_text(
-            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!{admin_url}".format(
+            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
+            "в награду за репорт{admin_url}".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
                 reward_amount=config.report_karma_award,
-                admin_url=hidden_link(user.link)
+                admin_url=hidden_link(user.link),
             )
         )
         delete_bot_reply = False
