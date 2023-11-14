@@ -33,6 +33,7 @@ from app.services.report import register_report, resolve_report, reward_reporter
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
 from app.utils.log import Logger
+from app.utils.view import hidden_link
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -92,7 +93,7 @@ async def get_mentions_admins(
     ]
     random_five_admins = notifiable_admins[:5]
     for admin in random_five_admins:
-        admins_mention += hd.link("&#8288;", admin.user.url)
+        admins_mention += hidden_link(admin.user.url)
     return admins_mention
 
 
@@ -341,9 +342,11 @@ async def approve_report_handler(
             bot=bot,
         )
         await callback_query.message.edit_text(
-            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!".format(
+            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
+            "в награду за репорт{admin_url}".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
                 reward_amount=config.report_karma_award,
+                admin_url=hidden_link(user.link),
             )
         )
         delete_bot_reply = False
