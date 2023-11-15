@@ -17,6 +17,12 @@ class ChatRepo:
     def __init__(self, session: BaseDBAsyncClient | None = None):
         self.session = session
 
+    async def get_by_id(self, chat_id: int) -> Chat:
+        return await Chat.get(chat_id=chat_id, using_db=self.session)
+
+    async def update(self, chat: Chat):
+        await chat.save(using_db=self.session)
+
     async def create_from_tg_chat(self, chat) -> Chat:
         chat = await Chat.create(
             chat_id=chat.id,
