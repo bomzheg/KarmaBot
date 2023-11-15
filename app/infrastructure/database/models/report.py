@@ -29,6 +29,8 @@ class Report(Model):
     )
     created_time = fields.DatetimeField(auto_now=True, null=False)
     resolution_time = fields.DatetimeField(null=True)
+    command_message_id = fields.BigIntField(generated=False, null=False)
+    bot_reply_message_id = fields.BigIntField(generated=False, null=True)
     reported_message_id = fields.BigIntField(generated=False, null=False)
     reported_message_content = fields.CharField(
         null=False, max_length=TG_MESSAGE_MAX_LEN
