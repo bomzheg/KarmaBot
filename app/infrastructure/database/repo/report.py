@@ -23,7 +23,7 @@ class ReportRepo:
             reporter=reporter,
             reported_user=reported_user,
             chat=chat,
-            command_message_id=command_message.id,
+            command_message_id=command_message.message_id,
             reported_message_id=reported_message.message_id,
             reported_message_content=reported_message.html_text,
             status=status,
