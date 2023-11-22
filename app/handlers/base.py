@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hbold, hpre
 
 from app.infrastructure.database.models import Chat
+from app.infrastructure.database.repo.chat import ChatRepo
 from app.utils.log import Logger
 
 logger = Logger(__name__)
@@ -83,9 +84,9 @@ async def cancel_state(message: types.Message, state: FSMContext):
 
 
 @router.message(F.message.content_types == types.ContentType.MIGRATE_TO_CHAT_ID)
-async def chat_migrate(message: types.Message, chat: Chat):
+async def chat_migrate(message: types.Message, chat: Chat, chat_repo: ChatRepo):
     old_id = message.chat.id
     new_id = message.migrate_to_chat_id
     chat.chat_id = new_id
-    await chat.save()
+    await chat_repo.update(chat)
     logger.info(f"Migrate chat from {old_id} to {new_id}")
