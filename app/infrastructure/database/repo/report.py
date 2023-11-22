@@ -49,5 +49,18 @@ class ReportRepo:
             )
             .prefetch_related("chat", "reporter")
             .order_by("created_time")
+            .using_db(self.session)
             .all()
+        )
+
+    async def has_resolved_report(self, chat_id: int, message_id: int) -> bool:
+        """Return True, if provided message has reports with status Approved or Declined"""
+        return await (
+            Report.filter(
+                chat__chat_id=chat_id,
+                reported_message_id=message_id,
+                status__in=[ReportStatus.APPROVED.value, ReportStatus.DECLINED.value],
+            )
+            .using_db(self.session)
+            .exists()
         )

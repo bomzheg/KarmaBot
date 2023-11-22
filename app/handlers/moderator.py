@@ -11,6 +11,7 @@ from app.filters import (
     HasTargetFilter,
     TargetHasPermissions,
 )
+from app.filters.reports import HasResolvedReport
 from app.handlers import keyboards as kb
 from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
 from app.infrastructure.database.repo.report import ReportRepo
@@ -48,6 +49,7 @@ router = Router(name=__name__)
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
     HasTargetFilter(),
+    ~HasResolvedReport(),
     Command("report", "admin", "spam", prefix="/!@"),
 )
 async def report_message(
@@ -59,9 +61,10 @@ async def report_message(
     report_repo: ReportRepo,
 ):
     logger.info(
-        "user {user} report for message {message}",
+        "User {user} reported message {message} in chat {chat}",
         user=message.from_user.id,
         message=message.message_id,
+        chat=message.chat.id,
     )
     answer_message = "Спасибо за сообщение. Мы обязательно разберёмся"
     admins_mention = await get_mentions_admins(message.chat, bot)
@@ -80,6 +83,17 @@ async def report_message(
         f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard
     )
     await set_report_bot_reply(report, bot_reply, report_repo)
+
+
+@router.message(
+    F.chat.type.in_(["group", "supergroup"]),
+    HasTargetFilter(),
+    HasResolvedReport(),
+    Command("report", "admin", "spam", prefix="/!@"),
+)
+async def report_already_reported(message: types.Message):
+    reply = await message.reply("Сообщение уже было рассмотрено ранее")
+    asyncio.create_task(cleanup_command_dialog(reply, True, delay=60))
 
 
 @router.message(
@@ -306,6 +320,11 @@ async def approve_report_handler(
     chat_settings: ChatSettings,
     report_repo: ReportRepo,
 ):
+    logger.info(
+        "Moderator {moderator} approved report {report}",
+        moderator=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
     first_report, *linked_reports = await resolve_report(
         report_id=callback_data.report_id,
         resolved_by=user,
@@ -350,6 +369,11 @@ async def decline_report_handler(
     bot: Bot,
     report_repo: ReportRepo,
 ):
+    logger.info(
+        "Moderator {moderator} declined report {report}",
+        moderator=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
     first_report, *linked_reports = await resolve_report(
         report_id=callback_data.report_id,
         resolved_by=user,
@@ -371,6 +395,11 @@ async def cancel_report_handler(
     user: User,
     report_repo: ReportRepo,
 ):
+    logger.info(
+        "User {user} cancelled report {report}",
+        user=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
     await cancel_report(
         report_id=callback_data.report_id,
         resolved_by=user,
