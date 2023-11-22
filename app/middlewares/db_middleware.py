@@ -5,6 +5,8 @@ from typing import Any, Awaitable, Callable, Dict, Optional
 from aiogram import BaseMiddleware, types
 from aiogram.dispatcher.event.bases import CancelHandler
 from aiogram.types import TelegramObject
+from tortoise import BaseDBAsyncClient
+from tortoise.transactions import in_transaction
 
 from app.infrastructure.database.models import User
 from app.infrastructure.database.repo.chat import ChatRepo
@@ -30,14 +32,20 @@ class DBMiddleware(BaseMiddleware):
         user: types.User = data.get("event_from_user", None)
         if isinstance(event, types.Message) and event.sender_chat:
             raise CancelHandler
-        await self.setup_chat(data, user, chat)
-        return await handler(event, data)
+
+        async with in_transaction() as session:
+            await self.setup_chat(session, data, user, chat)
+            return await handler(event, data)
 
     async def setup_chat(
-        self, data: dict, user: types.User, chat: Optional[types.Chat] = None
+        self,
+        session: BaseDBAsyncClient,
+        data: dict,
+        user: types.User,
+        chat: Optional[types.Chat] = None,
     ):
         try:
-            chat_repo = ChatRepo()
+            chat_repo = ChatRepo(session)
 
             async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)
