@@ -316,7 +316,6 @@ async def approve_report_handler(
     user: User,
     chat: Chat,
     bot: Bot,
-    config: Config,
     chat_settings: ChatSettings,
     report_repo: ReportRepo,
 ):
@@ -331,19 +330,19 @@ async def approve_report_handler(
         resolution=ReportStatus.APPROVED,
         report_repo=report_repo,
     )
-    award_enabled = chat_settings.karma_counting and config.report_karma_award
+    award_enabled = chat_settings.karma_counting and chat_settings.report_karma_award
     if award_enabled:
         karma_change_result = await reward_reporter(
             reporter_id=first_report.reporter.id,
             chat=chat,
-            reward_amount=config.report_karma_award,
+            reward_amount=chat_settings.report_karma_award,
             bot=bot,
         )
         message = await bot.edit_message_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
             "в награду за репорт{admin_url}".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
-                reward_amount=config.report_karma_award,
+                reward_amount=chat_settings.report_karma_award,
                 admin_url=hidden_link(user.link),
             ),
             chat_id=first_report.chat.chat_id,
@@ -387,10 +386,10 @@ async def decline_report_handler(
         resolution=ReportStatus.DECLINED,
         report_repo=report_repo,
     )
+    await callback_query.answer("Вы отклонили репорт", show_alert=True)
     await cleanup_reports_dialog(
         first_report, linked_reports, delete_first_reply=True, bot=bot
     )
-    await callback_query.answer("Вы отклонили репорт", show_alert=True)
 
 
 @router.callback_query(

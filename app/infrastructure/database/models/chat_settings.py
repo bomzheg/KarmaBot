@@ -15,6 +15,7 @@ class ChatSettings(Model):
     )
     karmic_restrictions: bool = fields.BooleanField(default=False)
     karma_counting: bool = fields.BooleanField(null=False, default=True)
+    report_karma_award: int = fields.IntField(null=False, default=0)
 
     class Meta:
         table = "chat_settings"
