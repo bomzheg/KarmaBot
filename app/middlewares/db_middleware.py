@@ -47,6 +47,7 @@ class DBMiddleware(BaseMiddleware):
     ):
         try:
             chat_repo = ChatRepo(session)
+            report_repo = ReportRepo(session)
 
             async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)
@@ -55,7 +56,6 @@ class DBMiddleware(BaseMiddleware):
                 async with self.lock_factory.get_lock(chat.id):
                     chat = await chat_repo.get_or_create_from_tg_chat(chat)
                     data["chat_settings"] = await get_chat_settings(chat=chat)
-            report_repo = ReportRepo()
         except Exception as e:
             logger.exception("troubles with db", exc_info=e)
             raise e
