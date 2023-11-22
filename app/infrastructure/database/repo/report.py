@@ -31,11 +31,8 @@ class ReportRepo:
         )
         return report
 
-    async def update(self, *reports: Report, fields: Iterable[str] | None = None):
-        if len(reports) == 1:
-            await reports[0].save()
-        else:
-            await Report.bulk_update(reports, fields, using_db=self.session)
+    async def save(self, report: Report, fields: Iterable[str] | None = None):
+        await report.save(update_fields=fields, using_db=self.session)
 
     async def get_report_by_id(self, report_id: int) -> Report:
         return await Report.get(id=report_id, using_db=self.session)
@@ -50,7 +47,7 @@ class ReportRepo:
                 reported_message_id=report.reported_message_id,
                 status=ReportStatus.PENDING,
             )
-            .prefetch_related("chat")
+            .prefetch_related("chat", "reporter")
             .order_by("created_time")
             .all()
         )

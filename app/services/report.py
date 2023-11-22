@@ -49,21 +49,17 @@ async def resolve_report(
     first_report.resolved_by = resolved_by
     first_report.status = resolution
     first_report.resolution_time = resolution_time
+    await report_repo.save(first_report)
 
     if not linked_reports:
-        await report_repo.update(first_report)
         return (first_report,)
 
     for report in linked_reports:
         report.resolved_by = resolved_by
         report.status = ReportStatus.CANCELLED
         report.resolution_time = resolution_time
+        await report_repo.save(report)
 
-    await report_repo.update(
-        first_report,
-        *linked_reports,
-        fields=("resolved_by", "status", "resolution_time"),
-    )
     return first_report, *linked_reports
 
 
@@ -78,7 +74,7 @@ async def cancel_report(
     report.resolution_time = datetime.utcnow()
     report.status = ReportStatus.CANCELLED
 
-    await report_repo.update(report)
+    await report_repo.save(report)
     return report
 
 
@@ -86,7 +82,7 @@ async def set_report_bot_reply(
     report: Report, bot_reply: aiogram.types.Message, report_repo: ReportRepo
 ):
     report.bot_reply_message_id = bot_reply.message_id
-    await report_repo.update(report)
+    await report_repo.save(report)
 
 
 async def reward_reporter(
