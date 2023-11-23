@@ -75,7 +75,7 @@ def render_settings(chat_settings: ChatSettings, chat: Chat) -> str:
         f"Изменить - {hd.code(hd.quote('/set_report_reward <число>'))}\n"
         f"Выключить - {hd.code('/set_report_reward 0')}\n"
     )
-    if chat_settings.karma_counting:
+    if not chat_settings.karma_counting:
         result += "Чтобы награды за репорт работали, необходимо включить подсчёт кармы в чате.\n\n"
 
     return result
