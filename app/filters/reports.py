@@ -11,6 +11,8 @@ class HasResolvedReport(BaseFilter):
     async def __call__(
         self, message: types.Message, chat: Chat, report_repo: ReportRepo
     ) -> bool:
+        if not message.reply_to_message:
+            return False
         return await report_repo.has_resolved_report(
             chat_id=chat.chat_id, message_id=message.reply_to_message.message_id
         )
