@@ -10,6 +10,7 @@ from tortoise.transactions import in_transaction
 
 from app.infrastructure.database.models import User
 from app.infrastructure.database.repo.chat import ChatRepo
+from app.infrastructure.database.repo.report import ReportRepo
 from app.services.settings import get_chat_settings
 from app.utils.lock_factory import LockFactory
 from app.utils.log import Logger
@@ -46,6 +47,7 @@ class DBMiddleware(BaseMiddleware):
     ):
         try:
             chat_repo = ChatRepo(session)
+            report_repo = ReportRepo(session)
 
             async with self.lock_factory.get_lock(user.id):
                 user = await User.get_or_create_from_tg_user(user)
@@ -54,10 +56,10 @@ class DBMiddleware(BaseMiddleware):
                 async with self.lock_factory.get_lock(chat.id):
                     chat = await chat_repo.get_or_create_from_tg_chat(chat)
                     data["chat_settings"] = await get_chat_settings(chat=chat)
-
         except Exception as e:
             logger.exception("troubles with db", exc_info=e)
             raise e
         data["user"] = user
         data["chat"] = chat
         data["chat_repo"] = chat_repo
+        data["report_repo"] = report_repo

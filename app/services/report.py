@@ -1,11 +1,13 @@
 from datetime import datetime
+from typing import Iterable, Literal
 
 import aiogram
 from aiogram import Bot
-from tortoise.backends.base.client import BaseDBAsyncClient
 
 from app.infrastructure.database.models import Chat, Report, ReportStatus, User
+from app.infrastructure.database.repo.report import ReportRepo
 from app.services.change_karma import change_karma
+from app.services.remove_message import delete_message_by_id
 from app.utils.types import ResultChangeKarma
 
 
@@ -14,16 +16,16 @@ async def register_report(
     reported_user: User,
     chat: Chat,
     reported_message: aiogram.types.Message,
-    db_session: BaseDBAsyncClient,
+    command_message: aiogram.types.Message,
+    report_repo: ReportRepo,
 ) -> Report:
-    report = await Report.create(
+    report = await report_repo.create(
         reporter=reporter,
         reported_user=reported_user,
         chat=chat,
-        reported_message_id=reported_message.message_id,
-        reported_message_content=reported_message.html_text,
+        reported_message=reported_message,
+        command_message=command_message,
         status=ReportStatus.PENDING,
-        using_db=db_session,
     )
     return report
 
@@ -31,14 +33,56 @@ async def register_report(
 async def resolve_report(
     report_id: int,
     resolved_by: User,
-    resolution: ReportStatus,
-    db_session: BaseDBAsyncClient,
-):
-    report = await Report.get(id=report_id, using_db=db_session)
+    resolution: Literal[ReportStatus.APPROVED, ReportStatus.DECLINED],
+    report_repo: ReportRepo,
+) -> tuple[Report, ...]:
+    """
+    Resolve all pending reports that are linked to the same message. All linked
+    reports except the first one are resolved as cancelled.
+    Returns all linked reports.
+    """
+    resolution_time = datetime.utcnow()
+    first_report, *linked_reports = await report_repo.get_linked_pending_reports(
+        report_id
+    )
+
+    first_report.resolved_by = resolved_by
+    first_report.status = resolution
+    first_report.resolution_time = resolution_time
+    await report_repo.save(first_report)
+
+    if not linked_reports:
+        return (first_report,)
+
+    for report in linked_reports:
+        report.resolved_by = resolved_by
+        report.status = ReportStatus.CANCELLED
+        report.resolution_time = resolution_time
+        await report_repo.save(report)
+
+    return first_report, *linked_reports
+
+
+async def cancel_report(
+    report_id: int,
+    resolved_by: User,
+    report_repo: ReportRepo,
+) -> Report:
+    report = await report_repo.get_report_by_id(report_id)
+
     report.resolved_by = resolved_by
-    report.status = resolution
     report.resolution_time = datetime.utcnow()
-    await report.save(using_db=db_session)
+    report.status = ReportStatus.CANCELLED
+
+    await report_repo.save(report)
+    return report
+
+
+async def set_report_bot_reply(
+    report: Report, bot_reply: aiogram.types.Message, report_repo: ReportRepo
+):
+    report.bot_reply_message_id = bot_reply.message_id
+    await report_repo.save(report)
 
 
 async def reward_reporter(
@@ -55,3 +99,25 @@ async def reward_reporter(
         comment="Report reward",
         is_reward=True,
     )
+
+
+async def cleanup_reports_dialog(
+    first_report: Report,
+    linked_reports: Iterable[Report],
+    delete_first_reply: bool,
+    bot: Bot,
+):
+    await delete_message_by_id(
+        first_report.chat.chat_id, first_report.command_message_id, bot
+    )
+
+    if delete_first_reply:
+        await delete_message_by_id(
+            first_report.chat.chat_id, first_report.bot_reply_message_id, bot
+        )
+
+    for report in linked_reports:
+        await delete_message_by_id(report.chat.chat_id, report.command_message_id, bot)
+        await delete_message_by_id(
+            report.chat.chat_id, report.bot_reply_message_id, bot
+        )
