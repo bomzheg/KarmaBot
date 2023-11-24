@@ -1,12 +1,11 @@
 # partially from https://github.com/aiogram/bot
 
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware, types
 from aiogram.dispatcher.event.bases import CancelHandler
 from aiogram.types import TelegramObject
 from tortoise import BaseDBAsyncClient
-from tortoise.transactions import in_transaction
 
 from app.infrastructure.database.models import User
 from app.infrastructure.database.repo.chat import ChatRepo
@@ -34,16 +33,16 @@ class DBMiddleware(BaseMiddleware):
         if isinstance(event, types.Message) and event.sender_chat:
             raise CancelHandler
 
-        async with in_transaction() as session:
-            await self.setup_chat(session, data, user, chat)
-            return await handler(event, data)
+        # TODO: need to pass db session here
+        await self.setup_chat(data, user, chat)
+        return await handler(event, data)
 
     async def setup_chat(
         self,
-        session: BaseDBAsyncClient,
         data: dict,
         user: types.User,
-        chat: Optional[types.Chat] = None,
+        chat: types.Chat | None = None,
+        session: BaseDBAsyncClient | None = None,
     ):
         try:
             chat_repo = ChatRepo(session)
