@@ -100,7 +100,7 @@ def get_mentioned_user(message: types.Message) -> dto.TargetUser | None:
 
 
 def get_replied_user(message: types.Message) -> dto.TargetUser | None:
-    if message.reply_to_message:
+    if message.reply_to_message and not message.reply_to_message.forum_topic_created:
         return dto.TargetUser.from_aiogram(message.reply_to_message.from_user)
     return None
 
