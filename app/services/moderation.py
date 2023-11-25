@@ -1,6 +1,8 @@
+import random
 from datetime import timedelta
 
-from aiogram import Bot
+from aiogram import Bot, types
+from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import ChatMemberRestricted
 from tortoise.backends.base.client import TransactionContext
@@ -12,6 +14,7 @@ from app.models.common import TypeRestriction
 from app.utils.exceptions import CantRestrict
 from app.utils.log import Logger
 from app.utils.timedelta_functions import format_timedelta, parse_timedelta_from_text
+from app.utils.view import hidden_link
 
 logger = Logger(__name__)
 config = load_config()
@@ -224,3 +227,39 @@ async def delete_moderator_event(
     )
 
     await moderator_event.delete()
+
+
+async def get_mentions_admins(
+    chat: types.Chat,
+    bot: Bot,
+    ignore_anonymous: bool = True,
+):
+    admins = await bot.get_chat_administrators(chat.id)
+    random.shuffle(admins)  # чтобы попадались разные админы
+    admins_mention = ""
+    notifiable_admins = [
+        admin for admin in admins if need_notify_admin(admin, ignore_anonymous)
+    ]
+    random_five_admins = notifiable_admins[:5]
+    for admin in random_five_admins:
+        admins_mention += hidden_link(admin.user.url)
+    return admins_mention
+
+
+def need_notify_admin(
+    admin: types.ChatMemberAdministrator | types.ChatMemberOwner,
+    ignore_anonymous: bool = True,
+):
+    """
+    Проверяет, нужно ли уведомлять администратора о жалобе.
+
+    :param admin: Администратор, которого нужно проверить.
+    :param ignore_anonymous: Игнорировать ли анонимных администраторов.
+    """
+    if admin.user.is_bot or (ignore_anonymous and admin.is_anonymous):
+        return False
+    return (
+        admin.status == ChatMemberStatus.CREATOR
+        or admin.can_delete_messages
+        or admin.can_restrict_members
+    )

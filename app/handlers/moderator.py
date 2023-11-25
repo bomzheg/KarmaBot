@@ -1,12 +1,9 @@
 import asyncio
-import random
 
 from aiogram import Bot, F, Router, types
-from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject, MagicData
 from aiogram.utils.text_decorations import html_decoration as hd
-from tortoise.transactions import in_transaction
 
 from app.filters import (
     BotHasPermissions,
@@ -14,13 +11,16 @@ from app.filters import (
     HasTargetFilter,
     TargetHasPermissions,
 )
+from app.filters.reports import HasResolvedReport
 from app.handlers import keyboards as kb
 from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
+from app.infrastructure.database.repo.report import ReportRepo
 from app.models.config import Config
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
     get_duration,
+    get_mentions_admins,
     ro_user,
     warn_user,
 )
@@ -29,10 +29,18 @@ from app.services.remove_message import (
     delete_message,
     remove_kb,
 )
-from app.services.report import register_report, resolve_report, reward_reporter
+from app.services.report import (
+    cancel_report,
+    cleanup_reports_dialog,
+    register_report,
+    resolve_report,
+    reward_reporter,
+    set_report_bot_reply,
+)
 from app.services.user_info import get_user_info
 from app.utils.exceptions import ModerationError, TimedeltaParseError
 from app.utils.log import Logger
+from app.utils.view import hidden_link
 
 logger = Logger(__name__)
 router = Router(name=__name__)
@@ -41,32 +49,51 @@ router = Router(name=__name__)
 @router.message(
     F.chat.type.in_(["group", "supergroup"]),
     HasTargetFilter(),
+    ~HasResolvedReport(),
     Command("report", "admin", "spam", prefix="/!@"),
 )
 async def report_message(
-    message: types.Message, chat: Chat, user: User, target: User, bot: Bot
+    message: types.Message,
+    chat: Chat,
+    user: User,
+    target: User,
+    bot: Bot,
+    report_repo: ReportRepo,
 ):
     logger.info(
-        "user {user} report for message {message}",
+        "User {user} reported message {message} in chat {chat}",
         user=message.from_user.id,
         message=message.message_id,
+        chat=message.chat.id,
     )
     answer_message = "Спасибо за сообщение. Мы обязательно разберёмся"
     admins_mention = await get_mentions_admins(message.chat, bot)
 
-    async with in_transaction() as db_session:
-        report = await register_report(
-            reporter=user,
-            reported_user=target,
-            chat=chat,
-            reported_message=message.reply_to_message,
-            db_session=db_session,
-        )
+    report = await register_report(
+        reporter=user,
+        reported_user=target,
+        chat=chat,
+        reported_message=message.reply_to_message,
+        command_message=message,
+        report_repo=report_repo,
+    )
 
     reaction_keyboard = kb.get_report_reaction_kb(report=report, user=user)
-    await message.reply(
+    bot_reply = await message.reply(
         f"{answer_message}.{admins_mention}", reply_markup=reaction_keyboard
     )
+    await set_report_bot_reply(report, bot_reply, report_repo)
+
+
+@router.message(
+    F.chat.type.in_(["group", "supergroup"]),
+    HasTargetFilter(),
+    HasResolvedReport(),
+    Command("report", "admin", "spam", prefix="/!@"),
+)
+async def report_already_reported(message: types.Message):
+    reply = await message.reply("Сообщение уже было рассмотрено ранее")
+    asyncio.create_task(cleanup_command_dialog(reply, True, delay=60))
 
 
 @router.message(
@@ -76,42 +103,6 @@ async def report_message(
 async def report_private(message: types.Message):
     await message.reply(
         "Вы можете жаловаться на сообщения пользователей только в группах."
-    )
-
-
-async def get_mentions_admins(
-    chat: types.Chat,
-    bot: Bot,
-    ignore_anonymous: bool = True,
-):
-    admins = await bot.get_chat_administrators(chat.id)
-    random.shuffle(admins)  # чтобы попадались разные админы
-    admins_mention = ""
-    notifiable_admins = [
-        admin for admin in admins if need_notify_admin(admin, ignore_anonymous)
-    ]
-    random_five_admins = notifiable_admins[:5]
-    for admin in random_five_admins:
-        admins_mention += hd.link("&#8288;", admin.user.url)
-    return admins_mention
-
-
-def need_notify_admin(
-    admin: types.ChatMemberAdministrator | types.ChatMemberOwner,
-    ignore_anonymous: bool = True,
-):
-    """
-    Проверяет, нужно ли уведомлять администратора о жалобе.
-
-    :param admin: Администратор, которого нужно проверить.
-    :param ignore_anonymous: Игнорировать ли анонимных администраторов.
-    """
-    if admin.user.is_bot or (ignore_anonymous and admin.is_anonymous):
-        return False
-    return (
-        admin.status == ChatMemberStatus.CREATOR
-        or admin.can_delete_messages
-        or admin.can_restrict_members
     )
 
 
@@ -310,7 +301,9 @@ async def cancel_warn(
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
 
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
-    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
+    await cleanup_command_dialog(
+        bot_message=callback_query.message, delete_bot_reply=True
+    )
 
 
 @router.callback_query(
@@ -325,34 +318,44 @@ async def approve_report_handler(
     bot: Bot,
     config: Config,
     chat_settings: ChatSettings,
+    report_repo: ReportRepo,
 ):
-    async with in_transaction() as db_session:
-        await resolve_report(
-            report_id=callback_data.report_id,
-            resolved_by=user,
-            resolution=ReportStatus.APPROVED,
-            db_session=db_session,
-        )
-    if chat_settings.karma_counting and config.report_karma_award:
+    logger.info(
+        "Moderator {moderator} approved report {report}",
+        moderator=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
+    first_report, *linked_reports = await resolve_report(
+        report_id=callback_data.report_id,
+        resolved_by=user,
+        resolution=ReportStatus.APPROVED,
+        report_repo=report_repo,
+    )
+    award_enabled = chat_settings.karma_counting and config.report_karma_award
+    if award_enabled:
         karma_change_result = await reward_reporter(
-            reporter_id=callback_data.reporter_id,
+            reporter_id=first_report.reporter.id,
             chat=chat,
             reward_amount=config.report_karma_award,
             bot=bot,
         )
-        await callback_query.message.edit_text(
-            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы в награду за репорт!".format(
+        await bot.edit_message_text(
+            "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
+            "в награду за репорт{admin_url}".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
                 reward_amount=config.report_karma_award,
-            )
+                admin_url=hidden_link(user.link),
+            ),
+            chat_id=first_report.chat.chat_id,
+            message_id=first_report.bot_reply_message_id,
         )
-        delete_bot_reply = False
-    else:
-        delete_bot_reply = True
 
-    await callback_query.answer("Вы подтвердили репорт", show_alert=delete_bot_reply)
-    await cleanup_command_dialog(
-        message=callback_query.message, delete_bot_reply=delete_bot_reply
+    await callback_query.answer("Вы подтвердили репорт", show_alert=not award_enabled)
+    await cleanup_reports_dialog(
+        first_report=first_report,
+        linked_reports=linked_reports,
+        delete_first_reply=not award_enabled,
+        bot=bot,
     )
 
 
@@ -360,34 +363,52 @@ async def approve_report_handler(
     kb.DeclineReportCb.filter(), HasPermissions(can_restrict_members=True)
 )
 async def decline_report_handler(
-    callback_query: types.CallbackQuery, callback_data: kb.DeclineReportCb, user: User
+    callback_query: types.CallbackQuery,
+    callback_data: kb.DeclineReportCb,
+    user: User,
+    bot: Bot,
+    report_repo: ReportRepo,
 ):
-    async with in_transaction() as db_session:
-        await resolve_report(
-            report_id=callback_data.report_id,
-            resolved_by=user,
-            resolution=ReportStatus.DECLINED,
-            db_session=db_session,
-        )
+    logger.info(
+        "Moderator {moderator} declined report {report}",
+        moderator=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
+    first_report, *linked_reports = await resolve_report(
+        report_id=callback_data.report_id,
+        resolved_by=user,
+        resolution=ReportStatus.DECLINED,
+        report_repo=report_repo,
+    )
+    await cleanup_reports_dialog(
+        first_report, linked_reports, delete_first_reply=True, bot=bot
+    )
     await callback_query.answer("Вы отклонили репорт", show_alert=True)
-    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
     kb.CancelReportCb.filter(), MagicData(F.user.id == F.callback_data.reporter_id)
 )
 async def cancel_report_handler(
-    callback_query: types.CallbackQuery, callback_data: kb.CancelReportCb, user: User
+    callback_query: types.CallbackQuery,
+    callback_data: kb.CancelReportCb,
+    user: User,
+    report_repo: ReportRepo,
 ):
-    async with in_transaction() as db_session:
-        await resolve_report(
-            report_id=callback_data.report_id,
-            resolved_by=user,
-            resolution=ReportStatus.CANCELLED,
-            db_session=db_session,
-        )
+    logger.info(
+        "User {user} cancelled report {report}",
+        user=callback_query.from_user.id,
+        report=callback_data.report_id,
+    )
+    await cancel_report(
+        report_id=callback_data.report_id,
+        resolved_by=user,
+        report_repo=report_repo,
+    )
     await callback_query.answer("Вы отменили репорт", show_alert=True)
-    await cleanup_command_dialog(message=callback_query.message, delete_bot_reply=True)
+    await cleanup_command_dialog(
+        bot_message=callback_query.message, delete_bot_reply=True
+    )
 
 
 @router.callback_query(
