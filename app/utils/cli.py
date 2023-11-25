@@ -2,6 +2,7 @@
 import argparse
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import SimpleEventIsolation
 
 import app
 from app import handlers, middlewares
@@ -42,7 +43,9 @@ def create_parser():
 
 async def cli(config: Config):
     bot = Bot(config.bot_token, parse_mode="HTML")
-    dp = Dispatcher(storage=config.storage.create_storage())
+    dp = Dispatcher(
+        storage=config.storage.create_storage(), events_isolation=SimpleEventIsolation()
+    )
     parser = create_parser()
     namespace = parser.parse_args()
 
