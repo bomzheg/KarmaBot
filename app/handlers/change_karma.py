@@ -6,6 +6,7 @@ from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import HasTargetFilter, KarmaFilter
 from app.infrastructure.database.models import Chat, User
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import cancel_karma_change, change_karma
@@ -14,7 +15,6 @@ from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import CantChangeKarma, DontOffendRestricted, SubZeroKarma
 from app.utils.log import Logger
 
-from ..infrastructure.database.repo.user import UserRepo
 from . import keyboards as kb
 
 logger = Logger(__name__)

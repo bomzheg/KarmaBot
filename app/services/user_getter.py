@@ -11,7 +11,6 @@ from app.services.restrict_call import RestrictCall
 from app.utils.log import Logger
 
 logger = Logger(__name__)
-SLEEP_TIME = 100
 
 
 class UserGetter:
@@ -23,7 +22,7 @@ class UserGetter:
             api_hash=client_config.api_hash,
             no_updates=True,
         )
-        self.restrict = RestrictCall(SLEEP_TIME)
+        self.restrict = RestrictCall(client_config.request_interval)
         self.restrict_methods = ("get_users", "get_chat_members")
         self.patch_api_client()
 
@@ -50,7 +49,6 @@ class UserGetter:
             user_tg = await try_by_name()
         return user_tg
 
-    # @RestrictCall(SLEEP_TIME)
     async def get_user_by_username(self, username: str) -> User:
         try:
             logger.info("get user of username {username}", username=username)
@@ -68,7 +66,6 @@ class UserGetter:
 
         return self.get_aiogram_user_by_pyrogram(user)
 
-    # @RestrictCall(SLEEP_TIME)
     async def get_user_by_fullname(self, chat_id: int, fullname: str) -> User:
         try:
             logger.info("get user of name {name}", name=fullname)
