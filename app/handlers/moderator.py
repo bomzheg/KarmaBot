@@ -254,10 +254,15 @@ async def get_info_about_user_private(message: types.Message):
     HasTargetFilter(can_be_same=True),
 )
 async def get_info_about_user(
-    message: types.Message, chat: Chat, target: User, config: Config, bot: Bot
+    message: types.Message,
+    chat: Chat,
+    target: User,
+    config: Config,
+    bot: Bot,
+    user_repo: UserRepo,
 ):
     info = await get_user_info(target, chat, config.date_format)
-    target_karma = await target.get_karma(chat)
+    target_karma = await user_repo.get_karma(target, chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"
     information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(

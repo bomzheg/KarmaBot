@@ -36,6 +36,7 @@ async def change_karma(
     chat: Chat,
     how_change: float,
     bot: Bot,
+    user_repo: UserRepo,
     comment: str = "",
     is_reward: bool = False,
 ) -> ResultChangeKarma:
@@ -84,6 +85,7 @@ async def change_karma(
                 bot=bot,
                 chat=chat,
                 target=target_user,
+                user_repo=user_repo,
                 using_db=conn,
             )
             uk.karma = config.auto_restriction.after_restriction_karma
@@ -91,7 +93,7 @@ async def change_karma(
             was_restricted = True
         else:
             count_auto_restrict = await get_count_auto_restrict(
-                target_user, chat, bot=bot
+                target_user, chat, bot=bot, user_repo=user_repo
             )
             moderator_event = None
             was_restricted = False

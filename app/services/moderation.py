@@ -10,6 +10,7 @@ from tortoise.backends.base.client import TransactionContext
 from app.config import moderation
 from app.config.main import load_config
 from app.infrastructure.database.models import Chat, ModeratorEvent, User
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.common import TypeRestriction
 from app.utils.exceptions import CantRestrict
 from app.utils.log import Logger
@@ -160,14 +161,20 @@ async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
 
 
 async def auto_restrict(
-    target: User, chat: Chat, bot: Bot, using_db: TransactionContext | None = None
+    target: User,
+    chat: Chat,
+    bot: Bot,
+    user_repo: UserRepo,
+    using_db: TransactionContext | None = None,
 ) -> tuple[int, ModeratorEvent]:
     """
     return count auto restrict
     """
-    bot_user = await User.get_or_create_from_tg_user(await bot.me())
+    bot_user = await user_repo.get_or_create_from_tg_user(await bot.me())
 
-    count_auto_restrict = await get_count_auto_restrict(target, chat, bot_user=bot_user)
+    count_auto_restrict = await get_count_auto_restrict(
+        target, chat, user_repo=user_repo, bot_user=bot_user
+    )
     logger.info(
         "auto restrict user {user} in chat {chat} for to negative karma. "
         "previous restrict count: {count}",
@@ -196,6 +203,7 @@ async def auto_restrict(
 async def get_count_auto_restrict(
     target: User,
     chat: Chat,
+    user_repo: UserRepo,
     bot_user: User | None = None,
     bot: Bot | None = None,
 ) -> int:
@@ -203,7 +211,7 @@ async def get_count_auto_restrict(
         bot is not None or bot_user is not None
     ), "One of bot and bot_user must be not None"
     if bot_user is None:
-        bot_user = await User.get_or_create_from_tg_user(await bot.me())
+        bot_user = await user_repo.get_or_create_from_tg_user(await bot.me())
     return await ModeratorEvent.filter(
         moderator=bot_user,
         user=target,

@@ -1,12 +1,9 @@
-from datetime import datetime
-
 from aiogram import types
 from tortoise import BaseDBAsyncClient
 from tortoise.exceptions import DoesNotExist
 
 from app.infrastructure.database.models import Chat, User
 from app.models import dto
-from app.models.common import TypeRestriction
 from app.utils.exceptions import UserWithoutUserIdError
 
 
@@ -72,7 +69,7 @@ class UserRepo:
         except DoesNotExist:
             return await self.create_from_tg_user(user=tg_user)
         else:
-            await user.update_user_data(tg_user)
+            await self.update_user_data(user, tg_user)
 
         return user
 
@@ -82,31 +79,8 @@ class UserRepo:
             return user_karma.karma_round
         return None
 
-    async def set_karma(self, user: User, chat: Chat, karma: int):
-        user_karma = await user.karma.filter(chat=chat).using_db(self.session).first()
-        user_karma.karma = karma
-        await user_karma.save(using_db=self.session)
-
     async def get_number_in_top_karma(self, user: User, chat: Chat) -> int:
         user_karma = await user.karma.filter(chat=chat).using_db(self.session).first()
         return await user_karma.filter(
             chat_id=user_karma.chat_id, karma__gte=user_karma.karma
         ).count()
-
-    async def is_read_only(self, user: User, chat: Chat) -> bool:
-        user_restrictions = (
-            await user.my_restriction_events.filter(
-                chat=chat, type_restriction=TypeRestriction.ro.name
-            )
-            .using_db(self.session)
-            .all()
-        )
-
-        for restriction in user_restrictions:
-            if (
-                restriction.timedelta_restriction
-                and restriction.date + restriction.timedelta_restriction
-                > datetime.now()
-            ):
-                return True
-        return False

@@ -61,6 +61,7 @@ async def karma_change(
     target: User,
     config: Config,
     bot: Bot,
+    user_repo: UserRepo,
 ):
     try:
         result_change_karma = await change_karma(
@@ -70,6 +71,7 @@ async def karma_change(
             how_change=karma["karma_change"],
             comment=karma["comment"],
             bot=bot,
+            user_repo=user_repo,
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")

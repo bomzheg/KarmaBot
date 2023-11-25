@@ -103,6 +103,7 @@ async def reward_reporter(
         bot=bot,
         comment="Report reward",
         is_reward=True,
+        user_repo=user_repo,
     )
 
 
