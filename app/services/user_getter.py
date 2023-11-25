@@ -4,12 +4,11 @@ import typing
 import pyrogram
 from aiogram.types import User
 from pyrogram import Client
-from pyrogram.errors import RPCError, UsernameNotOccupied, FloodWait
+from pyrogram.errors import FloodWait, RPCError, UsernameNotOccupied
 
 from app.models.config import TgClientConfig
 from app.services.restrict_call import RestrictCall
 from app.utils.log import Logger
-
 
 logger = Logger(__name__)
 SLEEP_TIME = 100
@@ -22,10 +21,20 @@ class UserGetter:
             bot_token=client_config.bot_token,
             api_id=client_config.api_id,
             api_hash=client_config.api_hash,
-            no_updates=True
+            no_updates=True,
         )
+        self.restrict = RestrictCall(SLEEP_TIME)
+        self.restrict_methods = ("get_users", "get_chat_members")
+        self.patch_api_client()
 
-    async def get_user(self, username: str = None, fullname: str = None, chat_id: int = None) -> User:
+    def patch_api_client(self):
+        for method in self.restrict_methods:
+            patched = self.restrict(getattr(self._client_api_bot, method))
+            setattr(self._client_api_bot, method, patched)
+
+    async def get_user(
+        self, username: str = None, fullname: str = None, chat_id: int = None
+    ) -> User:
         async def try_by_name() -> typing.Optional[User]:
             try:
                 return await self.get_user_by_fullname(chat_id, fullname)
@@ -41,7 +50,7 @@ class UserGetter:
             user_tg = await try_by_name()
         return user_tg
 
-    @RestrictCall(SLEEP_TIME)
+    # @RestrictCall(SLEEP_TIME)
     async def get_user_by_username(self, username: str) -> User:
         try:
             logger.info("get user of username {username}", username=username)
@@ -52,19 +61,26 @@ class UserGetter:
             raise
         except FloodWait as e:
             logger.error("Flood Wait {e}", e=e)
-            await asyncio.sleep(e.x)
-            raise IndexError
+            await asyncio.sleep(e.value)
+            raise Exception(
+                "Username resolver encountered flood error. Waited for %s", e.value
+            )
 
         return self.get_aiogram_user_by_pyrogram(user)
 
-    @RestrictCall(SLEEP_TIME)
+    # @RestrictCall(SLEEP_TIME)
     async def get_user_by_fullname(self, chat_id: int, fullname: str) -> User:
         try:
             logger.info("get user of name {name}", name=fullname)
-            chat_members = await self._client_api_bot.get_chat_members(chat_id=chat_id, query=fullname)
+            chat_members = await self._client_api_bot.get_chat_members(
+                chat_id=chat_id, query=fullname
+            )
             logger.info(
                 "found: {users}",
-                users=[self.get_user_dict_for_log(chat_member.user) for chat_member in chat_members]
+                users=[
+                    self.get_user_dict_for_log(chat_member.user)
+                    for chat_member in chat_members
+                ],
             )
             user = chat_members[0].user
         except IndexError:
@@ -98,10 +114,12 @@ class UserGetter:
         )
 
     async def start(self):
+        self.restrict.start_worker()
         if not self._client_api_bot.is_connected:
             await self._client_api_bot.start()
 
     async def stop(self):
+        self.restrict.stop_worker()
         if self._client_api_bot.is_connected:
             await self._client_api_bot.stop()
 
