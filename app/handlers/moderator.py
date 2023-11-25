@@ -15,6 +15,7 @@ from app.filters.reports import HasResolvedReport
 from app.handlers import keyboards as kb
 from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
 from app.infrastructure.database.repo.report import ReportRepo
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.moderation import (
     ban_user,
@@ -319,6 +320,7 @@ async def approve_report_handler(
     config: Config,
     chat_settings: ChatSettings,
     report_repo: ReportRepo,
+    user_repo: UserRepo,
 ):
     logger.info(
         "Moderator {moderator} approved report {report}",
@@ -338,6 +340,7 @@ async def approve_report_handler(
             chat=chat,
             reward_amount=config.report_karma_award,
             bot=bot,
+            user_repo=user_repo,
         )
         message = await bot.edit_message_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "

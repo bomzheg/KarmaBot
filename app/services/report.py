@@ -6,6 +6,7 @@ from aiogram import Bot
 
 from app.infrastructure.database.models import Chat, Report, ReportStatus, User
 from app.infrastructure.database.repo.report import ReportRepo
+from app.infrastructure.database.repo.user import UserRepo
 from app.services.change_karma import change_karma
 from app.services.remove_message import delete_message_by_id
 from app.utils.types import ResultChangeKarma
@@ -86,10 +87,14 @@ async def set_report_bot_reply(
 
 
 async def reward_reporter(
-    reporter_id: int, reward_amount: int, chat: Chat, bot: Bot
+    reporter_id: int,
+    reward_amount: int,
+    chat: Chat,
+    bot: Bot,
+    user_repo: UserRepo,
 ) -> ResultChangeKarma:
-    from_user = await User.get_or_create_from_tg_user(await bot.get_me())
-    target_user = await User.get(id=reporter_id)
+    from_user = await user_repo.get_or_create_from_tg_user(await bot.get_me())
+    target_user = await user_repo.get_by_id(user_id=reporter_id)
     return await change_karma(
         user=from_user,
         target_user=target_user,

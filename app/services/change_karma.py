@@ -10,6 +10,7 @@ from app.infrastructure.database.models import (
     User,
     UserKarma,
 )
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.common import TypeRestriction
 from app.services.moderation import (
     auto_restrict,
@@ -107,7 +108,11 @@ async def change_karma(
 
 
 async def cancel_karma_change(
-    karma_event_id: int, rollback_karma: float, moderator_event_id: int, bot: Bot
+    karma_event_id: int,
+    rollback_karma: float,
+    moderator_event_id: int,
+    bot: Bot,
+    user_repo: UserRepo,
 ):
     async with in_transaction() as conn:
         karma_event = await KarmaEvent.get(id_=karma_event_id)
@@ -125,7 +130,7 @@ async def cancel_karma_change(
         await karma_event.delete(using_db=conn)
         if moderator_event_id is not None:
             moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
-            restricted_user = await User.get(id=user_to_id)
+            restricted_user = await user_repo.get_by_id(user_id=user_to_id)
 
             if moderator_event.type_restriction == TypeRestriction.karmic_ro.name:
                 await bot.restrict_chat_member(

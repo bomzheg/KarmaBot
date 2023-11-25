@@ -14,6 +14,7 @@ from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import CantChangeKarma, DontOffendRestricted, SubZeroKarma
 from app.utils.log import Logger
 
+from ..infrastructure.database.repo.user import UserRepo
 from . import keyboards as kb
 
 logger = Logger(__name__)
@@ -122,7 +123,10 @@ async def karma_change(
 
 @router.callback_query(kb.KarmaCancelCb.filter())
 async def cancel_karma(
-    callback_query: types.CallbackQuery, callback_data: kb.KarmaCancelCb, bot: Bot
+    callback_query: types.CallbackQuery,
+    callback_data: kb.KarmaCancelCb,
+    bot: Bot,
+    user_repo: UserRepo,
 ):
     if callback_data.user_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
@@ -133,7 +137,7 @@ async def cancel_karma(
         else callback_data.moderator_event_id
     )
     await cancel_karma_change(
-        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot
+        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot, user_repo
     )
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()
