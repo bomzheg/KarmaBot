@@ -26,6 +26,7 @@ class Config:
     time_to_cancel_actions: int = 60
     time_to_remove_temp_messages: int = 30
     report_karma_award: int = 0
+    report_award_cleanup_delay: int = 3600  # If time in seconds less than 1, then messages will not be deleted
     callback_query_answer_cache_time: int = 3600
 
 

@@ -6,12 +6,13 @@ import yaml
 from dotenv import load_dotenv
 
 from app.models.config import Config, TgClientConfig
+
 from .db import load_db_config
 from .karmic_restriction import load_karmic_restriction_config
 from .log import load_log_config
+from .logging_config import logging_setup
 from .storage import load_storage
 from .webhook import load_webhook_config
-from .logging_config import logging_setup
 
 
 @lru_cache
@@ -40,5 +41,6 @@ def load_config(config_dir: Path = None) -> Config:
         tg_client=TgClientConfig(bot_token=_bot_token),
         storage=load_storage(config_file_data["storage"]),
         report_karma_award=config_file_data.get("report_karma_award", 0),
+        report_award_cleanup_delay=config_file_data.get("report_award_cleanup_delay", 3600),
         callback_query_answer_cache_time=config_file_data.get("callback_query_answer_cache_time", 3600)
     )
