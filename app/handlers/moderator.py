@@ -316,6 +316,7 @@ async def approve_report_handler(
     user: User,
     chat: Chat,
     bot: Bot,
+    config: Config,
     chat_settings: ChatSettings,
     report_repo: ReportRepo,
 ):
