@@ -339,7 +339,7 @@ async def approve_report_handler(
             reward_amount=config.report_karma_award,
             bot=bot,
         )
-        await bot.edit_message_text(
+        message = await bot.edit_message_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
             "в награду за репорт{admin_url}".format(
                 reporter=hd.quote(karma_change_result.karma_event.user_to.fullname),
@@ -349,6 +349,13 @@ async def approve_report_handler(
             chat_id=first_report.chat.chat_id,
             message_id=first_report.bot_reply_message_id,
         )
+        if config.report_award_cleanup_delay > 0:
+            asyncio.create_task(
+                delete_message(
+                    message,
+                    sleep_time=config.report_award_cleanup_delay,
+                )
+            )
 
     await callback_query.answer("Вы подтвердили репорт", show_alert=not award_enabled)
     await cleanup_reports_dialog(

@@ -12,3 +12,5 @@ __pycache__/
 db_data/
 /config/
 .ruff_cache/
+.venv/
+venv/

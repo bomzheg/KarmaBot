@@ -11,3 +11,5 @@ Dockerfile
 *.db*
 docs/
 log/
+.venv/
+venv/
