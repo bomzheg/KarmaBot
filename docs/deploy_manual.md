@@ -6,7 +6,7 @@
 
 * Install requirements: ```python -m pip install -r requirements.txt```
 
-* Check out config samples in `config_dist` directory. 
+* Check out config samples in `config_dist` directory.
   You may want to copy that dir and rename it to `config`, this will make the steps below easier.
 
 * Create `config/.env` file with environment variables or export these variables:
@@ -14,9 +14,9 @@
   * fill `WEBHOOK_HOST`, `WEBHOOK_PORT`, `WEBHOOK_PATH`, `LISTEN_IP`, `LISTEN_PORT` if you need to run with webhook
   * `DB_TYPE` one of "sqlite", "postgres" or "mysql"
   * if you are using sqlite you have to specify `DB_PATH`
-  * in other case you need to specify `LOGIN_DB`, `PASSWORD_DB`, `DB_NAME`, `DB_HOST` (can skip, default is localhost), 
+  * in other case you need to specify `DB_LOGIN`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST` (can skip, default is localhost),
     `DB_PORT` (can skip, default is default port for a current db (example: 5432 for postgres))
-
+* Note: you need to install asyncpg in order to use app with postgresql database.
 * Create `config/bot-config.yaml` and fill it with variables:
   * `dump_chat_id` and `log_chat_id` - these will be used to send database dumps and bot logs respectively.
   * `superusers` - list of telegram user ids to become bots superusers.
@@ -42,7 +42,7 @@
   * install https://github.com/bomzheg/nginx-le
 
   * add karmabot.conf to nginx-le bots path (etc/bots)
-  
+
 * create .env file with environment variables like in #KarmaBot run without docker
 
 ```docker-compose up --build -d```
@@ -55,5 +55,5 @@
 
 # The secondary setup:
 * To generate invite links, the bot must have administrator rights
-* you can change `PLUS_WORDS`, `PLUS_TRIGGERS`, `PLUS_EMOJI`, `MINUS_EMOJI` in `app/config/karmic_triggers.py`. 
+* you can change `PLUS_WORDS`, `PLUS_TRIGGERS`, `PLUS_EMOJI`, `MINUS_EMOJI` in `app/config/karmic_triggers.py`.
 They must be iterable, better is set or frozenset.
