@@ -22,7 +22,7 @@ class UserGetter:
             no_updates=True,
         )
         self.restrict = RestrictCall(client_config.request_interval)
-        self.restrict_methods = ("get_users", "get_chat_members")
+        self.restrict_methods = ("get_users",)
         self.patch_api_client()
 
     def patch_api_client(self):
