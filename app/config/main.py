@@ -45,7 +45,6 @@ def load_config(config_dir: Path = None) -> Config:
             config_file_data["tg_client_config"] | {"bot_token": _bot_token}
         ),
         storage=load_storage(config_file_data["storage"]),
-        report_karma_award=config_file_data.get("report_karma_award", 0),
         report_award_cleanup_delay=config_file_data.get(
             "report_award_cleanup_delay", 3600
         ),
