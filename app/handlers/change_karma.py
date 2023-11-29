@@ -6,6 +6,7 @@ from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import HasTargetFilter, KarmaFilter
 from app.infrastructure.database.models import Chat, User
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import cancel_karma_change, change_karma
@@ -60,6 +61,7 @@ async def karma_change(
     target: User,
     config: Config,
     bot: Bot,
+    user_repo: UserRepo,
 ):
     try:
         result_change_karma = await change_karma(
@@ -69,6 +71,7 @@ async def karma_change(
             how_change=karma["karma_change"],
             comment=karma["comment"],
             bot=bot,
+            user_repo=user_repo,
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
@@ -122,7 +125,10 @@ async def karma_change(
 
 @router.callback_query(kb.KarmaCancelCb.filter())
 async def cancel_karma(
-    callback_query: types.CallbackQuery, callback_data: kb.KarmaCancelCb, bot: Bot
+    callback_query: types.CallbackQuery,
+    callback_data: kb.KarmaCancelCb,
+    bot: Bot,
+    user_repo: UserRepo,
 ):
     if callback_data.user_id != callback_query.from_user.id:
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
@@ -133,7 +139,7 @@ async def cancel_karma(
         else callback_data.moderator_event_id
     )
     await cancel_karma_change(
-        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot
+        callback_data.karma_event_id, rollback_karma, moderator_event_id, bot, user_repo
     )
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()

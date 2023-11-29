@@ -11,3 +11,5 @@ storage:
 
 dump_chat_id: -123456
 log_chat_id: -123456
+tg_client_config:
+  request_interval: 100

@@ -88,5 +88,5 @@ async def chat_migrate(message: types.Message, chat: Chat, chat_repo: ChatRepo):
     old_id = message.chat.id
     new_id = message.migrate_to_chat_id
     chat.chat_id = new_id
-    await chat_repo.update(chat)
+    await chat_repo.save(chat)
     logger.info(f"Migrate chat from {old_id} to {new_id}")

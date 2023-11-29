@@ -29,9 +29,13 @@
     * -s - skip updates that accumulated on tg servers
 
 * To create tables in database run script:\
-```PYTHONPATH=. python migrations/01_initialize.py```
+```shell
+PYTHONPATH=. python migrations/01_initialize.py
+```
 * for run concrete sql migration:\
-```PYTHONPATH=. python migrations/migrate.py 05_add_report_table.sql```
+```shell
+PYTHONPATH=. python migrations/migrate.py 05_add_report_table.sql
+```
 
 # Karmabot deploy manual with a docker:
 
