@@ -12,5 +12,6 @@ __pycache__/
 db_data/
 /config/
 .ruff_cache/
+/app/karma_bot.session-journal
 .venv/
 venv/

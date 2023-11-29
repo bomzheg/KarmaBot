@@ -15,6 +15,7 @@ from app.filters.reports import HasResolvedReport
 from app.handlers import keyboards as kb
 from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
 from app.infrastructure.database.repo.report import ReportRepo
+from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.moderation import (
     ban_user,
@@ -253,10 +254,15 @@ async def get_info_about_user_private(message: types.Message):
     HasTargetFilter(can_be_same=True),
 )
 async def get_info_about_user(
-    message: types.Message, chat: Chat, target: User, config: Config, bot: Bot
+    message: types.Message,
+    chat: Chat,
+    target: User,
+    config: Config,
+    bot: Bot,
+    user_repo: UserRepo,
 ):
     info = await get_user_info(target, chat, config.date_format)
-    target_karma = await target.get_karma(chat)
+    target_karma = await user_repo.get_karma(target, chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"
     information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(
@@ -319,6 +325,7 @@ async def approve_report_handler(
     config: Config,
     chat_settings: ChatSettings,
     report_repo: ReportRepo,
+    user_repo: UserRepo,
 ):
     logger.info(
         "Moderator {moderator} approved report {report}",
@@ -338,6 +345,7 @@ async def approve_report_handler(
             chat=chat,
             reward_amount=config.report_karma_award,
             bot=bot,
+            user_repo=user_repo,
         )
         message = await bot.edit_message_text(
             "<b>{reporter}</b> получил <b>+{reward_amount}</b> кармы "
