@@ -20,7 +20,6 @@ Commands list:
 * !me - show your karma for this chat (in group or supergroup) or show your karma for all yours chats (in private)
 * !report, /report, !admin, /admin, @admin - report spam, insult or another inappropriate content
 to the group administrators
-* !idchat - get id of chat, your id, and id of replayed user
 
 Moderator commands list:
 * !ro !mute [DURATION] [@mention] - restrict replied or mentioned user for DURATION.
@@ -38,10 +37,22 @@ Moderator commands list:
 
 
 Chat settings commands list:
+* !enable_karma - enable karma in chat
+* !disable_karma - disable karma in chat
 * !enable_karmic_ro - enable restrictions on low karma reason
   (need to have right for ban users for bot and user asked for that command)
 * !disable_karmic_ro - disable restrictions on low karma reason
   (need to have right for ban users for bot and user asked for that command)
+* !set_report_reward [REWARD] - set reward for report
+
+
+Helper commands list:
+* !idchat - get id of chat, your id, and id of replayed user (if you reply to someone)
+* !go - search in Google
+* !paste - services for paste code
+* !nm - information about meta-questions
+* !xy - information about XY problem
+
 
 Superuser commands list:
 * /generate_invite_logchat - if bot is admin in the chat of LOG_CHAT_ID from `config.py` bot generates invite link to that
