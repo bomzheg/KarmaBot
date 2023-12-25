@@ -20,6 +20,7 @@ Commands list:
 * !me - show your karma for this chat (in group or supergroup) or show your karma for all yours chats (in private)
 * !report, /report, !admin, /admin, @admin - report spam, insult or another inappropriate content
 to the group administrators
+* !settings - show chat settings and commands to change them
 
 Moderator commands list:
 * !ro !mute [DURATION] [@mention] - restrict replied or mentioned user for DURATION.
