@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable
 
 import aiogram
@@ -15,6 +16,7 @@ class ReportRepo:
         reporter: User,
         reported_user: User,
         chat: Chat,
+        created_time: datetime,
         reported_message: aiogram.types.Message,
         command_message: aiogram.types.Message,
         status: ReportStatus,
@@ -23,6 +25,7 @@ class ReportRepo:
             reporter=reporter,
             reported_user=reported_user,
             chat=chat,
+            created_time=created_time,
             command_message_id=command_message.message_id,
             reported_message_id=reported_message.message_id,
             reported_message_content=reported_message.html_text,
