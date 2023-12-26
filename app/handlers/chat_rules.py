@@ -1,5 +1,5 @@
-from aiogram import Router, Bot, F
-from aiogram.filters import CommandObject, Command
+from aiogram import Bot, F, Router
+from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
 from app.handlers import keyboards as kb
@@ -58,6 +58,10 @@ def setup() -> Router:
     router.message.register(lmgify_cmd, Command("go", prefix="!"), F.reply_to_message)
     router.message.register(paste_cmd, Command("paste", prefix="!"), F.reply_to_message)
     router.message.register(nometa_cmd, Command("nm", prefix="!"), F.reply_to_message)
-    router.message.register(xy_problem_cmd, Command("xy", prefix="!"), F.reply_to_message)
-    router.message.register(delete_me_cmd, Command("go", "paste", "nm", prefix="!"))
+    router.message.register(
+        xy_problem_cmd, Command("xy", prefix="!"), F.reply_to_message
+    )
+    router.message.register(
+        delete_me_cmd, Command("go", "paste", "nm", "xy", prefix="!")
+    )
     return router
