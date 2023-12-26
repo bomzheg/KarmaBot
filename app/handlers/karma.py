@@ -3,6 +3,7 @@ import asyncio
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
+from tortoise.exceptions import DoesNotExist
 
 from app.infrastructure.database.models import Chat, User
 from app.infrastructure.database.repo.chat import ChatRepo
@@ -28,7 +29,13 @@ async def get_top_from_private(
             "или с указанием ID нужного чата, например:"
             "\n" + hd.code("!top -1001399056118")
         )
-    chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
+    try:
+        chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
+    except DoesNotExist:
+        return await message.reply(
+            "Не удалось найти чат с таким ID, убедитесь, "
+            "что бот состоит в этом чате и попробуйте еще раз"
+        )
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
