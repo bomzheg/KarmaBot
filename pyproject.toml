@@ -1,6 +1,33 @@
 [project]
 name = "karmabot"
+version = "1.6.1"
 requires-python = ">=3.11"
+dependencies = [
+    "aiogram~=3.0.0",
+    "aiohttp~=3.8.3",
+    "tortoise-orm~=0.19.3",
+    "lxml~=4.9.2",
+    "beautifulsoup4~=4.11.2",
+    "python-dotenv~=0.21.1",
+    "Pyrogram~=2.0.97",
+    "pyyaml~=6.0.1",
+    "colorlog~=6.7.0",
+    "redis~=4.4.2",
+    "pre-commit~=3.5.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "flake8~=6.0.0",
+    "pytest~=7.2.1",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
 
 [tool.ruff]
 target-version = "py311"
