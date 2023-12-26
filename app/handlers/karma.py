@@ -22,14 +22,13 @@ async def get_top_from_private(
     message: types.Message, user: User, chat_repo: ChatRepo, user_repo: UserRepo
 ):
     parts = message.text.split(maxsplit=1)
-    if len(parts) > 1:
-        chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
-    else:
+    if len(parts) == 1:
         return await message.reply(
             "Эту команду можно использовать только в группах "
-            "или с указанием id нужного чата, например:"
+            "или с указанием ID нужного чата, например:"
             "\n" + hd.code("!top -1001399056118")
         )
+    chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
@@ -46,6 +45,11 @@ async def get_top(
     chat_repo: ChatRepo,
     user_repo: UserRepo,
 ):
+    parts = message.text.split(maxsplit=1)
+    if len(parts) > 1:
+        return await message.reply(
+            "Просмотр топа другого чата возможен только в личных сообщениях с ботом"
+        )
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
