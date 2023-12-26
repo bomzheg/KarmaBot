@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Iterable
 
 import aiogram
@@ -16,7 +15,6 @@ class ReportRepo:
         reporter: User,
         reported_user: User,
         chat: Chat,
-        created_time: datetime,
         reported_message: aiogram.types.Message,
         command_message: aiogram.types.Message,
         status: ReportStatus,
@@ -25,7 +23,7 @@ class ReportRepo:
             reporter=reporter,
             reported_user=reported_user,
             chat=chat,
-            created_time=created_time,
+            created_time=command_message.date,
             command_message_id=command_message.message_id,
             reported_message_id=reported_message.message_id,
             reported_message_content=reported_message.html_text,
@@ -51,7 +49,10 @@ class ReportRepo:
                 status=ReportStatus.PENDING,
             )
             .prefetch_related("chat", "reporter")
-            .order_by("created_time")
+            # Sort by `created_time` and command_message_id to get the first report
+            # If `created_time` is the same,
+            # the first report is the one with the lowest `command_message_id`
+            .order_by("created_time", "command_message_id")
             .using_db(self.session)
             .all()
         )

@@ -74,7 +74,6 @@ async def report_message(
         reporter=user,
         reported_user=target,
         chat=chat,
-        created_time=message.date,
         reported_message=message.reply_to_message,
         command_message=message,
         report_repo=report_repo,
