@@ -51,12 +51,20 @@ async def get_top(
     user: User,
     chat_repo: ChatRepo,
     user_repo: UserRepo,
+    config: Config,
 ):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
-        return await message.reply(
+        msg = await message.reply(
             "Просмотр топа другого чата возможен только в личных сообщениях с ботом"
         )
+
+        asyncio.create_task(delete_message(msg, config.time_to_remove_temp_messages))
+        asyncio.create_task(
+            delete_message(message, config.time_to_remove_temp_messages)
+        )
+
+        return
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
