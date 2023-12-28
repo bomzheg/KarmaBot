@@ -11,7 +11,7 @@ from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.karma import get_me_chat_info, get_me_info
 from app.services.karma import get_top as get_karma_top
-from app.services.remove_message import delete_message
+from app.services.remove_message import cleanup_command_dialog
 from app.utils.log import Logger
 
 logger = Logger(__name__)
@@ -55,13 +55,16 @@ async def get_top(
 ):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
-        msg = await message.reply(
+        bot_reply = await message.reply(
             "Просмотр топа другого чата возможен только в личных сообщениях с ботом"
         )
 
-        asyncio.create_task(delete_message(msg, config.time_to_remove_temp_messages))
         asyncio.create_task(
-            delete_message(message, config.time_to_remove_temp_messages)
+            cleanup_command_dialog(
+                bot_message=bot_reply,
+                delete_bot_reply=True,
+                delay=config.time_to_remove_temp_messages,
+            )
         )
 
         return
@@ -79,12 +82,18 @@ async def get_me(message: types.Message, chat: Chat, user: User, config: Config)
         "user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
-    msg = await message.reply(
+    bot_reply = await message.reply(
         f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",
         disable_web_page_preview=True,
     )
-    asyncio.create_task(delete_message(msg, config.time_to_remove_temp_messages))
-    asyncio.create_task(delete_message(message, config.time_to_remove_temp_messages))
+
+    asyncio.create_task(
+        cleanup_command_dialog(
+            bot_message=bot_reply,
+            delete_bot_reply=True,
+            delay=config.time_to_remove_temp_messages,
+        )
+    )
 
 
 @router.message(F.chat.type == "private", Command("me", prefix="!"))
