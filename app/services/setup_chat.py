@@ -1,9 +1,12 @@
+import logging
+
 from aiogram import types
 
 from app.infrastructure.database.repo.chat import ChatRepo
 from app.infrastructure.database.repo.chat_settings import ChatSettingsRepo
 from app.infrastructure.database.repo.user import UserRepo
-from app.middlewares.db_middleware import logger
+
+logger = logging.getLogger(__name__)
 
 
 async def setup_chat(
