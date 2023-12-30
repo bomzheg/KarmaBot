@@ -17,7 +17,6 @@ from app.services.moderation import (
     get_count_auto_restrict,
     user_has_now_ro,
 )
-from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import AutoLike, DontOffendRestricted
 from app.utils.log import Logger
 from app.utils.types import ResultChangeKarma
@@ -35,6 +34,7 @@ async def change_karma(
     target_user: User,
     chat: Chat,
     how_change: float,
+    is_restriction_enabled: bool,
     bot: Bot,
     user_repo: UserRepo,
     comment: str = "",
@@ -78,9 +78,7 @@ async def change_karma(
         )
         karma_after = uk.karma
 
-        if config.auto_restriction.need_restrict(
-            uk.karma
-        ) and await is_enable_karmic_restriction(chat):
+        if config.auto_restriction.need_restrict(uk.karma) and is_restriction_enabled:
             count_auto_restrict, moderator_event = await auto_restrict(
                 bot=bot,
                 chat=chat,

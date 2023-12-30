@@ -5,13 +5,12 @@ from aiogram.types import ContentType
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import HasTargetFilter, KarmaFilter
-from app.infrastructure.database.models import Chat, User
+from app.infrastructure.database.models import Chat, ChatSettings, User
 from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
 from app.services.adaptive_trottle import AdaptiveThrottle
 from app.services.change_karma import cancel_karma_change, change_karma
 from app.services.remove_message import remove_kb
-from app.services.settings import is_enable_karmic_restriction
 from app.utils.exceptions import CantChangeKarma, DontOffendRestricted, SubZeroKarma
 from app.utils.log import Logger
 
@@ -58,6 +57,7 @@ async def karma_change(
     karma: dict,
     user: User,
     chat: Chat,
+    chat_settings: ChatSettings,
     target: User,
     config: Config,
     bot: Bot,
@@ -65,13 +65,14 @@ async def karma_change(
 ):
     try:
         result_change_karma = await change_karma(
+            user=user,
             target_user=target,
             chat=chat,
-            user=user,
             how_change=karma["karma_change"],
-            comment=karma["comment"],
+            is_restriction_enabled=chat_settings.karmic_restrictions,
             bot=bot,
             user_repo=user_repo,
+            comment=karma["comment"],
         )
     except SubZeroKarma:
         return await message.reply("У Вас слишком мало кармы для этого")
@@ -85,9 +86,7 @@ async def karma_change(
         notify_text = config.auto_restriction.render_auto_restriction(
             target, result_change_karma.count_auto_restrict
         )
-    elif result_change_karma.karma_after < 0 and await is_enable_karmic_restriction(
-        chat
-    ):
+    elif result_change_karma.karma_after < 0 and chat_settings.karmic_restrictions:
         notify_text = config.auto_restriction.render_negative_karma_notification(
             target, result_change_karma.count_auto_restrict
         )

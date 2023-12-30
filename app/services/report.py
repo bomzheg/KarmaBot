@@ -100,10 +100,11 @@ async def reward_reporter(
         target_user=target_user,
         chat=chat,
         how_change=reward_amount,
+        is_restriction_enabled=False,
         bot=bot,
+        user_repo=user_repo,
         comment="Report reward",
         is_reward=True,
-        user_repo=user_repo,
     )
 
 

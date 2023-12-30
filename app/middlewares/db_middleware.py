@@ -5,12 +5,12 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware, types
 from aiogram.dispatcher.event.bases import CancelHandler
 from aiogram.types import TelegramObject
-from tortoise import BaseDBAsyncClient
 
 from app.infrastructure.database.repo.chat import ChatRepo
+from app.infrastructure.database.repo.chat_settings import ChatSettingsRepo
 from app.infrastructure.database.repo.report import ReportRepo
 from app.infrastructure.database.repo.user import UserRepo
-from app.services.settings import get_chat_settings
+from app.services.setup_chat import setup_chat
 from app.utils.log import Logger
 
 logger = Logger(__name__)
@@ -29,32 +29,23 @@ class DBMiddleware(BaseMiddleware):
             raise CancelHandler
 
         # TODO: need to pass db session here
-        await self.setup_chat(data, user, chat)
-        return await handler(event, data)
+        chat_repo = ChatRepo()
+        user_repo = UserRepo()
+        report_repo = ReportRepo()
+        chat_settings_repo = ChatSettingsRepo()
 
-    async def setup_chat(
-        self,
-        data: dict,
-        user: types.User,
-        chat: types.Chat | None = None,
-        session: BaseDBAsyncClient | None = None,
-    ):
-        try:
-            chat_repo = ChatRepo(session)
-            user_repo = UserRepo(session)
-            report_repo = ReportRepo(session)
-
-            user = await user_repo.get_or_create_from_tg_user(user)
-
-            if chat and chat.type != "private":
-                chat = await chat_repo.get_or_create_from_tg_chat(chat)
-                data["chat_settings"] = await get_chat_settings(chat=chat)
-        except Exception as e:
-            logger.exception("troubles with db", exc_info=e)
-            raise e
-
-        data["user"] = user
-        data["chat"] = chat
+        user, chat, chat_settings = await setup_chat(
+            tg_user=user,
+            tg_chat=chat,
+            user_repo=user_repo,
+            chat_repo=chat_repo,
+            chat_settings_repo=chat_settings_repo,
+        )
         data["chat_repo"] = chat_repo
         data["user_repo"] = user_repo
         data["report_repo"] = report_repo
+        data["user"] = user
+        data["chat"] = chat
+        data["chat_settings"] = chat_settings
+
+        return await handler(event, data)

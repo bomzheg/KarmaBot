@@ -1,58 +1,31 @@
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.infrastructure.database.models import Chat, ChatSettings
+from app.infrastructure.database.repo.chat_settings import ChatSettingsRepo
 
 
-async def get_chat_settings(chat: Chat) -> ChatSettings:
-    chat_settings, _ = await ChatSettings.get_or_create(chat=chat)
-    return chat_settings
+async def disable_karmic_restriction(
+    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
+):
+    await chat_settings_repo.update_karmic_restriction(chat_settings, False)
 
 
-async def is_enable_karmic_restriction(chat: Chat) -> bool:
-    chat_settings = await get_chat_settings(chat=chat)
-    return chat_settings.karmic_restrictions
+async def enable_karmic_restriction(
+    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
+):
+    await chat_settings_repo.update_karmic_restriction(chat_settings, True)
 
 
-async def disable_karmic_restriction(chat: Chat):
-    await change_value_karmic_restriction(chat, False)
+async def disable_karma_counting(
+    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
+):
+    await chat_settings_repo.update_karma_counting(chat_settings, False)
 
 
-async def enable_karmic_restriction(chat: Chat):
-    await change_value_karmic_restriction(chat, True)
-
-
-async def is_karma_enabled(chat: Chat) -> bool:
-    chat_settings = await get_chat_settings(chat=chat)
-    return chat_settings.karma_counting
-
-
-async def disable_karma_counting(chat: Chat):
-    await change_value_karma_counting(chat, False)
-
-
-async def enable_karma_counting(chat: Chat):
-    await change_value_karma_counting(chat, True)
-
-
-async def change_value_karmic_restriction(chat: Chat, new_value: bool):
-    chat_settings = await get_chat_settings(chat=chat)
-    if chat_settings.karmic_restrictions == new_value:
-        return
-    chat_settings.karmic_restrictions = new_value
-    await chat_settings.save()
-
-
-async def change_value_karma_counting(chat: Chat, new_value: bool):
-    chat_settings = await get_chat_settings(chat=chat)
-    if chat_settings.karma_counting == new_value:
-        return
-    chat_settings.karma_counting = new_value
-    await chat_settings.save()
-
-
-async def get_settings_card(chat: Chat) -> str:
-    chat_settings = await get_chat_settings(chat=chat)
-    return render_settings(chat_settings, chat)
+async def enable_karma_counting(
+    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
+):
+    await chat_settings_repo.update_karma_counting(chat_settings, True)
 
 
 def render_settings(chat_settings: ChatSettings, chat: Chat) -> str:
@@ -79,10 +52,3 @@ def render_settings(chat_settings: ChatSettings, chat: Chat) -> str:
         result += "Чтобы награды за репорт работали, необходимо включить подсчёт кармы в чате.\n\n"
 
     return result
-
-
-async def update_report_reward(chat_settings: ChatSettings, value: int):
-    if chat_settings.report_karma_award == value:
-        return
-    chat_settings.report_karma_award = value
-    await chat_settings.save()

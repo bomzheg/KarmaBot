@@ -5,21 +5,21 @@ from aiogram.utils.text_decorations import html_decoration as hd
 from app.filters import HasPermissions
 from app.filters.basic_arguments import single_non_negative_int
 from app.infrastructure.database.models import Chat, ChatSettings
+from app.infrastructure.database.repo.chat_settings import ChatSettingsRepo
 from app.services.settings import (
     disable_karma_counting,
     disable_karmic_restriction,
     enable_karma_counting,
     enable_karmic_restriction,
-    get_settings_card,
-    update_report_reward,
+    render_settings,
 )
 
 router = Router(name=__name__)
 
 
 @router.message(Command(commands="settings", prefix="!/"))
-async def get_settings(message: types.Message, chat: Chat):
-    settings_card = await get_settings_card(chat)
+async def get_settings(message: types.Message, chat: Chat, chat_settings: ChatSettings):
+    settings_card = render_settings(chat_settings, chat)
     await message.answer(settings_card)
 
 
@@ -27,8 +27,12 @@ async def get_settings(message: types.Message, chat: Chat):
     Command("enable_karmic_ro", prefix="!/"),
     HasPermissions(can_restrict_members=True),
 )
-async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
-    await enable_karmic_restriction(chat)
+async def enable_karmic_ro_cmd(
+    message: types.Message,
+    chat_settings: ChatSettings,
+    chat_settings_repo: ChatSettingsRepo,
+):
+    await enable_karmic_restriction(chat_settings, chat_settings_repo)
     await message.reply(
         "<b>Кармобаны</b>\n\n"
         "Было включено правило кармобанов:\n"
@@ -44,8 +48,12 @@ async def enable_karmic_ro_cmd(message: types.Message, chat: Chat):
     Command("disable_karmic_ro", prefix="!/"),
     HasPermissions(can_restrict_members=True),
 )
-async def disable_karmic_ro_cmd(message: types.Message, chat: Chat):
-    await disable_karmic_restriction(chat)
+async def disable_karmic_ro_cmd(
+    message: types.Message,
+    chat_settings: ChatSettings,
+    chat_settings_repo: ChatSettingsRepo,
+):
+    await disable_karmic_restriction(chat_settings, chat_settings_repo)
     await message.reply("Кармобаны отключены")
 
 
@@ -53,8 +61,12 @@ async def disable_karmic_ro_cmd(message: types.Message, chat: Chat):
     Command("enable_karma", prefix="!/"),
     HasPermissions(can_delete_messages=True),
 )
-async def enable_karma(message: types.Message, chat: Chat):
-    await enable_karma_counting(chat)
+async def enable_karma(
+    message: types.Message,
+    chat_settings: ChatSettings,
+    chat_settings_repo: ChatSettingsRepo,
+):
+    await enable_karma_counting(chat_settings, chat_settings_repo)
     await message.reply("Включён подсчёт кармы")
 
 
@@ -62,8 +74,12 @@ async def enable_karma(message: types.Message, chat: Chat):
     Command("disable_karma", prefix="!/"),
     HasPermissions(can_delete_messages=True),
 )
-async def disable_karma(message: types.Message, chat: Chat):
-    await disable_karma_counting(chat)
+async def disable_karma(
+    message: types.Message,
+    chat_settings: ChatSettings,
+    chat_settings_repo: ChatSettingsRepo,
+):
+    await disable_karma_counting(chat_settings, chat_settings_repo)
     await message.reply("Выключен подсчёт кармы")
 
 
@@ -73,9 +89,12 @@ async def disable_karma(message: types.Message, chat: Chat):
     single_non_negative_int,
 )
 async def set_report_reward(
-    message: types.Message, chat_settings: ChatSettings, value: int
+    message: types.Message,
+    chat_settings: ChatSettings,
+    value: int,
+    chat_settings_repo: ChatSettingsRepo,
 ):
-    await update_report_reward(chat_settings, value)
+    await chat_settings_repo.update_report_award(chat_settings, value)
     if value != 0:
         reply_text = f"Награда за принятый репорт обновлена: +{value} кармы."
     else:
