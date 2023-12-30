@@ -41,9 +41,12 @@ class DBMiddleware(BaseMiddleware):
             chat_repo=chat_repo,
             chat_settings_repo=chat_settings_repo,
         )
+
         data["chat_repo"] = chat_repo
         data["user_repo"] = user_repo
         data["report_repo"] = report_repo
+        data["chat_settings_repo"] = chat_settings_repo
+
         data["user"] = user
         data["chat"] = chat
         data["chat_settings"] = chat_settings
