@@ -1,9 +1,8 @@
 FROM python:3.11-buster as builder
-COPY freeze.txt freeze.txt
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip install --no-cache-dir -r freeze.txt
+RUN pip install .
 
 FROM python:3.11-slim-buster
 LABEL maintainer="bomzheg <bomzheg@gmail.com>" \
