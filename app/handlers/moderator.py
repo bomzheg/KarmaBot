@@ -92,11 +92,14 @@ async def report_message(
     HasResolvedReport(),
     Command("report", "admin", "spam", prefix="/!@"),
 )
-async def report_already_reported(message: types.Message, config: Config):
+async def report_already_reported(message: types.Message, config: Config, bot: Bot):
     reply = await message.reply("Сообщение уже было рассмотрено ранее")
-    asyncio.create_task(
+    return asyncio.create_task(
         cleanup_command_dialog(
-            reply, delete_bot_reply=True, delay=config.time_to_remove_temp_messages
+            bot=bot,
+            bot_message=reply,
+            delete_bot_reply=True,
+            delay=config.time_to_remove_temp_messages,
         )
     )
 
@@ -305,14 +308,14 @@ async def cmd_unhandled(message: types.Message):
     kb.WarnCancelCb.filter(), MagicData(F.user.tg_id == F.callback_data.user_id)
 )
 async def cancel_warn(
-    callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb
+    callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb, bot: Bot
 ):
     from_user = callback_query.from_user
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
 
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
     await cleanup_command_dialog(
-        bot_message=callback_query.message, delete_bot_reply=True
+        bot, bot_message=callback_query.message, delete_bot_reply=True
     )
 
 
@@ -413,6 +416,7 @@ async def cancel_report_handler(
     callback_data: kb.CancelReportCb,
     user: User,
     report_repo: ReportRepo,
+    bot: Bot,
 ):
     logger.info(
         "User {user} cancelled report {report}",
@@ -426,7 +430,7 @@ async def cancel_report_handler(
     )
     await callback_query.answer("Вы отменили репорт", show_alert=True)
     await cleanup_command_dialog(
-        bot_message=callback_query.message, delete_bot_reply=True
+        bot, bot_message=callback_query.message, delete_bot_reply=True
     )
 
 

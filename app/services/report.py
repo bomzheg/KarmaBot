@@ -8,7 +8,6 @@ from app.infrastructure.database.models import Chat, Report, ReportStatus, User
 from app.infrastructure.database.repo.report import ReportRepo
 from app.infrastructure.database.repo.user import UserRepo
 from app.services.change_karma import change_karma
-from app.services.remove_message import delete_message_by_id
 from app.utils.types import ResultChangeKarma
 
 
@@ -113,17 +112,13 @@ async def cleanup_reports_dialog(
     delete_first_reply: bool,
     bot: Bot,
 ):
-    await delete_message_by_id(
-        first_report.chat.chat_id, first_report.command_message_id, bot
-    )
+    to_delete = [first_report.command_message_id]
 
     if delete_first_reply:
-        await delete_message_by_id(
-            first_report.chat.chat_id, first_report.bot_reply_message_id, bot
-        )
+        to_delete.append(first_report.bot_reply_message_id)
 
     for report in linked_reports:
-        await delete_message_by_id(report.chat.chat_id, report.command_message_id, bot)
-        await delete_message_by_id(
-            report.chat.chat_id, report.bot_reply_message_id, bot
-        )
+        to_delete.append(report.command_message_id)
+        to_delete.append(report.bot_reply_message_id)
+
+    await bot.delete_messages(chat_id=first_report.chat.chat_id, message_ids=to_delete)

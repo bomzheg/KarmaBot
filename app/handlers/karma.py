@@ -1,6 +1,6 @@
 import asyncio
 
-from aiogram import F, Router, types
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise.exceptions import DoesNotExist
@@ -20,21 +20,42 @@ router = Router(name=__name__)
 
 @router.message(Command("top", prefix="!"), F.chat.type == "private")
 async def get_top_from_private(
-    message: types.Message, user: User, chat_repo: ChatRepo, user_repo: UserRepo
+    message: types.Message,
+    user: User,
+    chat_repo: ChatRepo,
+    user_repo: UserRepo,
+    config: Config,
+    bot: Bot,
 ):
     parts = message.text.split(maxsplit=1)
     if len(parts) == 1:
-        return await message.reply(
+        bot_reply = await message.reply(
             "Эту команду можно использовать только в группах "
             "или с указанием ID нужного чата, например:"
             "\n" + hd.code("!top -1001399056118")
         )
+        return asyncio.create_task(
+            cleanup_command_dialog(
+                bot=bot,
+                bot_message=bot_reply,
+                delete_bot_reply=True,
+                delay=config.time_to_remove_temp_messages,
+            )
+        )
     try:
         chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
     except DoesNotExist:
-        return await message.reply(
+        bot_reply = await message.reply(
             "Не удалось найти чат с таким ID, убедитесь, "
             "что бот состоит в этом чате и попробуйте еще раз"
+        )
+        return asyncio.create_task(
+            cleanup_command_dialog(
+                bot=bot,
+                bot_message=bot_reply,
+                delete_bot_reply=True,
+                delay=config.time_to_remove_temp_messages,
+            )
         )
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
@@ -52,22 +73,22 @@ async def get_top(
     chat_repo: ChatRepo,
     user_repo: UserRepo,
     config: Config,
+    bot: Bot,
 ):
     parts = message.text.split(maxsplit=1)
     if len(parts) > 1:
         bot_reply = await message.reply(
             "Просмотр топа другого чата возможен только в личных сообщениях с ботом"
         )
-
-        asyncio.create_task(
+        return asyncio.create_task(
             cleanup_command_dialog(
+                bot=bot,
                 bot_message=bot_reply,
                 delete_bot_reply=True,
                 delay=config.time_to_remove_temp_messages,
             )
         )
 
-        return
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
@@ -77,7 +98,9 @@ async def get_top(
 
 
 @router.message(F.chat.type.in_(["group", "supergroup"]), Command("me", prefix="!"))
-async def get_me(message: types.Message, chat: Chat, user: User, config: Config):
+async def get_me(
+    message: types.Message, chat: Chat, user: User, config: Config, bot: Bot
+):
     logger.info(
         "user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
@@ -87,8 +110,9 @@ async def get_me(message: types.Message, chat: Chat, user: User, config: Config)
         disable_web_page_preview=True,
     )
 
-    asyncio.create_task(
+    return asyncio.create_task(
         cleanup_command_dialog(
+            bot=bot,
             bot_message=bot_reply,
             delete_bot_reply=True,
             delay=config.time_to_remove_temp_messages,

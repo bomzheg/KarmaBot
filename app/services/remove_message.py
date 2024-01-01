@@ -25,7 +25,7 @@ async def delete_message_by_id(chat_id: int, message_id: int, bot: Bot):
 
 
 async def cleanup_command_dialog(
-    bot_message: types.Message, delete_bot_reply: bool, delay: int = 0
+    bot: Bot, bot_message: types.Message, delete_bot_reply: bool, delay: int = 0
 ):
     """
     Delete command message that triggered bot.
@@ -34,10 +34,15 @@ async def cleanup_command_dialog(
     if delay:
         await asyncio.sleep(delay)
 
-    await delete_message(bot_message.reply_to_message)
-
     if delete_bot_reply:
-        await delete_message(bot_message)
+        await bot.delete_messages(
+            chat_id=bot_message.chat.id,
+            message_ids=[
+                bot_message.reply_to_message.message_id,
+                bot_message.message_id,
+            ],
+        )
     else:
+        await delete_message(bot_message)
         with suppress(TelegramBadRequest):
             await bot_message.edit_reply_markup()
