@@ -1,5 +1,7 @@
 FROM python:3.11-buster as builder
 ENV VIRTUAL_ENV=/opt/venv
+COPY pyproject.toml pyproject.toml
+RUN mkdir app
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install .
