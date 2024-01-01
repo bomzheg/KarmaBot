@@ -9,9 +9,10 @@ from app.infrastructure.database.models import Chat, User
 from app.infrastructure.database.repo.chat import ChatRepo
 from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
-from app.services.karma import get_me_chat_info, get_me_info
+from app.services.karma import get_chat, get_me_chat_info, get_me_info
 from app.services.karma import get_top as get_karma_top
 from app.services.remove_message import cleanup_command_dialog
+from app.utils.exceptions import IDParseError, NotEnoughArguments
 from app.utils.log import Logger
 
 logger = Logger(__name__)
@@ -27,32 +28,27 @@ async def get_top_from_private(
     config: Config,
     bot: Bot,
 ):
-    parts = message.text.split(maxsplit=1)
-    if len(parts) == 1:
-        bot_reply = await message.reply(
-            "Эту команду можно использовать только в группах "
-            "или с указанием ID нужного чата, например:"
-            "\n" + hd.code("!top -1001399056118")
-        )
-        return asyncio.create_task(
-            cleanup_command_dialog(
-                bot=bot,
-                bot_message=bot_reply,
-                delete_bot_reply=True,
-                delay=config.time_to_remove_temp_messages,
-            )
-        )
+    error_message = None
     try:
-        chat = await chat_repo.get_by_id(chat_id=int(parts[1]))
+        chat = await get_chat(message.text.split(maxsplit=1), chat_repo)
+    except NotEnoughArguments:
+        error_message = (
+            "Эту команду можно использовать только в группах "
+            f"или с указанием ID нужного чата, например:\n{hd.code('!top -1001399056118')}"
+        )
+    except IDParseError:
+        error_message = f"Введите число. Например: {hd.code('!top -1001399056118')}"
     except DoesNotExist:
-        bot_reply = await message.reply(
+        error_message = (
             "Не удалось найти чат с таким ID, убедитесь, "
             "что бот состоит в этом чате и попробуйте еще раз"
         )
+
+    if error_message:
         return asyncio.create_task(
             cleanup_command_dialog(
                 bot=bot,
-                bot_message=bot_reply,
+                bot_message=await message.reply(error_message),
                 delete_bot_reply=True,
                 delay=config.time_to_remove_temp_messages,
             )

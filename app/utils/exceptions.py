@@ -1,10 +1,6 @@
 class KarmaError(Exception):
     def __init__(
-            self,
-            text: str = None,
-            user_id: int = None,
-            chat_id: int = None,
-            *args
+        self, text: str = None, user_id: int = None, chat_id: int = None, *args
     ):
         super(KarmaError, self).__init__(text, args)
         self.text = text
@@ -86,3 +82,15 @@ class Throttled(RuntimeError):
         self.chat_id = chat_id
         self.user_id = user_id
         self.rate = rate
+
+
+class CommandError(Exception):
+    pass
+
+
+class NotEnoughArguments(CommandError):
+    pass
+
+
+class IDParseError(CommandError):
+    pass
