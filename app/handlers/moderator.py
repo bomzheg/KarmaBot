@@ -92,9 +92,13 @@ async def report_message(
     HasResolvedReport(),
     Command("report", "admin", "spam", prefix="/!@"),
 )
-async def report_already_reported(message: types.Message):
+async def report_already_reported(message: types.Message, config: Config):
     reply = await message.reply("Сообщение уже было рассмотрено ранее")
-    asyncio.create_task(cleanup_command_dialog(reply, True, delay=60))
+    asyncio.create_task(
+        cleanup_command_dialog(
+            reply, delete_bot_reply=True, delay=config.time_to_remove_temp_messages
+        )
+    )
 
 
 @router.message(
