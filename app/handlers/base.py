@@ -108,9 +108,10 @@ async def cmd_advanced_help(message: types.Message):
 @router.message(Command("about", prefix="!"))
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
+    repo_url = "https://github.com/bomzheg/KarmaBot"
     await message.reply(
-        text="Исходники по ссылке: https://github.com/bomzheg/KarmaBot",
-        link_preview_options=LinkPreviewOptions(prefer_small_media=True),
+        text=f"Исходники по ссылке: {repo_url}",
+        link_preview_options=LinkPreviewOptions(url=repo_url, prefer_small_media=True),
     )
 
 
