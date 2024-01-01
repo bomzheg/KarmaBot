@@ -15,3 +15,5 @@ db_data/
 /app/karma_bot.session-journal
 .venv/
 venv/
+build/*
+*.egg-info/

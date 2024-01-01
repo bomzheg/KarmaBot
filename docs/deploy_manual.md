@@ -4,7 +4,7 @@
 
 * Create [virtual environment](https://docs.python.org/3/tutorial/venv.html) and activate it
 
-* Install requirements: ```python -m pip install -r requirements.txt```
+* Install requirements: ```python -m pip install .```
 
 * Check out config samples in `config_dist` directory.
   You may want to copy that dir and rename it to `config`, this will make the steps below easier.
