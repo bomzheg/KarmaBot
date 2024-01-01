@@ -3,6 +3,7 @@ import asyncio
 from aiogram import Bot, F, Router, types
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject, MagicData
+from aiogram.types import ReplyParameters
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import (
@@ -272,12 +273,23 @@ async def get_info_about_user(
     target_karma = await user_repo.get_karma(target, chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"
-    information = f"Данные на {target.mention_link} ({target_karma}):\n" + "\n".join(
-        info
-    )
+
+    if info:
+        title = f"Данные на {target.mention_link} ({target_karma}):"
+    else:
+        title = f"Данные на {target.mention_link} ({target_karma}) отсутствуют"
+    info.insert(0, title)
+
     try:
         await bot.send_message(
-            message.from_user.id, information, disable_web_page_preview=True
+            chat_id=message.from_user.id,
+            text="\n".join(info),
+            reply_parameters=ReplyParameters(
+                message_id=message.message_id,
+                chat_id=message.chat.id,
+                allow_sending_without_reply=True,
+            ),
+            disable_web_page_preview=True,
         )
     except TelegramUnauthorizedError:
         me = await bot.me()
