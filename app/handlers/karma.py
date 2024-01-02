@@ -26,8 +26,6 @@ async def get_top_from_private(
     user: User,
     chat_repo: ChatRepo,
     user_repo: UserRepo,
-    config: Config,
-    bot: Bot,
 ):
     error_message = None
     try:
@@ -46,14 +44,8 @@ async def get_top_from_private(
         )
 
     if error_message:
-        return asyncio.create_task(
-            cleanup_command_dialog(
-                bot=bot,
-                bot_message=await message.reply(error_message),
-                delete_bot_reply=True,
-                delay=config.time_to_remove_temp_messages,
-            )
-        )
+        return await message.reply(error_message)
+
     logger.info(
         "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
     )
