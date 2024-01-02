@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram import Bot, F, Router, types
 from aiogram.filters import Command
+from aiogram.types import LinkPreviewOptions
 from aiogram.utils.text_decorations import html_decoration as hd
 from tortoise.exceptions import DoesNotExist
 
@@ -58,7 +59,7 @@ async def get_top_from_private(
     )
     text = await get_karma_top(chat, user, chat_repo=chat_repo, user_repo=user_repo)
 
-    await message.reply(text, disable_web_page_preview=True)
+    await message.reply(text, link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
 @router.message(Command("top", prefix="!"))
@@ -90,7 +91,7 @@ async def get_top(
     )
     text = await get_karma_top(chat, user, chat_repo=chat_repo, user_repo=user_repo)
 
-    await message.reply(text, disable_web_page_preview=True)
+    await message.reply(text, link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
 @router.message(F.chat.type.in_(["group", "supergroup"]), Command("me", prefix="!"))
@@ -103,7 +104,7 @@ async def get_me(
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
     bot_reply = await message.reply(
         f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",
-        disable_web_page_preview=True,
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
     )
 
     return asyncio.create_task(
@@ -125,8 +126,7 @@ async def get_me_private(message: types.Message, user: User):
         text += f"\n{uk.chat.mention} <b>{uk.karma:.2f}</b> ({number_in_top})"
     if text:
         return await message.reply(
-            f"У Вас есть карма в следующих чатах:{text}", disable_web_page_preview=True
+            f"У Вас есть карма в следующих чатах:{text}",
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
-    await message.reply(
-        "У Вас нет никакой кармы ни в каких чатах", disable_web_page_preview=True
-    )
+    await message.reply("У Вас нет никакой кармы ни в каких чатах")

@@ -1,7 +1,7 @@
 import asyncio
 
 from aiogram import Bot, F, Router, types
-from aiogram.types import ContentType
+from aiogram.types import ContentType, LinkPreviewOptions
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import HasTargetFilter, KarmaFilter
@@ -111,7 +111,7 @@ async def karma_change(
             power=result_change_karma.abs_change,
             notify_text=notify_text,
         ),
-        disable_web_page_preview=True,
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
         allow_sending_without_reply=True,
         reply_markup=kb.get_kb_karma_cancel(
             user=user,
@@ -120,7 +120,7 @@ async def karma_change(
             moderator_event=result_change_karma.moderator_event,
         ),
     )
-    asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
+    return asyncio.create_task(remove_kb(msg, config.time_to_cancel_actions))
 
 
 @router.callback_query(kb.KarmaCancelCb.filter())

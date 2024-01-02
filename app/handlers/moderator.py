@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot, F, Router, types
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject, MagicData
-from aiogram.types import ReplyParameters
+from aiogram.types import LinkPreviewOptions, ReplyParameters
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import (
@@ -289,7 +289,7 @@ async def get_info_about_user(
                 chat_id=message.chat.id,
                 allow_sending_without_reply=True,
             ),
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
     except TelegramUnauthorizedError:
         me = await bot.me()
