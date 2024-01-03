@@ -18,10 +18,8 @@ services:
       - db
 
   db:
-    image: "postgres:17-alpine"
+    image: "postgres:16.1-alpine"
     restart: unless-stopped
-    expose:
-      - "5432"
     ports:
       - "127.0.0.1:15432:5432"
     networks:
@@ -31,7 +29,7 @@ services:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_DB: $POSTGRES_DB
     volumes:
-      - user_service.postgres.data:/var/lib/postgresql/users:rw
+      - postgres.data:/var/lib/postgresql/users:rw
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 10s
@@ -47,4 +45,4 @@ networks:
       name: nginx-reverse-proxy
 
 volumes:
-  problems:
+  postgres.data:
