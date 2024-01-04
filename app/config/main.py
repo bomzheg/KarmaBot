@@ -40,7 +40,6 @@ def load_config(config_dir: Path = None) -> Config:
         bot_token=_bot_token,
         superusers=frozenset(config_file_data["superusers"]),
         log=log_config,
-        dump_chat_id=config_file_data["dump_chat_id"],
         tg_client=load_tg_client_config(
             config_file_data["tg_client_config"] | {"bot_token": _bot_token}
         ),

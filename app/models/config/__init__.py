@@ -19,7 +19,6 @@ class Config:
     bot_token: str
     superusers: Iterable[int]
     log: LogConfig
-    dump_chat_id: int
     tg_client: TgClientConfig
     storage: StorageConfig
     date_format: str = "%d.%m.%Y"
