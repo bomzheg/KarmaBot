@@ -1,0 +1,9 @@
+load database
+     from sqlite:////home/bomzheg/karma.db
+     into postgresql://karmabot:karmabot@localhost:5432/karmabot
+
+ with include drop, create tables, create indexes, reset sequences
+
+  set work_mem to '16MB', maintenance_work_mem to '512 MB'
+AFTER LOAD EXECUTE 08_to_postgres.sql
+;

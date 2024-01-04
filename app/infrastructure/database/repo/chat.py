@@ -1,8 +1,7 @@
 from collections import namedtuple
 
-from tortoise import BaseDBAsyncClient
+from tortoise import BaseDBAsyncClient, Tortoise
 from tortoise.exceptions import DoesNotExist
-from tortoise.transactions import in_transaction
 
 from app.infrastructure.database.models import UserKarma
 from app.infrastructure.database.models.chat import Chat
@@ -77,21 +76,24 @@ class ChatRepo:
 
     async def get_neighbours_id(self, chat_id, user_id) -> Neighbours:
         # TODO: remove this new session when self.session won't be optional
-        async with in_transaction() as session:
-            neighbours = await session.execute_query(
-                """
-                SELECT prev_user_id, next_user_id
-                FROM (
-                    SELECT
-                        user_id,
-                        LAG(user_id) OVER(ORDER BY karma) prev_user_id,
-                        LEAD(user_id) OVER(ORDER BY karma) next_user_id
-                    FROM user_karma
-                    WHERE chat_id = ?
-                )
-                WHERE user_id = ?""",
-                (chat_id, user_id),
-            )
+        if not self.session:
+            session = Tortoise.get_connection("default")
+        else:
+            session = self.session
+        neighbours = await session.execute_query(
+            """
+            SELECT win.prev_user_id, win.next_user_id
+            FROM (
+                SELECT
+                    user_id,
+                    LAG(user_id) OVER(ORDER BY karma) prev_user_id,
+                    LEAD(user_id) OVER(ORDER BY karma) next_user_id
+                FROM user_karma
+                WHERE chat_id = $1
+            ) as win
+            WHERE user_id = $2""",
+            [chat_id, user_id],
+        )
         try:
             rez = dict(neighbours[1][0])
         except IndexError:
