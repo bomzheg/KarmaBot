@@ -13,6 +13,8 @@ services:
         read_only: true
     env_file: config/.env
     entrypoint: [ "python3", "-m", "app", "-p" ]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - reverse-proxy
       - db
@@ -39,7 +41,6 @@ services:
 
 
 networks:
-  db:
   reverse-proxy:
     external:
       name: nginx-reverse-proxy
