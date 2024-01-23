@@ -5,7 +5,17 @@ from aiogram.utils.markdown import hbold
 from app.infrastructure.database.models import Chat, User, UserKarma
 from app.infrastructure.database.repo.chat import ChatRepo
 from app.infrastructure.database.repo.user import UserRepo
-from app.utils.exceptions import NotHaveNeighbours
+from app.utils.exceptions import IDParseError, NotEnoughArguments, NotHaveNeighbours
+
+
+async def get_chat(command_arguments: list[str], chat_repo: ChatRepo) -> Chat:
+    if len(command_arguments) == 1:
+        raise NotEnoughArguments
+
+    try:
+        return await chat_repo.get_by_id(chat_id=int(command_arguments[1]))
+    except ValueError:
+        raise IDParseError
 
 
 async def get_top(

@@ -56,10 +56,7 @@ Helper commands list:
 
 
 Superuser commands list:
-* /generate_invite_logchat - if bot is admin in the chat of LOG_CHAT_ID from `config.py` bot generates invite link to that
-* /logchat - get logchat invite link if it's generated earlier
-* /update_log - send logs from /logs path to LOG_CHAT_ID and remove logs from files
 * /dump - The bot sends a dump of the sqlite database to the chat DUMP_CHAT_ID
-* /json - bot exports db with karma to json and send it to the DUMP_CHAT_ID
-* !add_manual - send it with the format  "!add_manual USER_ID NEW_KARMA" to replace karma in that chat for that user.
-**use this command CAREFULLY**
+* /get_out - Leave chat
+* /exception - Throw RuntimeError exception
+* /entities - Show entities from reply message

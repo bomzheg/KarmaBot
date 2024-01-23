@@ -1,6 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.types import LinkPreviewOptions
 from aiogram.utils.markdown import hbold, hpre
 
 from app.infrastructure.database.models import Chat
@@ -107,7 +108,11 @@ async def cmd_advanced_help(message: types.Message):
 @router.message(Command("about", prefix="!"))
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
-    await message.reply("Исходники по ссылке: https://github.com/bomzheg/KarmaBot")
+    repo_url = "https://github.com/bomzheg/KarmaBot"
+    await message.reply(
+        text=f"Исходники по ссылке: {repo_url}",
+        link_preview_options=LinkPreviewOptions(url=repo_url, prefer_small_media=True),
+    )
 
 
 @router.message(Command("idchat", prefix="!"))
