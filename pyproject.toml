@@ -38,6 +38,7 @@ packages = ["app"]
 target-version = "py311"
 line-length = 100
 pydocstyle = { convention = "google" }
+extend-select = ["I"]
 
 [tool.isort]
 profile = "black"
