@@ -34,12 +34,6 @@ jobs:
       run: |
         ruff check --config=pyproject.toml --show-fixes --output-format=github ${{ steps.changed-python-files.outputs.all_changed_files }}
 
-    - name: Black
-      id: black
-      if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
-      run: |
-        black --config=pyproject.toml --check --diff --verbose ${{ steps.changed-python-files.outputs.all_changed_files }}
-
     - name: Isort
       id: isort
       if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
