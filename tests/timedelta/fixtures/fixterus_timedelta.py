@@ -13,7 +13,9 @@ CORRECT_SIMPLE = [
 CORRECT_TUPLE_TYPE = typing.Tuple[str, timedelta]
 
 
-def get_difficult_correct(count: int = 10, count_in_one_up_to: int = 3) -> typing.List[CORRECT_TUPLE_TYPE]:
+def get_difficult_correct(
+    count: int = 10, count_in_one_up_to: int = 3
+) -> typing.List[CORRECT_TUPLE_TYPE]:
     return [get_many_correct(i) for _ in range(count) for i in range(2, count_in_one_up_to)]
 
 

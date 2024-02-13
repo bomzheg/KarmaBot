@@ -1,9 +1,14 @@
 import pytest
 from aiogram import types
 
-from .common import filter_check, CONF_CANT_BE_SAME
-from .fixtures import (get_from_user, get_message_with_reply,
-                       get_message_with_text_mention, get_message_with_mention, get_parts)
+from .common import CONF_CANT_BE_SAME, filter_check
+from .fixtures import (
+    get_from_user,
+    get_message_with_mention,
+    get_message_with_reply,
+    get_message_with_text_mention,
+    get_parts,
+)
 
 
 def test_reply_target():
@@ -35,6 +40,8 @@ def check_target(target_user: dict, msg: types.Message):
     target_user = types.User(**target_user)
     founded_user = filter_rez["target"]
     if founded_user.id is None:
-        assert founded_user.username == target_user.username, f"msg text {{{msg.text}}} user: {{{target_user}}}"
+        assert (
+            founded_user.username == target_user.username
+        ), f"msg text {{{msg.text}}} user: {{{target_user}}}"
     else:
         assert founded_user == target_user, f"msg text {{{msg.text}}} user: {{{target_user}}}"
