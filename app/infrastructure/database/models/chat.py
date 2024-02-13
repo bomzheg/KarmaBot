@@ -36,9 +36,7 @@ class Chat(Model):
         )
 
     def __str__(self):
-        rez = (
-            f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"
-        )
+        rez = f"Chat with type: {self.type_} with ID {self.chat_id}, title: {self.title}"
         if self.username:
             rez += f" Username @{self.username}"
         if self.description:

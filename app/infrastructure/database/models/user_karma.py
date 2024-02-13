@@ -55,9 +55,7 @@ class UserKarma(Model):
         (how_change) must be from -inf to +inf
         """
         if how_change == 0:
-            raise ValueError(
-                f"how_change must be float and not 0 but it is {how_change}"
-            )
+            raise ValueError(f"how_change must be float and not 0 but it is {how_change}")
         await self.fetch_related("chat", using_db=using_db)
 
         if skip_power_check:
@@ -132,9 +130,7 @@ class UserKarma(Model):
     async def all_to_json(cls, chat_id: int = None) -> dict:
         if chat_id is not None:
             uks = (
-                await cls.filter(chat_id=chat_id)
-                .prefetch_related("user")
-                .order_by(*karma_filters)
+                await cls.filter(chat_id=chat_id).prefetch_related("user").order_by(*karma_filters)
             )
             return {chat_id: [{**uk.user.to_json(), "karma": uk.karma} for uk in uks]}
         else:

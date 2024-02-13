@@ -117,10 +117,7 @@ async def cmd_about(message: types.Message):
 
 @router.message(Command("idchat", prefix="!"))
 async def get_idchat(message: types.Message):
-    text = (
-        f"id этого чата: {hpre(message.chat.id)}\n"
-        f"Ваш id: {hpre(message.from_user.id)}"
-    )
+    text = f"id этого чата: {hpre(message.chat.id)}\n" f"Ваш id: {hpre(message.from_user.id)}"
     if message.reply_to_message:
         text += (
             f"\nid {hbold(message.reply_to_message.from_user.full_name)}: "

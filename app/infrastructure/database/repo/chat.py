@@ -40,9 +40,7 @@ class ChatRepo:
             chat = await self.create_from_tg_chat(chat=chat)
         return chat
 
-    async def get_top_karma_list(
-        self, chat: Chat, limit: int = 15
-    ) -> list[TopResultEntry]:
+    async def get_top_karma_list(self, chat: Chat, limit: int = 15) -> list[TopResultEntry]:
         await chat.fetch_related("user_karma", using_db=self.session)
         users_karmas = (
             await chat.user_karma.order_by(*karma_filters)
@@ -69,9 +67,7 @@ class ChatRepo:
             .all()
         )
 
-        user_uk = (
-            await chat.user_karma.filter(user=user).prefetch_related("user").first()
-        )
+        user_uk = await chat.user_karma.filter(user=user).prefetch_related("user").first()
         return uk[0], user_uk, uk[1]
 
     async def get_neighbours_id(self, chat_id, user_id) -> Neighbours:

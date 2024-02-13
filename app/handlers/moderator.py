@@ -110,9 +110,7 @@ async def report_already_reported(message: types.Message, config: Config, bot: B
     Command("report", "admin", "spam", prefix="/!@"),
 )
 async def report_private(message: types.Message):
-    await message.reply(
-        "Вы можете жаловаться на сообщения пользователей только в группах."
-    )
+    await message.reply("Вы можете жаловаться на сообщения пользователей только в группах.")
 
 
 @router.message(
@@ -123,9 +121,7 @@ async def report_private(message: types.Message):
     ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
-async def cmd_ro(
-    message: types.Message, user: User, target: User, chat: Chat, bot: Bot
-):
+async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
@@ -167,9 +163,7 @@ async def cmd_ro_private(message: types.Message):
     ~TargetHasPermissions(),
     BotHasPermissions(can_restrict_members=True),
 )
-async def cmd_ban(
-    message: types.Message, user: User, target: User, chat: Chat, bot: Bot
-):
+async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, bot: Bot):
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
@@ -223,10 +217,8 @@ async def cmd_warn(
         moderator=user, target_user=target, chat=chat, comment=comment
     )
 
-    text = (
-        "Пользователь {user} получил официальное предупреждение от модератора".format(
-            user=target.mention_link,
-        )
+    text = "Пользователь {user} получил официальное предупреждение от модератора".format(
+        user=target.mention_link,
     )
     msg = await message.reply(
         text,
@@ -241,9 +233,7 @@ async def cmd_warn(
     Command(commands=["w", "warn"], prefix="!"),
 )
 async def cmd_warn_private(message: types.Message):
-    await message.reply(
-        "Вы можете выдавать предупреждения пользователям только в группах."
-    )
+    await message.reply("Вы можете выдавать предупреждения пользователям только в группах.")
 
 
 @router.message(
@@ -251,9 +241,7 @@ async def cmd_warn_private(message: types.Message):
     Command("info", prefix="!"),
 )
 async def get_info_about_user_private(message: types.Message):
-    await message.reply(
-        "Вы можете запрашивать информацию о пользователях только в группах."
-    )
+    await message.reply("Вы можете запрашивать информацию о пользователях только в группах.")
 
 
 @router.message(
@@ -316,9 +304,7 @@ async def cmd_unhandled(message: types.Message):
     await delete_message(message)
 
 
-@router.callback_query(
-    kb.WarnCancelCb.filter(), MagicData(F.user.tg_id == F.callback_data.user_id)
-)
+@router.callback_query(kb.WarnCancelCb.filter(), MagicData(F.user.tg_id == F.callback_data.user_id))
 async def cancel_warn(
     callback_query: types.CallbackQuery, callback_data: kb.WarnCancelCb, bot: Bot
 ):
@@ -326,9 +312,7 @@ async def cancel_warn(
     await delete_moderator_event(callback_data.moderator_event_id, moderator=from_user)
 
     await callback_query.answer("Вы отменили предупреждение", show_alert=True)
-    await cleanup_command_dialog(
-        bot, bot_message=callback_query.message, delete_bot_reply=True
-    )
+    await cleanup_command_dialog(bot, bot_message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
@@ -393,9 +377,7 @@ async def approve_report_handler(
     )
 
 
-@router.callback_query(
-    kb.DeclineReportCb.filter(), HasPermissions(can_restrict_members=True)
-)
+@router.callback_query(kb.DeclineReportCb.filter(), HasPermissions(can_restrict_members=True))
 async def decline_report_handler(
     callback_query: types.CallbackQuery,
     callback_data: kb.DeclineReportCb,
@@ -415,9 +397,7 @@ async def decline_report_handler(
         report_repo=report_repo,
     )
     await callback_query.answer("Вы отклонили репорт", show_alert=True)
-    await cleanup_reports_dialog(
-        first_report, linked_reports, delete_first_reply=True, bot=bot
-    )
+    await cleanup_reports_dialog(first_report, linked_reports, delete_first_reply=True, bot=bot)
 
 
 @router.callback_query(
@@ -441,9 +421,7 @@ async def cancel_report_handler(
         report_repo=report_repo,
     )
     await callback_query.answer("Вы отменили репорт", show_alert=True)
-    await cleanup_command_dialog(
-        bot, bot_message=callback_query.message, delete_bot_reply=True
-    )
+    await cleanup_command_dialog(bot, bot_message=callback_query.message, delete_bot_reply=True)
 
 
 @router.callback_query(
@@ -453,15 +431,9 @@ async def cancel_report_handler(
 @router.callback_query(
     kb.CancelReportCb.filter(), MagicData(F.user.id != F.callback_data.reporter_id)
 )
-@router.callback_query(
-    kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True)
-)
-@router.callback_query(
-    kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True)
-)
-async def unauthorized_button_action(
-    callback_query: types.CallbackQuery, config: Config
-):
+@router.callback_query(kb.ApproveReportCb.filter(), ~HasPermissions(can_restrict_members=True))
+@router.callback_query(kb.DeclineReportCb.filter(), ~HasPermissions(can_restrict_members=True))
+async def unauthorized_button_action(callback_query: types.CallbackQuery, config: Config):
     await callback_query.answer(
         "Эта кнопка не для Вас", cache_time=config.callback_query_answer_cache_time
     )

@@ -39,24 +39,20 @@ class ReportRepo:
         return await Report.get(id=report_id, using_db=self.session)
 
     async def get_linked_pending_reports(self, report_id: int) -> Iterable[Report]:
-        report = await Report.get(id=report_id, using_db=self.session).prefetch_related(
-            "chat"
-        )
-        return (
-            await (
-                Report.filter(
-                    chat=report.chat,
-                    reported_message_id=report.reported_message_id,
-                    status=ReportStatus.PENDING,
-                )
-                .prefetch_related("chat", "reporter")
-                # Sort by `created_time` and command_message_id to get the first report
-                # If `created_time` is the same,
-                # the first report is the one with the lowest `command_message_id`
-                .order_by("created_time", "command_message_id")
-                .using_db(self.session)
-                .all()
+        report = await Report.get(id=report_id, using_db=self.session).prefetch_related("chat")
+        return await (
+            Report.filter(
+                chat=report.chat,
+                reported_message_id=report.reported_message_id,
+                status=ReportStatus.PENDING,
             )
+            .prefetch_related("chat", "reporter")
+            # Sort by `created_time` and command_message_id to get the first report
+            # If `created_time` is the same,
+            # the first report is the one with the lowest `command_message_id`
+            .order_by("created_time", "command_message_id")
+            .using_db(self.session)
+            .all()
         )
 
     async def has_resolved_report(self, chat_id: int, message_id: int) -> bool:

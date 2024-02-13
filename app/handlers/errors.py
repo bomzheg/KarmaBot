@@ -21,9 +21,7 @@ async def errors_handler(error: ErrorEvent, bot: Bot, config: Config):
     except TelegramBadRequest as e:
         if "rights" in e.message and "send" in e.message:
             if error.update.message and error.update.message.chat:
-                logger.info(
-                    "bot are muted in chat {chat}", chat=error.update.message.chat.id
-                )
+                logger.info("bot are muted in chat {chat}", chat=error.update.message.chat.id)
             else:
                 logger.info(
                     "bot can't send message (no rights) in update {update}",

@@ -8,9 +8,7 @@ class ChatSettingsRepo:
         self.session = session
 
     async def get_or_create(self, chat: Chat) -> ChatSettings:
-        chat_settings, _ = await ChatSettings.get_or_create(
-            chat=chat, using_db=self.session
-        )
+        chat_settings, _ = await ChatSettings.get_or_create(chat=chat, using_db=self.session)
         return chat_settings
 
     async def update_karma_counting(self, chat_settings: ChatSettings, value: bool):

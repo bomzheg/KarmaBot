@@ -37,8 +37,6 @@ def setup_superuser(bot_config: Config) -> Router:
 
     router.message.register(exception, Command(commands="exception"))
     router.message.register(leave_chat, Command(commands="get_out"))
-    router.message.register(
-        show_tagged_users, Command(commands="entities", prefix="!/")
-    )
+    router.message.register(show_tagged_users, Command(commands="entities", prefix="!/"))
 
     return router

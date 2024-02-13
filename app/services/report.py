@@ -42,9 +42,7 @@ async def resolve_report(
     Returns all linked reports.
     """
     resolution_time = datetime.utcnow()
-    first_report, *linked_reports = await report_repo.get_linked_pending_reports(
-        report_id
-    )
+    first_report, *linked_reports = await report_repo.get_linked_pending_reports(report_id)
 
     first_report.resolved_by = resolved_by
     first_report.status = resolution

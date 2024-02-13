@@ -45,14 +45,10 @@ class HasPermissions(BaseFilter):
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
 
-    def _get_cached_value(
-        self, user: types.User, chat: Chat
-    ) -> types.ChatMember | None:
+    def _get_cached_value(self, user: types.User, chat: Chat) -> types.ChatMember | None:
         return None  # TODO
 
-    def _set_cached_value(
-        self, user: types.User, chat: Chat, _member: types.ChatMember
-    ):
+    def _set_cached_value(self, user: types.User, chat: Chat, _member: types.ChatMember):
         return None  # TODO
 
     async def _get_chat_member(
@@ -66,9 +62,7 @@ class HasPermissions(BaseFilter):
             if target_user_id is None:
                 return False
             try:
-                chat_member = next(
-                    filter(lambda member: member.user.id == target_user_id, admins)
-                )
+                chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
             except StopIteration:
                 return False
             self._set_cached_value(user, chat, chat_member)
@@ -92,9 +86,7 @@ class HasPermissions(BaseFilter):
 
         return {self.PAYLOAD_ARGUMENT_NAME: chat_member}
 
-    def get_target_id(
-        self, update: types.TelegramObject, user: types.User, bot: Bot
-    ) -> int | None:
+    def get_target_id(self, update: types.TelegramObject, user: types.User, bot: Bot) -> int | None:
         return user.id
 
 
@@ -107,9 +99,7 @@ class TargetHasPermissions(HasPermissions):
     can_be_same: bool = False
     can_be_bot: bool = False
 
-    def get_target_id(
-        self, message: types.Message, user: types.User, bot: Bot
-    ) -> int | None:
+    def get_target_id(self, message: types.Message, user: types.User, bot: Bot) -> int | None:
         target_user = get_target_user(message, self.can_be_same, self.can_be_bot)
         if target_user is None:
             return None
@@ -133,7 +123,5 @@ class BotHasPermissions(HasPermissions):
     }
     PAYLOAD_ARGUMENT_NAME = "bot_member"
 
-    def get_target_id(
-        self, message: types.Message, user: types.User, bot: Bot
-    ) -> int | None:
+    def get_target_id(self, message: types.Message, user: types.User, bot: Bot) -> int | None:
         return bot.id

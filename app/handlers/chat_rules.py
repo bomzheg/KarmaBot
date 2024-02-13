@@ -58,10 +58,6 @@ def setup() -> Router:
     router.message.register(lmgify_cmd, Command("go", prefix="!"), F.reply_to_message)
     router.message.register(paste_cmd, Command("paste", prefix="!"), F.reply_to_message)
     router.message.register(nometa_cmd, Command("nm", prefix="!"), F.reply_to_message)
-    router.message.register(
-        xy_problem_cmd, Command("xy", prefix="!"), F.reply_to_message
-    )
-    router.message.register(
-        delete_me_cmd, Command("go", "paste", "nm", "xy", prefix="!")
-    )
+    router.message.register(xy_problem_cmd, Command("xy", prefix="!"), F.reply_to_message)
+    router.message.register(delete_me_cmd, Command("go", "paste", "nm", "xy", prefix="!"))
     return router
