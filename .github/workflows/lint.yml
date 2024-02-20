@@ -32,6 +32,7 @@ jobs:
       id: ruff
       if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
       run: |
+        ruff check --config=pyproject.toml .
         ruff format --check --config=pyproject.toml .
 
     - name: Isort
