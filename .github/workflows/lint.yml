@@ -32,10 +32,10 @@ jobs:
       id: ruff
       if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
       run: |
-        ruff format --check --config=pyproject.toml ${{ steps.changed-python-files.outputs.all_changed_files }}
+        ruff format --check --config=pyproject.toml .
 
     - name: Isort
       id: isort
       if: steps.changed-python-files.outputs.all_changed_files != '' && !cancelled()
       run: |
-        isort --check --diff --profile=black ${{ steps.changed-python-files.outputs.all_changed_files }}
+        isort --check --diff --profile=black .
