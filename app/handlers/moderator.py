@@ -15,6 +15,7 @@ from app.filters import (
 from app.filters.reports import HasResolvedReport
 from app.handlers import keyboards as kb
 from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus, User
+from app.infrastructure.database.repo.karma_event import KarmaEventRepo
 from app.infrastructure.database.repo.report import ReportRepo
 from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
@@ -256,8 +257,9 @@ async def get_info_about_user(
     config: Config,
     bot: Bot,
     user_repo: UserRepo,
+    karma_event_repo: KarmaEventRepo,
 ):
-    info = await get_user_info(target, chat, config.date_format)
+    info = await get_user_info(karma_event_repo, target, chat, config.date_format)
     target_karma = await user_repo.get_karma(target, chat)
     if target_karma is None:
         target_karma = "пока не имеет кармы"

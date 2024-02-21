@@ -35,7 +35,7 @@ class ChatRepo:
 
     async def get_or_create_from_tg_chat(self, chat) -> Chat:
         try:
-            chat = await Chat.get(chat_id=chat.id)
+            chat = await Chat.get(chat_id=chat.id, using_db=self.session)
         except DoesNotExist:
             chat = await self.create_from_tg_chat(chat=chat)
         return chat
@@ -46,6 +46,7 @@ class ChatRepo:
             await chat.user_karma.order_by(*karma_filters)
             .limit(limit)
             .prefetch_related("user")
+            .using_db(self.session)
             .all()
         )
         rez = []
@@ -64,6 +65,7 @@ class ChatRepo:
             await chat.user_karma.filter(user_id__in=(prev_id, next_id))
             .prefetch_related("user")
             .order_by(*karma_filters)
+            .using_db(self.session)
             .all()
         )
 

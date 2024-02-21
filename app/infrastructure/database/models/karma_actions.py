@@ -18,11 +18,9 @@ class KarmaEvent(Model):
         "models.Chat", related_name="karma_events"
     )
     date = fields.DatetimeField(auto_now=True, null=False)
-    how_change = fields.FloatField(
-        description="how match change karma in percent of possible power"
-    )
+    how_change = fields.FloatField(description="how much change karma in percent of possible power")
     how_change_absolute = fields.FloatField(
-        description="how match user_from change karma user_to in absolute",
+        description="how much user_from change karma user_to in absolute",
         source_field="how_match_change",
     )
     comment = fields.TextField(null=True)
@@ -34,16 +32,6 @@ class KarmaEvent(Model):
         return (
             f"KarmaEvent {self.id_} from user {self.user_from.id} to {self.user_to.id}, "
             f"date {self.date}, change {self.how_change}"
-        )
-
-    @classmethod
-    async def get_last_by_user(cls, user: User, chat: Chat, limit: int = 10):
-        return (
-            await cls.filter(user_to=user, chat=chat)
-            .order_by("-date")
-            .limit(limit)
-            .prefetch_related("user_from")
-            .all()
         )
 
     def format_event(self, date_format: str):
@@ -58,7 +46,7 @@ class KarmaEvent(Model):
         return rez
 
 
-def get_emoji_by_karma_sign(value: float):
+def get_emoji_by_karma_sign(value: float) -> str:
     if value > 0:
         return "⏫"
     if value < 0:

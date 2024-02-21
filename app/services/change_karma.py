@@ -3,13 +3,8 @@ from aiogram.types import ChatPermissions
 from tortoise.transactions import in_transaction
 
 from app.config.main import load_config
-from app.infrastructure.database.models import (
-    Chat,
-    KarmaEvent,
-    ModeratorEvent,
-    User,
-    UserKarma,
-)
+from app.infrastructure.database.models import Chat, ModeratorEvent, User, UserKarma
+from app.infrastructure.database.repo.karma_event import KarmaEventRepo
 from app.infrastructure.database.repo.user import UserRepo
 from app.models.common import TypeRestriction
 from app.services.moderation import (
@@ -37,6 +32,7 @@ async def change_karma(
     is_restriction_enabled: bool,
     bot: Bot,
     user_repo: UserRepo,
+    karma_event_repo: KarmaEventRepo,
     comment: str = "",
     is_reward: bool = False,
 ) -> ResultChangeKarma:
@@ -61,15 +57,14 @@ async def change_karma(
             using_db=conn,
             skip_power_check=is_reward,
         )
-        ke = KarmaEvent(
+        ke = await karma_event_repo.create(
             user_from=user,
-            user_to=target_user,
+            target=target_user,
             chat=chat,
             how_change=relative_change,
             how_change_absolute=abs_change,
             comment=comment[:200],
         )
-        await ke.save(using_db=conn)
         logger.info(
             "user {user} change karma of {target_user} in chat {chat}",
             user=user.tg_id,
@@ -113,9 +108,10 @@ async def cancel_karma_change(
     moderator_event_id: int,
     bot: Bot,
     user_repo: UserRepo,
+    karma_event_repo: KarmaEventRepo,
 ):
     async with in_transaction() as conn:
-        karma_event = await KarmaEvent.get(id_=karma_event_id)
+        karma_event = await karma_event_repo.get_karma_event_by_id(karma_event_id)
 
         # noinspection PyUnresolvedReferences
         user_to_id = karma_event.user_to_id
