@@ -1,6 +1,9 @@
-from .common import PLUS_TRIGGERS, MINUS_TRIGGERS, punctuations, filter_check
-from .fixtures import (wrong_generate_phrases_next_word, get_message_with_text,
-                       generate_phrases_next_word)
+from .common import MINUS_TRIGGERS, PLUS_TRIGGERS, filter_check, punctuations
+from .fixtures import (
+    generate_phrases_next_word,
+    get_message_with_text,
+    wrong_generate_phrases_next_word,
+)
 
 
 def test_plus():

@@ -46,9 +46,7 @@ async def get_top_from_private(
     if error_message:
         return await message.reply(error_message)
 
-    logger.info(
-        "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user, chat_repo=chat_repo, user_repo=user_repo)
 
     await message.reply(text, link_preview_options=LinkPreviewOptions(is_disabled=True))
@@ -78,21 +76,15 @@ async def get_top(
             )
         )
 
-    logger.info(
-        "user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+    logger.info("user {user} ask top karma of chat {chat}", user=user.tg_id, chat=chat.chat_id)
     text = await get_karma_top(chat, user, chat_repo=chat_repo, user_repo=user_repo)
 
     await message.reply(text, link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
 @router.message(F.chat.type.in_(["group", "supergroup"]), Command("me", prefix="!"))
-async def get_me(
-    message: types.Message, chat: Chat, user: User, config: Config, bot: Bot
-):
-    logger.info(
-        "user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id
-    )
+async def get_me(message: types.Message, chat: Chat, user: User, config: Config, bot: Bot):
+    logger.info("user {user} ask his karma in chat {chat}", user=user.tg_id, chat=chat.chat_id)
     uk, number_in_top = await get_me_chat_info(chat=chat, user=user)
     bot_reply = await message.reply(
         f"Ваша карма в данном чате: <b>{uk.karma:.2f}</b> ({number_in_top})",

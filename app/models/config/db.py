@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from app.utils.log import Logger
 
-
 logger = Logger(__name__)
 
 
@@ -17,20 +16,18 @@ class DBConfig:
     db_path: str = None
 
     def create_url_config(self):
-        if self.db_type == 'mysql':
+        if self.db_type == "mysql":
             db_url = (
-                f'{self.db_type}://{self.login}:{self.password}'
-                f'@{self.db_host}:{self.db_port}/{self.db_name}'
+                f"{self.db_type}://{self.login}:{self.password}"
+                f"@{self.db_host}:{self.db_port}/{self.db_name}"
             )
-        elif self.db_type == 'postgres':
+        elif self.db_type == "postgres":
             db_url = (
-                f'{self.db_type}://{self.login}:{self.password}'
-                f'@{self.db_host}:{self.db_port}/{self.db_name}'
+                f"{self.db_type}://{self.login}:{self.password}"
+                f"@{self.db_host}:{self.db_port}/{self.db_name}"
             )
-        elif self.db_type == 'sqlite':
-            db_url = (
-                f'{self.db_type}://{self.db_path}'
-            )
+        elif self.db_type == "sqlite":
+            db_url = f"{self.db_type}://{self.db_path}"
         else:
             raise ValueError("DB_TYPE not mysql, sqlite or postgres")
         logger.debug(db_url)

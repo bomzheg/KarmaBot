@@ -55,9 +55,7 @@ class UserRepo:
         if changed:
             await self.save(user)
 
-    async def get_or_create_from_tg_user(
-        self, tg_user: types.User | dto.TargetUser
-    ) -> User:
+    async def get_or_create_from_tg_user(self, tg_user: types.User | dto.TargetUser) -> User:
         if tg_user.id is None:
             try:
                 return await User.get(username__iexact=tg_user.username)

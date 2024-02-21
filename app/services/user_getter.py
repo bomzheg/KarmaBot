@@ -41,9 +41,7 @@ class UserGetter:
         except FloodWait as e:
             logger.error("Flood Wait {e}", e=e)
             await asyncio.sleep(e.value)
-            raise Exception(
-                "Username resolver encountered flood error. Waited for %s", e.value
-            )
+            raise Exception("Username resolver encountered flood error. Waited for %s", e.value)
 
         return self.get_aiogram_user_by_pyrogram(user)
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from enum import Enum
 
 from aiogram.fsm.storage.base import BaseStorage
@@ -43,4 +43,3 @@ class RedisConfig:
     def create_redis_storage(self) -> RedisStorage:
         logger.info("created storage for {self}", self=self)
         return RedisStorage(Redis(host=self.url, port=self.port, db=self.db))
-

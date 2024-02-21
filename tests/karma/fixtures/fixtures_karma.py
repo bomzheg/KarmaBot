@@ -7,9 +7,7 @@ from aiogram import types
 
 
 def get_next_word_parts(
-        first_word: str,
-        punctuations: typing.Iterable[str],
-        spaces: typing.Iterable[str]
+    first_word: str, punctuations: typing.Iterable[str], spaces: typing.Iterable[str]
 ) -> typing.List[typing.List[str]]:
     """
     собрать список из списков [first_word, знак препинания, пробельный символ, сгенерированные следующее слово]
@@ -23,9 +21,7 @@ def get_next_word_parts(
 
 
 def generate_phrases_next_word(
-        first_word: str,
-        punctuations: typing.Iterable[str],
-        spaces: typing.Iterable[str]
+    first_word: str, punctuations: typing.Iterable[str], spaces: typing.Iterable[str]
 ) -> typing.List[str]:
     """
     get string like %karma_trigger%%punctuation%%space%%next_words%
@@ -34,7 +30,9 @@ def generate_phrases_next_word(
     return ["".join(precursors_list) for precursors_list in precursors_lists]
 
 
-def get_wrong_next_word_parts(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[typing.List[str]]:
+def get_wrong_next_word_parts(
+    first_word: str, punctuations: typing.Iterable[str]
+) -> typing.List[typing.List[str]]:
     """
     собрать список из списков [first_word, знак препинания, "", сгенерированные следующее слово]
     """
@@ -45,14 +43,16 @@ def get_wrong_next_word_parts(first_word: str, punctuations: typing.Iterable[str
     return rez
 
 
-def wrong_generate_phrases_next_word(first_word: str, punctuations: typing.Iterable[str]) -> typing.List[str]:
+def wrong_generate_phrases_next_word(
+    first_word: str, punctuations: typing.Iterable[str]
+) -> typing.List[str]:
     """get string like %karma_trigger%%punctuation%%next_words% without spaces"""
     precursors_lists = get_wrong_next_word_parts(first_word, punctuations)
     return ["".join(precursors_list) for precursors_list in precursors_lists]
 
 
 def get_next_words(count_symbols: int = 10) -> str:
-    return ''.join(choice(ascii_letters) for _ in range(count_symbols))
+    return "".join(choice(ascii_letters) for _ in range(count_symbols))
 
 
 def get_message_with_text(text: str) -> types.Message:

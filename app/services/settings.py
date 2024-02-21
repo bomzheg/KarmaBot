@@ -16,15 +16,11 @@ async def enable_karmic_restriction(
     await chat_settings_repo.update_karmic_restriction(chat_settings, True)
 
 
-async def disable_karma_counting(
-    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
-):
+async def disable_karma_counting(chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo):
     await chat_settings_repo.update_karma_counting(chat_settings, False)
 
 
-async def enable_karma_counting(
-    chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo
-):
+async def enable_karma_counting(chat_settings: ChatSettings, chat_settings_repo: ChatSettingsRepo):
     await chat_settings_repo.update_karma_counting(chat_settings, True)
 
 

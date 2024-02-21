@@ -18,7 +18,7 @@ def get_parts() -> typing.List[typing.List[str]]:
 
 
 def get_words(count_symbols: int = 10) -> str:
-    return ''.join(choice(ascii_letters) for _ in range(count_symbols))
+    return "".join(choice(ascii_letters) for _ in range(count_symbols))
 
 
 def get_message_with_reply(author_user: dict, target_user: dict, text: str) -> types.Message:
@@ -32,7 +32,9 @@ def get_message_with_reply(author_user: dict, target_user: dict, text: str) -> t
     )
 
 
-def get_message_with_mention(author_user: dict, target_user: dict, text_precursors: typing.List[str]) -> types.Message:
+def get_message_with_mention(
+    author_user: dict, target_user: dict, text_precursors: typing.List[str]
+) -> types.Message:
     username = get_user_username(target_user)
     text_precursors[1] = username
     msg_text = " ".join(text_precursors)
@@ -45,46 +47,40 @@ def get_message_with_mention(author_user: dict, target_user: dict, text_precurso
         ],
         message_id=1,
         date=datetime.now(),
-        chat=types.Chat(id=1, type="group")
+        chat=types.Chat(id=1, type="group"),
     )
 
 
 def get_entity_mention(offset, length) -> types.MessageEntity:
-    return types.MessageEntity(**{
-        "offset": offset,
-        "length": length,
-        "type": "mention"
-    })
+    return types.MessageEntity(**{"offset": offset, "length": length, "type": "mention"})
 
 
 def get_message_with_text_mention(
-        author_user: dict,
-        target_user: dict,
-        text_precursors: typing.List[str]
+    author_user: dict, target_user: dict, text_precursors: typing.List[str]
 ) -> types.Message:
-    first_name = target_user['first_name']
+    first_name = target_user["first_name"]
     text_precursors[1] = first_name
     msg_text = " ".join(text_precursors)
     start_entity_pos = len(text_precursors[0]) + 1  # добавляем длину пробела
     return types.Message(
         from_user=types.User(**author_user),
         text=msg_text,
-        entities=[
-            get_entity_text_mention(start_entity_pos, target_user)
-        ],
+        entities=[get_entity_text_mention(start_entity_pos, target_user)],
         message_id=1,
         date=datetime.now(),
-        chat=types.Chat(id=1, type="group")
+        chat=types.Chat(id=1, type="group"),
     )
 
 
 def get_entity_text_mention(offset, user: dict) -> types.MessageEntity:
-    return types.MessageEntity(**{
-        "offset": offset,
-        "length": len(user["first_name"]),
-        "type": "text_mention",
-        "user": user
-    })
+    return types.MessageEntity(
+        **{
+            "offset": offset,
+            "length": len(user["first_name"]),
+            "type": "text_mention",
+            "user": user,
+        }
+    )
 
 
 def get_user_username(user: dict) -> str:
@@ -102,8 +98,8 @@ def get_reply_message(user_dict):
 
 def get_from_user(id_=777, username=None, first_name="Bob"):
     return {
-        'id': id_,
-        'username': username,
-        'first_name': first_name,
-        'is_bot': False,
+        "id": id_,
+        "username": username,
+        "first_name": first_name,
+        "is_bot": False,
     }

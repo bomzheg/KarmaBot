@@ -23,9 +23,7 @@ class FixTargetMiddleware(BaseMiddleware):
     ) -> Any:
         if target := data.get("target", None):
             logger.debug("Starting target lookup either in db or by pyrogram")
-            target = await get_db_user_by_tg_user(
-                target, self.user_getter, data["user_repo"]
-            )
+            target = await get_db_user_by_tg_user(target, self.user_getter, data["user_repo"])
             data["target"] = target
             logger.debug("Target resolved")
         return await handler(event, data)

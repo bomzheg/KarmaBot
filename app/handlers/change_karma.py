@@ -133,9 +133,7 @@ async def cancel_karma(
         return await callback_query.answer("Эта кнопка не для Вас", cache_time=3600)
     rollback_karma = float(callback_data.rollback_karma)
     moderator_event_id = (
-        None
-        if callback_data.moderator_event_id == "null"
-        else callback_data.moderator_event_id
+        None if callback_data.moderator_event_id == "null" else callback_data.moderator_event_id
     )
     await cancel_karma_change(
         callback_data.karma_event_id, rollback_karma, moderator_event_id, bot, user_repo

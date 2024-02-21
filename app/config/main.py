@@ -24,9 +24,7 @@ def load_config(config_dir: Path = None) -> Config:
     with (config_dir / "bot-config.yaml").open("r", encoding="utf-8") as f:
         config_file_data = yaml.load(f, Loader=yaml.FullLoader)
 
-    log_config = load_log_config(
-        app_dir=app_dir, log_chat_id=config_file_data["log_chat_id"]
-    )
+    log_config = load_log_config(app_dir=app_dir, log_chat_id=config_file_data["log_chat_id"])
     logging_setup(config_dir, log_config)
 
     load_dotenv(str(config_dir / ".env"))
@@ -44,9 +42,7 @@ def load_config(config_dir: Path = None) -> Config:
             config_file_data["tg_client_config"] | {"bot_token": _bot_token}
         ),
         storage=load_storage(config_file_data["storage"]),
-        report_award_cleanup_delay=config_file_data.get(
-            "report_award_cleanup_delay", 3600
-        ),
+        report_award_cleanup_delay=config_file_data.get("report_award_cleanup_delay", 3600),
         callback_query_answer_cache_time=config_file_data.get(
             "callback_query_answer_cache_time", 3600
         ),

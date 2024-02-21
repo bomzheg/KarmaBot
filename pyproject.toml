@@ -23,7 +23,6 @@ test = [
 ]
 lint = [
     "ruff~=0.1.9",
-    "black~=23.12.1",
     "isort~=5.13.2",
 ]
 
@@ -38,6 +37,7 @@ packages = ["app"]
 target-version = "py311"
 line-length = 100
 pydocstyle = { convention = "google" }
+extend-select = ["I"]
 
 [tool.isort]
 profile = "black"

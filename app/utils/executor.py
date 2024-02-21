@@ -7,7 +7,6 @@ from aiogram.exceptions import TelegramAPIError
 from app.models.config import Config, WebhookConfig
 from app.utils.log import Logger
 
-
 logger = Logger(__name__)
 
 

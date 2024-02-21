@@ -21,9 +21,7 @@ logger = Logger(__name__)
 config = load_config()
 
 
-async def warn_user(
-    moderator: User, target_user: User, chat: Chat, comment: str
-) -> ModeratorEvent:
+async def warn_user(moderator: User, target_user: User, chat: Chat, comment: str) -> ModeratorEvent:
     return await ModeratorEvent.save_new_action(
         moderator=moderator,
         user=target_user,
@@ -45,13 +43,9 @@ async def ban_user(
         comment=comment,
         type_restriction=TypeRestriction.ban,
     )
-    text = "Пользователь {user} попал в бан этого чата.".format(
-        user=target.mention_link
-    )
+    text = "Пользователь {user} попал в бан этого чата.".format(user=target.mention_link)
     if duration < moderation.FOREVER_RESTRICT_DURATION:
-        text += " Он сможет вернуться через {duration}".format(
-            duration=format_timedelta(duration)
-        )
+        text += " Он сможет вернуться через {duration}".format(duration=format_timedelta(duration))
     return text
 
 
@@ -68,8 +62,7 @@ async def ro_user(
         type_restriction=TypeRestriction.ro,
     )
     return (
-        "Пользователь {user} сможет <b>только читать</b> "
-        "сообщения на протяжении {duration}"
+        "Пользователь {user} сможет <b>только читать</b> " "сообщения на протяжении {duration}"
     ).format(
         user=target.mention_link,
         duration=format_timedelta(duration),
@@ -146,9 +139,7 @@ def get_duration(text: str) -> tuple[timedelta, str]:
 
 async def user_has_now_ro(user: User, chat: Chat, bot: Bot) -> bool:
     try:
-        chat_member = await bot.get_chat_member(
-            chat_id=chat.chat_id, user_id=user.tg_id
-        )
+        chat_member = await bot.get_chat_member(chat_id=chat.chat_id, user_id=user.tg_id)
     except TelegramBadRequest as e:
         # TODO #102 probably we need to disable karmic ro for chats with hidden members?
         if "user not found" in e.message:
@@ -183,9 +174,7 @@ async def auto_restrict(
         count=count_auto_restrict,
     )
 
-    current_restriction = config.auto_restriction.get_next_restriction(
-        count_auto_restrict
-    )
+    current_restriction = config.auto_restriction.get_next_restriction(count_auto_restrict)
 
     moderator_event = await restrict(
         bot=bot,
@@ -207,9 +196,7 @@ async def get_count_auto_restrict(
     bot_user: User | None = None,
     bot: Bot | None = None,
 ) -> int:
-    assert (
-        bot is not None or bot_user is not None
-    ), "One of bot and bot_user must be not None"
+    assert bot is not None or bot_user is not None, "One of bot and bot_user must be not None"
     if bot_user is None:
         bot_user = await user_repo.get_or_create_from_tg_user(await bot.me())
     return await ModeratorEvent.filter(
@@ -223,9 +210,7 @@ async def get_count_auto_restrict(
     ).count()
 
 
-async def delete_moderator_event(
-    moderator_event_id: int, moderator: User | None = None
-):
+async def delete_moderator_event(moderator_event_id: int, moderator: User | None = None):
     moderator_event = await ModeratorEvent.get(id_=moderator_event_id)
 
     logger.info(
@@ -245,9 +230,7 @@ async def get_mentions_admins(
     admins = await bot.get_chat_administrators(chat.id)
     random.shuffle(admins)  # чтобы попадались разные админы
     admins_mention = ""
-    notifiable_admins = [
-        admin for admin in admins if need_notify_admin(admin, ignore_anonymous)
-    ]
+    notifiable_admins = [admin for admin in admins if need_notify_admin(admin, ignore_anonymous)]
     random_five_admins = notifiable_admins[:5]
     for admin in random_five_admins:
         admins_mention += hidden_link(admin.user.url)
