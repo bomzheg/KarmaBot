@@ -1,4 +1,4 @@
-from aiogram import Router, types
+from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.utils.text_decorations import html_decoration as hd
 
@@ -15,6 +15,11 @@ from app.services.settings import (
 )
 
 router = Router(name=__name__)
+
+
+@router.message(Command(commands="settings", prefix="!/"), F.chat.type == "private")
+async def get_settings_private(message: types.Message):
+    await message.answer("Настройки поддерживаются только в групповых чатах")
 
 
 @router.message(Command(commands="settings", prefix="!/"))
