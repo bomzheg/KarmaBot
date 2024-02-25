@@ -6,6 +6,7 @@ This telegram bot is designed to track karma in chats.
 Just add him to the chat and thank each other for helpful answers.
 
 [![wakatime](https://wakatime.com/badge/github/bomzheg/KarmaBot.svg)](https://wakatime.com/badge/github/bomzheg/KarmaBot)
+[![license](https://img.shields.io/badge/💬-Telegram-blue)](https://t.me/KarmaBotDev)
 
 - [Deployment](./docs/deploy_manual.md)
 - [Development](./docs/development.md)
