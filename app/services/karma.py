@@ -22,9 +22,9 @@ async def get_chat(command_arguments: list[str], chat_repo: ChatRepo) -> Chat:
 
 
 async def import_karma(import_data: list[dto.Import], chat: models.Chat, user_repo: UserRepo):
-    with in_transaction() as using_db:
+    async with in_transaction() as using_db:
         for data in import_data:
-            target_user = await user_repo.get_by_id(data.id)
+            target_user = await user_repo.get_or_create_from_tg_id(data.id, using_db=using_db)
             uk, _ = await UserKarma.get_or_create(
                 user=target_user,
                 chat=chat,

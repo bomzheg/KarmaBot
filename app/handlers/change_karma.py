@@ -159,7 +159,7 @@ async def karma_import_handler(
     user_repo: UserRepo,
 ):
     logger.info("try to start import karma")
-    args = [dto.Import(d["id"], d["karma"]) for d in json.loads(command.args or "{}")]
+    args = [dto.Import(d["id"], d["karma"]) for d in json.loads(command.args or "[]")]
     chat_owner: types.ChatMemberOwner = next(
         filter(
             lambda c: c.status == ChatMemberStatus.CREATOR,
@@ -177,3 +177,4 @@ async def karma_import_handler(
     )
     await import_karma(args, chat, user_repo)
     logger.warning("completed import karma for chat %s", event_chat.id)
+    await message.reply("успешно выполнен импорт")
