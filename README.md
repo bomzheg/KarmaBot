@@ -36,6 +36,9 @@ Moderator commands list:
   * you have to specify one or more duration part without spaces
 * !warn, !w [@mention] - official warn user from moderator
 * !info [@mention] - information about user (karma changes, restrictions, warns)
+* !karma_import [{"id": %id%, "karma": 42}] - import karma from JSON.
+%id% - is telegram user id, 42 is user karma. ONLY FOR CHAT OWNER.
+You can add more than one object in array.
 
 
 Chat settings commands list:

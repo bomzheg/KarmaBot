@@ -63,6 +63,7 @@ async def cmd_moderator_help(message: types.Message):
         "<code>!ban</code> [время] – заблокировать пользователя\n"
         "<code>!warn</code> – выдать предупреждение пользователю\n"
         "<code>!info</code> – показать информацию о пользователе"
+        # no info here about import karma. it's not so public API
     )
 
 
