@@ -1,6 +1,9 @@
 import asyncio
+import json
 
 from aiogram import Bot, F, Router, types
+from aiogram.enums import ChatMemberStatus
+from aiogram.filters import Command, CommandObject
 from aiogram.types import ContentType, LinkPreviewOptions
 from aiogram.utils.text_decorations import html_decoration as hd
 
@@ -14,6 +17,9 @@ from app.services.remove_message import remove_kb
 from app.utils.exceptions import CantChangeKarma, DontOffendRestricted, SubZeroKarma
 from app.utils.log import Logger
 
+from ..infrastructure.database import models
+from ..models import dto
+from ..services.karma import import_karma
 from . import keyboards as kb
 
 logger = Logger(__name__)
@@ -140,3 +146,34 @@ async def cancel_karma(
     )
     await callback_query.answer("Вы отменили изменение кармы", show_alert=True)
     await callback_query.message.delete()
+
+
+@router.message(Command("karma_import", prefix="!"))
+async def karma_import_handler(
+    message: types.Message,
+    command: CommandObject,
+    bot: Bot,
+    event_chat: types.Chat,
+    event_from_user: types.User,
+    chat: models.Chat,
+    user_repo: UserRepo,
+):
+    logger.info("try to start import karma")
+    args = [dto.Import(d["id"], d["karma"]) for d in json.loads(command.args or "{}")]
+    chat_owner: types.ChatMemberOwner = next(
+        filter(
+            lambda c: c.status == ChatMemberStatus.CREATOR,
+            await bot.get_chat_administrators(event_chat.id),
+        )
+    )
+    if chat_owner.user.id != event_from_user.id:
+        await message.reply("Только для владельца чата")
+        return
+    logger.warning(
+        "started import karma for chat %s, by user %s, with data %s",
+        event_chat.id,
+        event_from_user.id,
+        args,
+    )
+    await import_karma(args, chat, user_repo)
+    logger.warning("completed import karma for chat %s", event_chat.id)

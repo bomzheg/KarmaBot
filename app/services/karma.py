@@ -1,10 +1,13 @@
 import typing
 
 from aiogram.utils.markdown import hbold
+from tortoise.transactions import in_transaction
 
+from app.infrastructure.database import models
 from app.infrastructure.database.models import Chat, User, UserKarma
 from app.infrastructure.database.repo.chat import ChatRepo
 from app.infrastructure.database.repo.user import UserRepo
+from app.models import dto
 from app.utils.exceptions import IDParseError, NotEnoughArguments, NotHaveNeighbours
 
 
@@ -16,6 +19,19 @@ async def get_chat(command_arguments: list[str], chat_repo: ChatRepo) -> Chat:
         return await chat_repo.get_by_id(chat_id=int(command_arguments[1]))
     except ValueError:
         raise IDParseError
+
+
+async def import_karma(import_data: list[dto.Import], chat: models.Chat, user_repo: UserRepo):
+    with in_transaction() as using_db:
+        for data in import_data:
+            target_user = await user_repo.get_by_id(data.id)
+            uk, _ = await UserKarma.get_or_create(
+                user=target_user,
+                chat=chat,
+                using_db=using_db,
+            )
+            uk.karma = data.karma
+            await uk.save(using_db=using_db)
 
 
 async def get_top(
