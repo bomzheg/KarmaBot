@@ -20,9 +20,11 @@ services:
     deploy:
       resources:
         reservations:
-          memory: 480M
+          memory: 180M
+          cpus: "0.008"
         limits:
           memory: 600M
+          cpus: "0.05"
 
 networks:
   reverse-proxy:
