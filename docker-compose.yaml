@@ -17,6 +17,12 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - reverse-proxy
+    deploy:
+      resources:
+        reservations:
+          memory: 480M
+        limits:
+          memory: 600M
 
 networks:
   reverse-proxy:
