@@ -25,7 +25,7 @@ async def enable_karma_counting(chat_settings: ChatSettings, chat_settings_repo:
 
 
 def render_settings(chat_settings: ChatSettings, chat: Chat) -> str:
-    result = f"Настройки для чата {chat.title} {chat.chat_id}:\n\n"
+    result = f"Настройки для чата {hd.quote(chat.title)} {chat.chat_id}:\n\n"
 
     result += f"Подсчёт кармы: {chat_settings.karma_counting}.\n"
     if chat_settings.karma_counting:
