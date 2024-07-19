@@ -1,3 +1,5 @@
+import importlib
+
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -104,6 +106,15 @@ async def cmd_advanced_help(message: types.Message):
         "<code>!nm</code> – информация о мета-вопросах\n"
         "<code>!xy</code> – информация о XY problem\n"
     )
+
+
+@router.message(Command("privacy"))
+async def privacy(message: types.Message):
+    with (
+        importlib.resources.path("app.infrastructure.assets", "privacy.txt") as path,
+        path.open("r") as f,
+    ):
+        await message.reply(f.read())
 
 
 @router.message(Command("about", prefix="!"))
