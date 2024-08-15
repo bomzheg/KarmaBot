@@ -114,10 +114,16 @@ async def privacy(message: types.Message):
         importlib.resources.path("app.infrastructure.assets", "privacy.txt") as path,
         path.open("r") as f,
     ):
-        await message.reply(f.read())
+        await message.reply(
+            f"our privacy is something like https://telegram.org/privacy-tpa\n"
+            f"But this bot is only for Russian-speaking people, "
+            f"so detailed privacy is in Russian:\n"
+            f"{f.read()}"
+        )
 
 
-@router.message(Command("about", prefix="!"))
+@router.message(Command("about", prefix="!/"))
+@router.message(Command("developer_info", prefix="!/"))
 async def cmd_about(message: types.Message):
     logger.info("User {user} about", user=message.from_user.id)
     repo_url = "https://github.com/bomzheg/KarmaBot"
