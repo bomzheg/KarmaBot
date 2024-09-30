@@ -106,6 +106,7 @@ async def karma_change(
         + result_change_karma.abs_change
     )
 
+    # noinspection PyStringFormat
     msg = await message.reply(
         "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> "
         "до <b>{karma_new:z.2f}</b> ({power:+.2f})\n\n{notify_text}".format(
