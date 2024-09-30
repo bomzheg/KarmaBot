@@ -108,7 +108,7 @@ async def karma_change(
 
     msg = await message.reply(
         "<b>{actor_name}</b>, Вы {how_change} карму <b>{target_name}</b> "
-        "до <b>{karma_new:.2f}</b> ({power:+.2f})\n\n{notify_text}".format(
+        "до <b>{karma_new:z.2f}</b> ({power:+.2f})\n\n{notify_text}".format(
             actor_name=hd.quote(user.fullname),
             how_change=get_how_change_text(karma["karma_change"]),
             target_name=hd.quote(target.fullname),
