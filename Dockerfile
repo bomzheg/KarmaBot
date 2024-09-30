@@ -1,4 +1,4 @@
-FROM python:3.12-buster as builder
+FROM python:3.12-bookworm as builder
 ENV VIRTUAL_ENV=/opt/venv
 COPY pyproject.toml pyproject.toml
 RUN mkdir app
@@ -6,7 +6,7 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install .
 
-FROM python:3.12-slim-buster
+FROM python:3.12-slim-bookworm
 LABEL maintainer="bomzheg <bomzheg@gmail.com>" \
       description="Karma Telegram Bot"
 ENV VIRTUAL_ENV=/opt/venv
