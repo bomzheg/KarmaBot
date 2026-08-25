@@ -35,7 +35,8 @@ Moderator commands list:
     * FFF - count of seconds (less than 30 seconds will be mean 30 seconds)
   * you have to specify one or more duration part without spaces
 * !warn, !w [@mention] - official warn user from moderator
-* !info [@mention] - information about user (karma changes, restrictions, warns)
+* !info [@mention] - information about user (karma changes, restrictions, warns).
+  The answer is an ephemeral message, visible only to the moderator who asked for it.
 * !karma_import [{"id": %id%, "karma": 42}] - import karma from JSON.
 %id% - is telegram user id, 42 is user karma. ONLY FOR CHAT OWNER.
 You can add more than one object in array.
