@@ -1,9 +1,8 @@
 import asyncio
 
 from aiogram import Bot, F, Router, types
-from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import Command, CommandObject, MagicData
-from aiogram.types import LinkPreviewOptions, ReplyParameters
+from aiogram.types import LinkPreviewOptions
 from aiogram.utils.text_decorations import html_decoration as hd
 
 from app.filters import (
@@ -18,6 +17,7 @@ from app.infrastructure.database.models import Chat, ChatSettings, ReportStatus,
 from app.infrastructure.database.repo.report import ReportRepo
 from app.infrastructure.database.repo.user import UserRepo
 from app.models.config import Config
+from app.services.ephemeral import reply_ephemeral
 from app.services.moderation import (
     ban_user,
     delete_moderator_event,
@@ -93,15 +93,10 @@ async def report_message(
     HasResolvedReport(),
     Command("report", "admin", "spam", prefix="/!@"),
 )
-async def report_already_reported(message: types.Message, config: Config, bot: Bot):
-    reply = await message.reply("Сообщение уже было рассмотрено ранее")
+async def report_already_reported(message: types.Message, config: Config):
+    await reply_ephemeral(message, "Сообщение уже было рассмотрено ранее")
     return asyncio.create_task(
-        cleanup_command_dialog(
-            bot=bot,
-            bot_message=reply,
-            delete_bot_reply=True,
-            delay=config.time_to_remove_temp_messages,
-        )
+        delete_message(message, sleep_time=config.time_to_remove_temp_messages)
     )
 
 
@@ -125,7 +120,7 @@ async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, b
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
-        return await message.reply(f"Не могу распознать время. {hd.quote(e.text)}")
+        return await reply_ephemeral(message, f"Не могу распознать время. {hd.quote(e.text)}")
 
     try:
         success_text = await ro_user(chat, target, user, duration, comment, bot)
@@ -142,8 +137,8 @@ async def cmd_ro(message: types.Message, user: User, target: User, chat: Chat, b
     ~BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ro_no_bot_permissions(message: types.Message):
-    await message.reply(
-        "Мне нужны соответствующие права, чтобы запрещать писать пользователям в группе."
+    await reply_ephemeral(
+        message, "Мне нужны соответствующие права, чтобы запрещать писать пользователям в группе."
     )
 
 
@@ -167,7 +162,7 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     try:
         duration, comment = get_duration(message.text)
     except TimedeltaParseError as e:
-        return await message.reply(f"Не могу распознать время. {hd.quote(e.text)}")
+        return await reply_ephemeral(message, f"Не могу распознать время. {hd.quote(e.text)}")
 
     try:
         success_text = await ban_user(chat, target, user, duration, comment, bot)
@@ -184,8 +179,8 @@ async def cmd_ban(message: types.Message, user: User, target: User, chat: Chat, 
     ~BotHasPermissions(can_restrict_members=True),
 )
 async def cmd_ban_no_bot_permissions(message: types.Message):
-    await message.reply(
-        "Мне нужны соответствующие права, чтобы блокировать пользователей в группе."
+    await reply_ephemeral(
+        message, "Мне нужны соответствующие права, чтобы блокировать пользователей в группе."
     )
 
 
@@ -254,7 +249,6 @@ async def get_info_about_user(
     chat: Chat,
     target: User,
     config: Config,
-    bot: Bot,
     user_repo: UserRepo,
 ):
     info = await get_user_info(target, chat, config.date_format)
@@ -269,21 +263,10 @@ async def get_info_about_user(
     info.insert(0, title)
 
     try:
-        await bot.send_message(
-            chat_id=message.from_user.id,
-            text="\n".join(info),
-            reply_parameters=ReplyParameters(
-                message_id=message.message_id,
-                chat_id=message.chat.id,
-                allow_sending_without_reply=True,
-            ),
+        await reply_ephemeral(
+            message,
+            "\n".join(info),
             link_preview_options=LinkPreviewOptions(is_disabled=True),
-        )
-    except TelegramUnauthorizedError:
-        me = await bot.me()
-        await message.reply(
-            f"{message.from_user.mention_html()}, напишите мне в личку "
-            f'<a href="https://t.me/{me.username}?start">/start</a> и повторите команду.'
         )
     finally:
         await delete_message(message)
